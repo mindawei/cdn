@@ -108,8 +108,7 @@ public final class BoundMergeOptimizer implements Optimizer{
 			String nodeId = entry.getKey();
 			Server server = toServers.get(nodeId);
 			TransferInfo transferInfo = entry.getValue();
-			fromServer.transferTo(server,transferInfo);
-			bandWidthCost+=transferInfo.getTransferCost();
+			bandWidthCost += fromServer.transferTo(server,transferInfo);
 		}
 
 		return bandWidthCost;

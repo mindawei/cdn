@@ -84,18 +84,16 @@ public final class Global {
 	public static void updateSolution() {
 		int newMinCost = getTotalCost();
 		String[] newSoluttion = getSolution();
-
+		
+		if(IS_DEBUG){
+			System.out.println("newMinCost:"+newMinCost);
+			System.out.println(newMinCost < Global.minCost?"better":"worse");
+		}
+		
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
 			soluttion = newSoluttion;
-			if (IS_DEBUG) {
-				System.out.println("better!");
-			}
-		} else {
-			if (IS_DEBUG) {
-				System.out.println("worse!");
-			}
-		}
+		} 
 	}
 
 	/**
@@ -146,7 +144,6 @@ public final class Global {
 		System.out.println("---------------");
 		System.out.println("最优解：");
 		System.out.println("总的费用：" + Global.minCost);
-		System.out.println("总的服务器数：" + Global.servers.size());
 		System.out.println();
 		for (String line : Global.soluttion) {
 			System.out.println(line);

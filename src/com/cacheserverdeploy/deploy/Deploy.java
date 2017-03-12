@@ -20,10 +20,14 @@ public class Deploy
     	
     	Global.initSolution();
     
+    	// 1 边界合并
     	Optimizer optimizer = new BoundMergeOptimizer();
     	optimizer.optimize();
-    	
-//    	Map<String,CostInfo> map = Router.getUnitCost("7");
+    	// 2 启发
+    	optimizer = new HeuristicOptimizer();
+    	optimizer.optimize();	
+
+ //    	Map<String,CostInfo> map = Router.getUnitCost("7");
 //    	for(Map.Entry<String,CostInfo> entry : map.entrySet()){
 //    		System.out.println("7 - > "+entry.getKey()+" : "+entry.getValue().cost);
 //    		for(String node :entry.getValue().nodes){

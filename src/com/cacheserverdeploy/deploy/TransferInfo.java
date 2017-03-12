@@ -25,9 +25,4 @@ public final class TransferInfo {
 		this.nodes = nodes;
 	}
 	
-	/** 计算传送消耗 */
-	public int getTransferCost(){
-		return avaliableBandWidth * cost;
-	}
-	
 }
