@@ -20,7 +20,8 @@ public class Deploy
     	
     	Global.initSolution();
     
-    	Optimizer.optimize();
+    	Optimizer optimizer = new BoundMergeOptimizer();
+    	optimizer.optimize();
     	
 //    	Map<String,CostInfo> map = Router.getUnitCost("7");
 //    	for(Map.Entry<String,CostInfo> entry : map.entrySet()){
