@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public final class TransferInfo {
 	
 	/** 可提供的带宽 */
-	int avaliableBandWidth;
+	int avaliableBandWidth = 0;
 	
 	/** 到达需要的费用：单位花费 */
 	int cost; 

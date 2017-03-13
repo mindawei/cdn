@@ -34,6 +34,7 @@ public class HeuristicOptimizer implements Optimizer {
 	/** 存活周期 ,单位：推进次数  */	
 	private static final int LIVE_TIME = 10;
 	
+	 static int round =1;
 	/**
 	 * 简单的思路：只是在边界合并
 	 */
@@ -52,6 +53,11 @@ public class HeuristicOptimizer implements Optimizer {
 		final long TIME_OUT = 5 * 1000;
 		long startT = System.currentTimeMillis();
 		while(true) {
+			
+			round++;
+			System.out.println("round:"+round);
+		
+			
 			// 可选方案
 			List<Pair> pairs = new LinkedList<Pair>();
 			for(Server server : Global.servers){
@@ -71,7 +77,11 @@ public class HeuristicOptimizer implements Optimizer {
 
 			Pair bestNextPair = null;
 			int minCost = Global.INFINITY;
-			
+//			if(round==9){
+//				for (Pair nextPair : pairs) {
+//					System.out.println(nextPair);
+//				}
+//			}
 			for (Pair nextPair : pairs) {
 				Global.save();
 				// 启发函数： 花费 + 这个点的移动频率
@@ -85,6 +95,7 @@ public class HeuristicOptimizer implements Optimizer {
 			
 
 			if (bestNextPair != null) {
+				
 				// 移动
 				move(bestNextPair);
 				// 更新该点的移动值
@@ -128,6 +139,15 @@ public class HeuristicOptimizer implements Optimizer {
 	 */
 	private static int move(Pair pair) {
 		
+		if(round==9){
+			if(pair.oldServerNodeId.equals("23")&&pair.newServerNodeId.equals("19")){
+				System.out.println("debug");
+				System.out.println(pair);
+				Edge edge = Global.getEdge("18", "23");
+				System.out.println(edge.getLeftBandWidth());
+			}
+		}
+		
 		Server oldServer= null;
 		Server newServer = null;
 
@@ -150,7 +170,7 @@ public class HeuristicOptimizer implements Optimizer {
 		}
 		// 拆一台装一台没有费用
 		int mergeCost = 0;	
-
+	
 		mergeCost += transfer(oldServer, newServers);
 		if (oldServer.getDemand() == 0) {			// 真正拆除
 			Global.servers.remove(oldServer);

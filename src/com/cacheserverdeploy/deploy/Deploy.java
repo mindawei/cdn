@@ -22,9 +22,9 @@ public class Deploy
     
     	// 1 边界合并
     	Optimizer optimizer = new BoundMergeOptimizer();
-    	// optimizer.optimize();
+        optimizer.optimize();
     	// 2 启发
-    	optimizer = new HeuristicOptimizer();
+    	//optimizer = new HeuristicOptimizer();
     	optimizer.optimize();	
 
  //    	Map<String,CostInfo> map = Router.getUnitCost("7");

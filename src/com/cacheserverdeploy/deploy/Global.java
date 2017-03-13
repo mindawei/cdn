@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public final class Global {
 
-	public static final boolean IS_DEBUG = true;
+	public static final boolean IS_DEBUG = false;
 
 	/** 无穷大 */
 	public static final int INFINITY = Integer.MAX_VALUE;
@@ -34,7 +34,7 @@ public final class Global {
 	public static final Set<String> nodes = new HashSet<String>();
 
 	/** 边 */
-	public static final Map<String, Map<String, Edge>> edges = new HashMap<String, Map<String, Edge>>();
+	private static final Map<String, Map<String, Edge>> edges = new HashMap<String, Map<String, Edge>>();
 
 	/** 放置的服务器 */
 	public static ArrayList<Server> servers = new ArrayList<Server>();
@@ -184,23 +184,24 @@ public final class Global {
 	 * @return 消耗掉的带宽
 	 */
 	public static int useBandWidth(int demand, ArrayList<String> nodes) {
-		if (demand == 0) {
+		
+		if (demand == 0 || nodes.size()<=1) {
 			return 0;
 		}
-		int minBindWidth = Global.INFINITY;
+		int minBandWidth = Global.INFINITY;
 		for (int i = 0; i < nodes.size() - 1; ++i) {
 			Edge edge = getEdge(nodes.get(i), nodes.get(i + 1));
-			minBindWidth = Math.min(edge.bandWidth, minBindWidth);
+			minBandWidth = Math.min(edge.getLeftBandWidth(), minBandWidth);
 		}
-		if (minBindWidth == 0) {
+		if (minBandWidth == 0) {
 			return 0;
 		}
-		int usedBindWidth = Math.min(minBindWidth, demand);
+		int usedBandWidth = Math.min(minBandWidth, demand);
 		for (int i = 0; i < nodes.size() - 1; ++i) {
 			Edge edge = getEdge(nodes.get(i), nodes.get(i + 1));
-			edge.bandWidth -= usedBindWidth;
+			edge.useBandWidth(usedBandWidth);
 		}
-		return usedBindWidth;
+		return usedBandWidth;
 	}
 
 }

@@ -29,7 +29,7 @@ public final class Server {
 	 * 注意：可能cost会改变(又返回之前的点)
 	 */
 	public int transferTo(Server toServer, TransferInfo transferInfo) {
-		
+	
 		Set<String> consumerIds = new HashSet<String>(); 
 		for(ServerInfo info : serverInfos ){
 			consumerIds.add(info.consumerId);
@@ -47,40 +47,53 @@ public final class Server {
 		
 		LinkedList<ServerInfo> needRemoveServerInfos = new LinkedList<ServerInfo>();
 		for(ServerInfo localServerInfo : serverInfos){
-			// 已经完成
-			if(bandWidth==0){
-				return transferCost;
-			}
 			
 			int transferBandWidth = Math.min(bandWidth, localServerInfo.bandWidth);
 			// 转移给新的
+//			System.out.println(transferBandWidth+" min "+bandWidth+" "+localServerInfo.bandWidth );
 			
-			ArrayList<String> nodes = new ArrayList<String>(localServerInfo.nodes);
+			ArrayList<String> localNodes = new ArrayList<String>(localServerInfo.nodes);
 			for(String transferNode : transferNodes){
-				if(nodes.contains(transferNode)){  // 存在回路
-					nodes.add(transferNode);
-					int index = nodes.indexOf(transferNode);
+				if(localNodes.contains(transferNode)){  // 存在回路
+					localNodes.add(transferNode);
+					int index = localNodes.indexOf(transferNode);
 					// 删除回路影响
-					for(int i=index;i<nodes.size()-1;++i){
-						Edge edge = Global.getEdge(nodes.get(i), nodes.get(i+1));
-						transferCost -= transferInfo.avaliableBandWidth * edge.cost;
-						edge.bandWidth += transferInfo.avaliableBandWidth;
+					for(int i=index;i<localNodes.size()-1;++i){
+						Edge edge = Global.getEdge(localNodes.get(i), localNodes.get(i+1));
+						transferCost -= transferBandWidth * edge.cost;
+						
+//						if(edge.getLeftBandWidth()+transferBandWidth>edge.initBandWidth){
+//							System.out.println(localNodes.get(i)+ "->"+ localNodes.get(i+1));
+//							System.out.println(edge.getLeftBandWidth()+" + "+transferBandWidth+" > "+edge.initBandWidth);
+//							//System.out.println(edge.log.toString());
+//							System.exit(0);
+//						}
+						edge.relaseBandWidth(transferBandWidth);
 					}
 					// 删除回路
 					ArrayList<String> newNodes = new ArrayList<String>(index+1);
 					for(int i=0;i<=index;++i){
-						newNodes.add(nodes.get(i));
+						newNodes.add(localNodes.get(i));
 					}
-					nodes = newNodes;
+					localNodes = newNodes;
 				}else{ // 不存在回路
-					nodes.add(transferNode);
-					int size = nodes.size();
-					Edge edge = Global.getEdge(nodes.get(size-2), nodes.get(size-1));
-					transferCost += transferInfo.avaliableBandWidth * edge.cost;
+					localNodes.add(transferNode);
+					int size = localNodes.size();
+					Edge edge = Global.getEdge(localNodes.get(size-2), localNodes.get(size-1));
+					transferCost += transferBandWidth * edge.cost;
+				}
+				
+				if(bandWidth-transferBandWidth<0){
+					System.out.println(bandWidth);
+				}
+				bandWidth-=transferBandWidth;
+				// 已经完成
+				if(bandWidth==0){
+					return transferCost;
 				}
 			}
 			
-			ServerInfo toServerInfo = new ServerInfo(localServerInfo.consumerId,transferBandWidth,nodes);
+			ServerInfo toServerInfo = new ServerInfo(localServerInfo.consumerId,transferBandWidth,localNodes);
 			toServer.serverInfos.add(toServerInfo);
 			// 更新当前的
 			localServerInfo.bandWidth -= transferBandWidth;
@@ -91,14 +104,10 @@ public final class Server {
 		serverInfos.removeAll(needRemoveServerInfos);
 		
 		
-		Set<String> toConsumerIds = new HashSet<String>(); 
-		for(ServerInfo info : toServer.serverInfos ){
-			toConsumerIds.add(info.consumerId);
-		}
-		
-		if(!toConsumerIds.containsAll(consumerIds)){
-			System.out.println("Error");
-		}
+//		Set<String> toConsumerIds = new HashSet<String>(); 
+//		for(ServerInfo info : toServer.serverInfos ){
+//			toConsumerIds.add(info.consumerId);
+//		}
 		
 		return transferCost;
 	}

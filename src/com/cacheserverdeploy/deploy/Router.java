@@ -16,7 +16,7 @@ public final class Router {
 	 * 获得点到各个点的单位消耗<br>
 	 * 算法：dijkstra<br>
 	 */
-	public static Map<String,TransferInfo> getToNodeCost(String fromNodeId){
+	private static Map<String,TransferInfo> getToNodeCost(String fromNodeId){
 
 		Map<String,TransferInfo> costMap = new HashMap<String, TransferInfo>();
 
@@ -88,8 +88,6 @@ public final class Router {
 		// 使用了多少个服务节点
 		int usedToNodeNum = 0;
 		
-		Map<String,TransferInfo> returnMap = new HashMap<String, TransferInfo>();
-		
 		Map<String,TransferInfo> costMap = new HashMap<String, TransferInfo>();
 
 		// 未访问过的节点ID
@@ -135,10 +133,12 @@ public final class Router {
 				if (usedDemand > 0) {
 					usedToNodeNum++;
 					minCostInfo.avaliableBandWidth = usedDemand;
-					returnMap.put(minCostNodeID, minCostInfo);
 					fromDemand -= usedDemand;
+					
+					
+					
 					if (fromDemand == 0 || toNodes.size() == usedToNodeNum) {
-						return returnMap;
+						break;
 					}
 				}
 			}
@@ -146,21 +146,33 @@ public final class Router {
 			// 更新
 			for (String toNodeId : Global.getToNodeIds(minCostNodeID)) {
 				if (notVisitNodeIds.contains(toNodeId)) {
-					TransferInfo costInfo = costMap.get(toNodeId);
+					TransferInfo toCostInfo = costMap.get(toNodeId);
 					
-					int oldCost = costInfo.cost;
+					int oldCost = toCostInfo.cost;
 					
 					Edge edge = Global.getEdge(minCostNodeID, toNodeId);
 					int newCost = minCost + edge.cost;
 					
 					if(newCost<oldCost){
-						costInfo.cost = newCost;
-						costInfo.nodes = new ArrayList<String>(minCostInfo.nodes);
-						costInfo.nodes.add(toNodeId);
+						toCostInfo.cost = newCost;
+						toCostInfo.nodes = new ArrayList<String>(minCostInfo.nodes);
+						toCostInfo.nodes.add(toNodeId);
 					}
 				}
 			}
 			
+		}
+		
+		Map<String,TransferInfo> returnMap = new HashMap<String, TransferInfo>();
+		for(String toNode : toNodes){
+			if(!costMap.containsKey(toNode)){
+				continue;
+			}
+			if(costMap.get(toNode).avaliableBandWidth>0){
+				returnMap.put(toNode, costMap.get(toNode));
+			}
+			
+		
 		}
 		return returnMap;
 	}

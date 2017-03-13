@@ -5,15 +5,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
-
 import com.cacheserverdeploy.deploy.Edge;
 import com.cacheserverdeploy.deploy.Global;
 import com.cacheserverdeploy.deploy.Parser;
 import com.cacheserverdeploy.deploy.Server;
 import com.cacheserverdeploy.deploy.ServerInfo;
 import com.filetool.util.FileUtil;
-import com.filetool.util.LogUtil;
 
 /**
  * 校验
@@ -55,8 +52,8 @@ public class Checker {
 	    	 String consumerId = parts[size-2];
 	    	 for(int j=0;j<size-3;++j){
 	    		 Edge edge = Global.getEdge(parts[j], parts[j+1]);
-	    		 edge.bandWidth -= bandwidth;
-	    		 if(edge.bandWidth<0){
+	    		 edge.useBandWidth(bandwidth);
+	    		 if(edge.getLeftBandWidth()<0){
 	    			 System.out.println("edge.bandWidth<0:"+line);
 	    			 System.exit(0);
 	    		 }  
