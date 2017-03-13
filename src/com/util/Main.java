@@ -29,6 +29,8 @@ public class Main
 		 String graphFilePath = FilePath.graphFilePath;
 	     String resultFilePath = FilePath.resultFilePath;
 	     
+	     System.out.println(graphFilePath+" "+resultFilePath);
+	     
         LogUtil.printLog("Begin");
 
         // 读取输入文件

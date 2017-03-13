@@ -5,15 +5,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
-
 import com.cacheserverdeploy.deploy.Edge;
 import com.cacheserverdeploy.deploy.Global;
 import com.cacheserverdeploy.deploy.Parser;
 import com.cacheserverdeploy.deploy.Server;
 import com.cacheserverdeploy.deploy.ServerInfo;
 import com.filetool.util.FileUtil;
-import com.filetool.util.LogUtil;
 
 /**
  * 校验

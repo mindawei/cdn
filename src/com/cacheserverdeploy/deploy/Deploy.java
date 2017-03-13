@@ -29,19 +29,17 @@ public class Deploy
     	
     	// 快速提供一个解
     	optimizers.add(new BoundMergeOptimizer(null));
-    	
     	// 优化解
-    	optimizers.add(new BoundMergeOptimizer(new BetterHeuristicOptimizer2(null)));
+    	optimizers.add(new BoundMergeOptimizer(new HeuristicOptimizer(null)));
     	
     	// 1 边界合并
     	for(Optimizer optimizer : optimizers){
     		Global.reset();
     		optimizer.optimize();
-    		//if(Global.IS_DEBUG){
+    		if(Global.IS_DEBUG){
     			System.out.println(optimizer.getClass().getSimpleName());
     			System.out.println(Global.getTotalCost());
-    			//Global.printBestSolution();
-    		//}
+      		}
     	}
     	
     	String[] solution = Global.getBestSolution();

@@ -1,10 +1,10 @@
 package com.cacheserverdeploy.deploy;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 启发式搜素：当前全局的服务费用最下
@@ -37,7 +37,9 @@ public class HeuristicOptimizer implements Optimizer {
 	}
 	
 	/** 存活周期 ,单位：推进次数  */	
-	private static int LIVE_TIME = 10;
+	private static int LIVE_TIME = 1;
+	
+	// private static int nearestK = Global.nodes.size();
 	
 	/**
 	 * 简单的思路：只是在边界合并
@@ -53,20 +55,17 @@ public class HeuristicOptimizer implements Optimizer {
 			visitedNodes.put(server.nodeId,LIVE_TIME);
 		}
 		
-		Map<String,Integer> moveNumbers = new HashMap<String,Integer>();
-		for(String nodeId : Global.nodes){
-			moveNumbers.put(nodeId, 0);
-		}
-		
 		final long TIME_OUT = 5 * 1000;
 		long startT = System.currentTimeMillis();
+	
 		while(true) {
 			// 可选方案
 			List<Pair> pairs = new LinkedList<Pair>();
 			for(Server server : Global.servers){
 				// 获得可以移动的点
-				Set<String> toNodeIds = Global.getToNodeIds(server.nodeId);
-				for(String toNodeId : toNodeIds){
+				// Set<String> toNodeIds = Router.getNearestK(Router.getToNodeCost(server.nodeId), nearestK);
+				
+				for(String toNodeId : Global.nodes){
 					// 排除移动
 					if(!visitedNodes.containsKey(toNodeId)){
 						pairs.add(new Pair(server.nodeId, toNodeId));
@@ -85,7 +84,6 @@ public class HeuristicOptimizer implements Optimizer {
 				Global.save();
 				// 启发函数： 花费 + 这个点的移动频率
 				int cost = move(nextPair);
-				 // + moveNumbers.get(nextPair.oldServerNodeId) * 10;
 				if (cost < minCost) {
 					minCost = cost;
 					bestNextPair = nextPair;
@@ -97,9 +95,6 @@ public class HeuristicOptimizer implements Optimizer {
 			if (bestNextPair != null) {
 				// 移动
 				move(bestNextPair);
-				// 更新该点的移动值
-				// int moveNumber = moveNumbers.get(bestNextPair.oldServerNodeId);
-				// moveNumbers.put(bestNextPair.oldServerNodeId,moveNumber+1);
 				Global.updateSolution();
 				visitedNodes.put(bestNextPair.newServerNodeId,LIVE_TIME);
 			} else {
@@ -138,47 +133,41 @@ public class HeuristicOptimizer implements Optimizer {
 	 */
 	private static int move(Pair pair) {
 		
-		Server oldServer= null;
-		Server newServer = null;
-
 		// 替换旧的Server
 		Map<String, Server> newServers = new HashMap<String, Server>();
-		for (Server server : Global.servers){
-			newServers.put(server.nodeId, server);
-			if(server.nodeId.equals(pair.oldServerNodeId)){
-				oldServer = server;
-			}
-			if(server.nodeId.equals(pair.newServerNodeId)){
-				newServer = server;
-			}
-		}
-		newServers.remove(pair.oldServerNodeId);
 		
-		if(newServer==null){
-			newServer= new Server(pair.newServerNodeId);
-			newServers.put(pair.newServerNodeId,newServer);
-		}
+		for (Server server : Global.servers){
+			if(!server.nodeId.equals(pair.oldServerNodeId)){
+				newServers.put(server.nodeId, new Server(server.nodeId));
+			}	
+		}	
+		newServers.put(pair.newServerNodeId,new Server(pair.newServerNodeId));
+	
 		// 拆一台装一台没有费用
 		int mergeCost = 0;	
-
-		mergeCost += transfer(oldServer, newServers);
-		if (oldServer.getDemand() == 0) {			// 真正拆除
-			Global.servers.remove(oldServer);
-		}else{
-			// 部署一台
-			mergeCost += Global.depolyCostPerServer;
+		
+		List<Server> oldServers = new ArrayList<Server>(Global.servers);
+		for (Server oldServer : oldServers) {
+			mergeCost += transfer(oldServer, newServers);
+			if (oldServer.getDemand() == 0) { // 真正拆除
+				Global.servers.remove(oldServer);
+			} else {
+				// 部署一台
+				mergeCost += Global.depolyCostPerServer;
+			}
 		}
 		
-		if(newServer.getDemand()==0){
-			// 拆掉不需要
-			mergeCost -= Global.depolyCostPerServer;
-		}else{ // > 0
-			// 真正安装
-			Global.servers.add(newServer);
+		for(Server newServer : newServers.values()){
+			if (newServer.getDemand() == 0) {
+				// 拆掉不需要
+				mergeCost -= Global.depolyCostPerServer;
+			} else { // > 0
+				// 真正安装
+				Global.servers.add(newServer);
+			}
 		}
-
 		if (Global.IS_DEBUG) {
-			System.out.println("当前数目："+Global.servers.size());
+			System.out.println("当前数目：" + Global.servers.size());
 			System.out.println("mergeCost:" + mergeCost);
 		}
 		return mergeCost;
