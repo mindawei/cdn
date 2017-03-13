@@ -1,4 +1,4 @@
-package com.filetool.main;
+package com.util;
 
 import com.cacheserverdeploy.deploy.Deploy;
 import com.filetool.util.FileUtil;

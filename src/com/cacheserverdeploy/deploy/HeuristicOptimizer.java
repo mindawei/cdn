@@ -14,6 +14,11 @@ import java.util.Set;
  */
 public class HeuristicOptimizer implements Optimizer {
 
+	private final Optimizer previousOptimizer;
+	
+	public HeuristicOptimizer(Optimizer previousOptimizer){
+		this.previousOptimizer = previousOptimizer;
+	}
 	// 接下来可以走的地方
 	class Pair{
 		String oldServerNodeId;
@@ -32,12 +37,16 @@ public class HeuristicOptimizer implements Optimizer {
 	}
 	
 	/** 存活周期 ,单位：推进次数  */	
-	private static final int LIVE_TIME = 10;
+	private static int LIVE_TIME = 10;
 	
 	/**
 	 * 简单的思路：只是在边界合并
 	 */
 	public void optimize() {
+		
+		if(previousOptimizer!=null){
+			previousOptimizer.optimize();
+		}
 		
 		Map<String,Integer> visitedNodes = new HashMap<String,Integer>();
 		for(Server server : Global.servers){
@@ -75,7 +84,8 @@ public class HeuristicOptimizer implements Optimizer {
 			for (Pair nextPair : pairs) {
 				Global.save();
 				// 启发函数： 花费 + 这个点的移动频率
-				int cost = move(nextPair) + moveNumbers.get(nextPair.oldServerNodeId) * 10;
+				int cost = move(nextPair);
+				 // + moveNumbers.get(nextPair.oldServerNodeId) * 10;
 				if (cost < minCost) {
 					minCost = cost;
 					bestNextPair = nextPair;

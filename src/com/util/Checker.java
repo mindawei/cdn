@@ -25,8 +25,8 @@ public class Checker {
 	
 	// case_example/case0.txt result/0.txt
 	public static void main(String[] args) {
-		 String graphFilePath = args[0];
-	     String resultFilePath = args[1];
+		 String graphFilePath = FilePath.graphFilePath;
+	     String resultFilePath = FilePath.resultFilePath;
 	     System.out.println(graphFilePath+" "+resultFilePath);
 	     // 读取输入文件
 	     String[] graphContent = FileUtil.read(graphFilePath, null); 

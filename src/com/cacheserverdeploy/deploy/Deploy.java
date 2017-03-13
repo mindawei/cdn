@@ -1,5 +1,8 @@
 package com.cacheserverdeploy.deploy;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class Deploy
 {
     /**
@@ -19,25 +22,27 @@ public class Deploy
         }
     	
     	Global.initSolution();
-    
-    	// 1 边界合并
-    	Optimizer optimizer = new BoundMergeOptimizer();
-    	// optimizer.optimize();
-    	// 2 启发
-    	optimizer = new HeuristicOptimizer();
-    	optimizer.optimize();	
+     	
+    	Global.initRest();
+    	
+    	List<Optimizer> optimizers = new LinkedList<Optimizer>();
+    	
 
- //    	Map<String,CostInfo> map = Router.getUnitCost("7");
-//    	for(Map.Entry<String,CostInfo> entry : map.entrySet()){
-//    		System.out.println("7 - > "+entry.getKey()+" : "+entry.getValue().cost);
-//    		for(String node :entry.getValue().nodes){
-//    			System.out.print(node+" ");
-//    		}
-//    		System.out.println();
-//    	}
-    	if(Global.IS_DEBUG){
-    		Global.printBestSolution();
-		}	
+    	optimizers.add(new BoundMergeOptimizer(null));
+    	
+    	optimizers.add(new HeuristicOptimizer(null));
+    	
+    	// 1 边界合并
+    	for(Optimizer optimizer : optimizers){
+    		Global.reset();
+    		optimizer.optimize();
+    		//if(Global.IS_DEBUG){
+    			System.out.println(optimizer.getClass().getSimpleName());
+    			System.out.println(Global.getTotalCost());
+    			//Global.printBestSolution();
+    		//}
+    	}
+    	
     	String[] solution = Global.getBestSolution();
     	return solution;    
     }

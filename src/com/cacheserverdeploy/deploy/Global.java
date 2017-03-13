@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public final class Global {
 
-	public static final boolean IS_DEBUG = true;
+	public static final boolean IS_DEBUG = false;
 
 	/** 无穷大 */
 	public static final int INFINITY = Integer.MAX_VALUE;
@@ -41,6 +41,31 @@ public final class Global {
 
 	/** 备份 */
 	private static ArrayList<Server> copyServers;
+	
+	/** 备份 */
+	private static ArrayList<Server> initServers;
+	
+	/** 初始化 */
+	public static void initRest(){
+		initServers = new ArrayList<Server>(servers.size());
+		for (Server server : servers) {
+			initServers.add(server.copy());
+		}
+	}
+	
+	/** 重置 */
+	public static void reset(){
+		// 恢复edge的带宽值
+		for (Map<String, Edge> map : edges.values()) {
+			for (Edge edge : map.values()) {
+				edge.reset();
+			}
+		}
+		servers = new ArrayList<Server>(servers.size());
+		for (Server server : initServers) {
+			servers.add(server.copy());
+		}
+	}
 
 	/** 保存当前状态 */
 	public static void save() {
@@ -50,6 +75,8 @@ public final class Global {
 				edge.saveCurrentBandWidth();
 			}
 		}
+		
+		
 		copyServers = new ArrayList<Server>(servers.size());
 		for (Server server : servers) {
 			copyServers.add(server.copy());
@@ -129,7 +156,7 @@ public final class Global {
 	}
 
 	/** 获得总的费用 */
-	private static int getTotalCost() {
+	public static int getTotalCost() {
 		int toatlCost = 0;
 		for (Server server : Global.servers) {
 			toatlCost += server.getCost();

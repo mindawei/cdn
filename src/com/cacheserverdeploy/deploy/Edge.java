@@ -13,7 +13,14 @@ public final class Edge {
 	/** 单位网络租用费 */
 	public final int cost;
 
+	public final int initBandWidth;
+	
+	public void reset() {
+		bandWidth = initBandWidth;
+	}
+	
 	public Edge(int bandWidth, int cost) {
+		this.initBandWidth = bandWidth;
 		this.bandWidth = bandWidth;
 		this.cost = cost;
 	}
@@ -29,4 +36,5 @@ public final class Edge {
 	public void goBackBandWidth(){
 		bandWidth = savedBandWidth;
 	}
+	
 }

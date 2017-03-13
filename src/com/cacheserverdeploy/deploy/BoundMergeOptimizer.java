@@ -16,10 +16,20 @@ import java.util.Set;
  */
 public final class BoundMergeOptimizer implements Optimizer{
 	
+	private final Optimizer previousOptimizer;
+	public BoundMergeOptimizer(Optimizer previousOptimizer){
+		this.previousOptimizer = previousOptimizer;
+	}
+	
 	/** 
 	 * 简单的思路：只是在边界合并 
 	 */
 	public void optimize() {
+		
+		if(previousOptimizer!=null){
+			previousOptimizer.optimize();
+		}
+		
 		while (true) {
 			int bestIndex = -1;
 			int minCost = 0;
