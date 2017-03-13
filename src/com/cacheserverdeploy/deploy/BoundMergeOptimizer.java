@@ -123,39 +123,5 @@ public final class BoundMergeOptimizer implements Optimizer{
 
 		return bandWidthCost;
 	}
-	
-	/** 获得最近的几个 */
-	static Set<String> getNearestK(Map<String,TransferInfo> toNodeCost,int nearestK){
-		
-		class Info implements Comparable<Info>{
-			
-			String nodeID;
-			int cost;
-			public Info(String nodeID, int cost) {
-				super();
-				this.nodeID = nodeID;
-				this.cost = cost;
-			}
-			
-			@Override
-			public int compareTo(Info other) {
-				return cost-other.cost;
-			}
-		}
-		
-		PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>();
-		for(Map.Entry<String,TransferInfo> entry : toNodeCost.entrySet()){
-			Info info = new Info(entry.getKey(), entry.getValue().cost);
-			priorityQueue.add(info);
-		}
-		
-		int len = Math.min(priorityQueue.size(), nearestK);
-		Set<String> sets = new HashSet<String>();
-		for(int i=0;i<len;++i){
-			sets.add(priorityQueue.poll().nodeID);
-		}	
-		return sets;
-	}
-
 
 }

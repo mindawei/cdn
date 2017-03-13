@@ -27,10 +27,11 @@ public class Deploy
     	
     	List<Optimizer> optimizers = new LinkedList<Optimizer>();
     	
-
+    	// 快速提供一个解
     	optimizers.add(new BoundMergeOptimizer(null));
     	
-    	optimizers.add(new HeuristicOptimizer(null));
+    	// 优化解
+    	optimizers.add(new BoundMergeOptimizer(new BetterHeuristicOptimizer2(null)));
     	
     	// 1 边界合并
     	for(Optimizer optimizer : optimizers){
