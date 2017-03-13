@@ -11,10 +11,10 @@ import java.util.ArrayList;
 public final class ServerInfo {
 	
 	/** 服务的消费者ID */
-	final String consumerId;
+	public final String consumerId;
 	
 	/** 使用的带宽  */
-    int bandWidth;
+    public int bandWidth;
 	
 	/**
 	 * 消费者到服务器当中经过的路径 ,包括消费者节点和服务器节点<br> 

@@ -49,7 +49,7 @@ public class HeuristicOptimizer implements Optimizer {
 			moveNumbers.put(nodeId, 0);
 		}
 		
-		final long TIME_OUT = 60 * 1000;
+		final long TIME_OUT = 5 * 1000;
 		long startT = System.currentTimeMillis();
 		while(true) {
 			// 可选方案
