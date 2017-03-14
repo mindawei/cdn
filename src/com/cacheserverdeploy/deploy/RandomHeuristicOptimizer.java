@@ -57,7 +57,7 @@ public class RandomHeuristicOptimizer implements Optimizer {
 			visitedNodes.put(server.nodeId,LIVE_TIME);
 		}
 		
-		final long TIME_OUT = 60 * 1000;
+		final long TIME_OUT = 2 * 1000;
 		long startT = System.currentTimeMillis();
 	
 		while(true) {
