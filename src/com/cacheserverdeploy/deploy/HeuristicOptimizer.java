@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 启发式搜素：当前全局的服务费用最下
@@ -41,6 +42,8 @@ public class HeuristicOptimizer implements Optimizer {
 	
 	// private static int nearestK = Global.nodes.size();
 	
+	private static Random random = new Random(47);
+	
 	/**
 	 * 简单的思路：只是在边界合并
 	 */
@@ -55,8 +58,8 @@ public class HeuristicOptimizer implements Optimizer {
 			visitedNodes.put(server.nodeId,LIVE_TIME);
 		}
 		
-		final long TIME_OUT = 5 * 1000;
-		long startT = System.currentTimeMillis();
+		final int RANDOM_RATE = 10;
+		int randomRate = 10; // 1/10随机
 	
 		while(true) {
 			// 可选方案
@@ -76,22 +79,30 @@ public class HeuristicOptimizer implements Optimizer {
 			if(pairs.size()==0){
 				break;
 			}
+			
 
 			Pair bestNextPair = null;
 			int minCost = Global.INFINITY;
 			
-			for (Pair nextPair : pairs) {
-				Global.save();
-				// 启发函数： 花费 + 这个点的移动频率
-				int cost = move(nextPair);
-				if (cost < minCost) {
-					minCost = cost;
-					bestNextPair = nextPair;
+			randomRate--;
+			// 增加扰动性
+			if(randomRate>0){
+				for (Pair nextPair : pairs) {
+					Global.save();
+					// 启发函数： 花费 + 这个点的移动频率
+					int cost = move(nextPair);
+					if (cost < minCost) {
+						minCost = cost;
+						bestNextPair = nextPair;
+					}
+					Global.goBack();
 				}
-				Global.goBack();
+			}else{
+				randomRate = RANDOM_RATE;
+				int randomIndex = random.nextInt(pairs.size());
+				bestNextPair = pairs.get(randomIndex);
 			}
 			
-
 			if (bestNextPair != null) {
 				// 移动
 				move(bestNextPair);
@@ -100,9 +111,8 @@ public class HeuristicOptimizer implements Optimizer {
 			} else {
 				break;
 			}
-		
-			long endT = System.currentTimeMillis();
-			if(endT-startT>=TIME_OUT){
+
+			if(Global.isTimeOut()){
 				break;
 			}
 			

@@ -1,12 +1,12 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+
+import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
 
 /**
  * 启发式搜素：当前全局的服务费用最下
@@ -14,11 +14,11 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月12日
  */
-public class RandomHeuristicOptimizer implements Optimizer {
+public class GreedyOptimizer implements Optimizer {
 
 	private final Optimizer previousOptimizer;
 	
-	public RandomHeuristicOptimizer(Optimizer previousOptimizer){
+	public GreedyOptimizer(Optimizer previousOptimizer){
 		this.previousOptimizer = previousOptimizer;
 	}
 	// 接下来可以走的地方
@@ -56,9 +56,7 @@ public class RandomHeuristicOptimizer implements Optimizer {
 		for(Server server : Global.servers){
 			visitedNodes.put(server.nodeId,LIVE_TIME);
 		}
-		
-		final long TIME_OUT = 2 * 1000;
-		long startT = System.currentTimeMillis();
+	
 	
 		while(true) {
 			// 可选方案
@@ -102,9 +100,8 @@ public class RandomHeuristicOptimizer implements Optimizer {
 			} else {
 				break;
 			}
-		
-			long endT = System.currentTimeMillis();
-			if(endT-startT>=TIME_OUT){
+	
+			if(Global.isTimeOut()){
 				break;
 			}
 			
@@ -128,7 +125,6 @@ public class RandomHeuristicOptimizer implements Optimizer {
 		
 	}
 
-	private static final Random random = new Random();
 	/**
 	 * 尝试合并
 	 * 
@@ -150,20 +146,7 @@ public class RandomHeuristicOptimizer implements Optimizer {
 		int mergeCost = 0;	
 		
 		List<Server> oldServers = new ArrayList<Server>(Global.servers);
-		
-		int[] visited = new int[oldServers.size()];
-		Arrays.fill(visited, 0);
-		int visitedNum = 0;
-		while (visitedNum<oldServers.size()) {
-			
-			int index = random.nextInt(oldServers.size());
-			while(visited[index]==1){
-				index = random.nextInt(oldServers.size());
-			}
-			visited[index]=1;
-			visitedNum++;
-					
-			Server oldServer = oldServers.get(index);
+		for (Server oldServer : oldServers) {
 			mergeCost += transfer(oldServer, newServers);
 			if (oldServer.getDemand() == 0) { // 真正拆除
 				Global.servers.remove(oldServer);

@@ -18,7 +18,16 @@ import java.util.Set;
 public final class Global {
 
 	public static final boolean IS_DEBUG = false;
+	
+	public static final long startTime = System.nanoTime();
 
+	public static final long executeTime = 2 * 1000 * 1000 * 1000; // 2s
+	
+	public static boolean isTimeOut(){
+		long estimatedTime = System.nanoTime() - startTime;
+		return estimatedTime > executeTime;
+	}
+	   
 	/** 无穷大 */
 	public static final int INFINITY = Integer.MAX_VALUE;
 
