@@ -50,6 +50,11 @@ public class HeuristicOptimizer extends Optimizer {
 		int MAX_SAME_BEST_COST_NUM = 100;
 	
 		while(true) {
+			
+			if(Global.isTimeOut()){
+				break;
+			}
+			
 			// 可选方案
 			List<MoveAction> pairs = new LinkedList<MoveAction>();
 			for(Server server : Global.servers){
@@ -106,10 +111,6 @@ public class HeuristicOptimizer extends Optimizer {
 				}
 				visitedNodes.put(bestNextPair.newServerNodeId,LIVE_TIME);
 			} else {
-				break;
-			}
-
-			if(Global.isTimeOut()){
 				break;
 			}
 			

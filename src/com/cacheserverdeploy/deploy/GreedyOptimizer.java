@@ -16,6 +16,10 @@ public final class GreedyOptimizer extends Optimizer {
 	
 		while(true) {
 			
+			if(Global.isTimeOut()){
+				break;
+			}
+			
 			// 可选方案
 			List<MoveAction> moveActions = new LinkedList<MoveAction>();
 			for(Server server : Global.servers){		
@@ -49,11 +53,7 @@ public final class GreedyOptimizer extends Optimizer {
 			if(!better){
 				break; // 返回
 			}
-			
-			if(Global.isTimeOut()){
-				break;
-			}
-			
+					
 		}
 		
 	}
