@@ -116,8 +116,8 @@ public final class Global {
 		Global.soluttion = getSolution();
 	}
 
-	/** 更新值 */
-	public static void updateSolution() {
+	/** 更新值 ，是否更好*/
+	public static boolean updateSolution() {
 		int newMinCost = getTotalCost();
 		String[] newSoluttion = getSolution();
 		
@@ -129,7 +129,10 @@ public final class Global {
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
 			soluttion = newSoluttion;
-		} 
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	/**

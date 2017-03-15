@@ -1,6 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,41 +12,26 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月12日
  */
-public class HeuristicOptimizer implements Optimizer {
+public class HeuristicOptimizer extends Optimizer {
 
 	private final Optimizer previousOptimizer;
 	
 	public HeuristicOptimizer(Optimizer previousOptimizer){
 		this.previousOptimizer = previousOptimizer;
 	}
-	// 接下来可以走的地方
-	class Pair{
-		String oldServerNodeId;
-		String newServerNodeId;
-		public Pair(String oldServerNodeId, String newServerNodeId) {
-			super();
-			this.oldServerNodeId = oldServerNodeId;
-			this.newServerNodeId = newServerNodeId;
-		}
-		@Override
-		public String toString() {
-			return "Pair [oldServerNodeId=" + oldServerNodeId
-					+ ", newServerNodeId=" + newServerNodeId + "]";
-		}
-		
-	}
 	
 	/** 存活周期 ,单位：推进次数  */	
-	private static int LIVE_TIME = 1;
+	private static final int LIVE_TIME = 1;
 	
 	// private static int nearestK = Global.nodes.size();
 	
-	private static Random random = new Random(47);
+	private static final Random random = new Random(47);
 	
 	/**
 	 * 简单的思路：只是在边界合并
 	 */
-	public void optimize() {
+	@Override
+	void optimize() {
 		
 		if(previousOptimizer!=null){
 			previousOptimizer.optimize();
@@ -60,10 +44,14 @@ public class HeuristicOptimizer implements Optimizer {
 		
 		final int RANDOM_RATE = 10;
 		int randomRate = 10; // 1/10随机
+		
+		// 计算最优解重复次数
+		int sameBestCostNum = 0;
+		int MAX_SAME_BEST_COST_NUM = 100;
 	
 		while(true) {
 			// 可选方案
-			List<Pair> pairs = new LinkedList<Pair>();
+			List<MoveAction> pairs = new LinkedList<MoveAction>();
 			for(Server server : Global.servers){
 				// 获得可以移动的点
 				// Set<String> toNodeIds = Router.getNearestK(Router.getToNodeCost(server.nodeId), nearestK);
@@ -71,7 +59,7 @@ public class HeuristicOptimizer implements Optimizer {
 				for(String toNodeId : Global.nodes){
 					// 排除移动
 					if(!visitedNodes.containsKey(toNodeId)){
-						pairs.add(new Pair(server.nodeId, toNodeId));
+						pairs.add(new MoveAction(server.nodeId, toNodeId));
 					}
 				}
 			}
@@ -81,16 +69,17 @@ public class HeuristicOptimizer implements Optimizer {
 			}
 			
 
-			Pair bestNextPair = null;
+			MoveAction bestNextPair = null;
 			int minCost = Global.INFINITY;
 			
 			randomRate--;
 			// 增加扰动性
 			if(randomRate>0){
-				for (Pair nextPair : pairs) {
+				for (MoveAction nextPair : pairs) {
 					Global.save();
 					// 启发函数： 花费 + 这个点的移动频率
-					int cost = move(nextPair);
+					move(nextPair);
+					int cost = Global.getTotalCost();
 					if (cost < minCost) {
 						minCost = cost;
 						bestNextPair = nextPair;
@@ -106,7 +95,15 @@ public class HeuristicOptimizer implements Optimizer {
 			if (bestNextPair != null) {
 				// 移动
 				move(bestNextPair);
-				Global.updateSolution();
+				boolean better = Global.updateSolution();
+				if(better){
+					sameBestCostNum = 0;
+				}else{
+					sameBestCostNum++;
+					if(sameBestCostNum==MAX_SAME_BEST_COST_NUM){
+						
+					}
+				}
 				visitedNodes.put(bestNextPair.newServerNodeId,LIVE_TIME);
 			} else {
 				break;
@@ -135,77 +132,4 @@ public class HeuristicOptimizer implements Optimizer {
 		}
 		
 	}
-
-	/**
-	 * 尝试合并
-	 * 
-	 * @return
-	 */
-	private static int move(Pair pair) {
-		
-		// 替换旧的Server
-		Map<String, Server> newServers = new HashMap<String, Server>();
-		
-		for (Server server : Global.servers){
-			if(!server.nodeId.equals(pair.oldServerNodeId)){
-				newServers.put(server.nodeId, new Server(server.nodeId));
-			}	
-		}	
-		newServers.put(pair.newServerNodeId,new Server(pair.newServerNodeId));
-	
-		// 拆一台装一台没有费用
-		int mergeCost = 0;	
-		
-		List<Server> oldServers = new ArrayList<Server>(Global.servers);
-		for (Server oldServer : oldServers) {
-			mergeCost += transfer(oldServer, newServers);
-			if (oldServer.getDemand() == 0) { // 真正拆除
-				Global.servers.remove(oldServer);
-			} else {
-				// 部署一台
-				mergeCost += Global.depolyCostPerServer;
-			}
-		}
-		
-		for(Server newServer : newServers.values()){
-			if (newServer.getDemand() == 0) {
-				// 拆掉不需要
-				mergeCost -= Global.depolyCostPerServer;
-			} else { // > 0
-				// 真正安装
-				Global.servers.add(newServer);
-			}
-		}
-		if (Global.IS_DEBUG) {
-			System.out.println("当前数目：" + Global.servers.size());
-			System.out.println("mergeCost:" + mergeCost);
-		}
-		return mergeCost;
-	}
-
-	/**
-	 * 尽可能地转移需求 <br>
-	 * 转移后会改变fromServer 和 toServer的状态<br>
-	 * 
-	 * @return 转移部分的网络花费，不成功或者就在本地时返回0
-	 */
-	private static int transfer(Server fromServer, Map<String, Server> toServers) {
-
-		int bandWidthCost = 0;
-
-		String fromNode = fromServer.nodeId;
-
-		Map<String, TransferInfo> toServerCost = Router.getToServerCost(
-				fromNode, fromServer.getDemand(), toServers.keySet());
-
-		for (Map.Entry<String, TransferInfo> entry : toServerCost.entrySet()) {
-			String nodeId = entry.getKey();
-			Server server = toServers.get(nodeId);
-			TransferInfo transferInfo = entry.getValue();
-			bandWidthCost += fromServer.transferTo(server, transferInfo);
-		}
-
-		return bandWidthCost;
-	}
-
 }
