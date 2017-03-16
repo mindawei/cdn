@@ -16,7 +16,7 @@ public final class Global {
 	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 60 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -218,21 +218,21 @@ public final class Global {
 	 * 
 	 * @return 消耗掉的带宽
 	 */
-	public static int useBandWidth(int demand, ArrayList<Integer> nodes) {
+	public static int useBandWidth(int demand, int[] nodeIds) {
 		if (demand == 0) {
 			return 0;
 		}
 		int minBindWidth = Global.INFINITY;
-		for (int i = 0; i < nodes.size() - 1; ++i) {
-			Edge edge = graph[nodes.get(i)][nodes.get(i + 1)];
+		for (int i = 0; i < nodeIds.length - 1; ++i) {
+			Edge edge = graph[nodeIds[i]][nodeIds[i + 1]];
 			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
 		}
 		if (minBindWidth == 0) {
 			return 0;
 		}
 		int usedBindWidth = Math.min(minBindWidth, demand);
-		for (int i = 0; i < nodes.size() - 1; ++i) {
-			Edge edge = graph[nodes.get(i)][nodes.get(i + 1)];
+		for (int i = 0; i < nodeIds.length - 1; ++i) {
+			Edge edge = graph[nodeIds[i]][nodeIds[i + 1]];
 			edge.leftBandWidth -= usedBindWidth;
 		}
 		return usedBindWidth;

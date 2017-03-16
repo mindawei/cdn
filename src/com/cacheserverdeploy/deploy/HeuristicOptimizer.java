@@ -9,8 +9,11 @@ import java.util.Arrays;
  * @date 2017年3月12日
  */
 public class HeuristicOptimizer extends Optimizer {
-
-	private void walk(int[] arr,int leftStep,int index) {
+	
+	private int[] arr;
+	private int maxServerNum;
+	
+	private void walk(int leftStep,int index) {
 		
 		if (Global.isTimeOut()||index==arr.length) {
 			return;
@@ -25,25 +28,24 @@ public class HeuristicOptimizer extends Optimizer {
 		}
 		
 		arr[index] = 1;
-		walk(arr, leftStep-1, index+1);
+		walk(leftStep-1, index+1);
 		
 		arr[index] = 0;
-		walk(arr, leftStep, index+1);	
+		walk(leftStep, index+1);	
 	}
 
 
 	@Override
 	void optimize() {
 		
-		int maxServerNum = Global.bestServerNum;
-		
+		maxServerNum = Global.bestServerNum;
 		if(maxServerNum==0){
 			return;
 		}
 	
-		int[] arr = new int[Global.nodeNum];
+		arr = new int[Global.nodeNum];
 		Arrays.fill(arr, 0);
 
-		walk(arr, maxServerNum, 0);
+		walk(maxServerNum, 0);
 	}
 }

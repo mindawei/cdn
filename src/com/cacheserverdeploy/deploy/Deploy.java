@@ -29,7 +29,7 @@ public class Deploy
     	
     	// 局部最优
     	optimizers.add(new GreedyOptimizer());
-    	//optimizers.add(new HeuristicOptimizer());
+    	optimizers.add(new HeuristicOptimizer());
     	
     	// 1 边界合并
     	for(Optimizer optimizer : optimizers){

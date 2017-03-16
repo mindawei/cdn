@@ -36,7 +36,7 @@ public class Checker {
 	     for(Server server : Global.servers){
 	    	 ServerInfo serverInfo = server.serverInfos.get(0);
 	    	 Integer consumerId = serverInfo.consumerId;
-	    	 int demand = serverInfo.bandWidth;
+	    	 int demand = serverInfo.provideBandWidth;
 	    	 consumerDemands.put(consumerId, demand);
 	     }
 	    

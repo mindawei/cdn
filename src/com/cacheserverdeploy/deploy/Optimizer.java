@@ -28,7 +28,6 @@ public abstract class Optimizer {
 	
 	/** 移动 */
 	final void move(MoveAction moveAction) {
-		
 		// 替换旧的Server
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		

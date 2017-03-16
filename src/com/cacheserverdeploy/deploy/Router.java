@@ -1,6 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,12 +13,7 @@ import java.util.Set;
  */
 public final class Router {
 
-	/**
-	 * 将起始点需求分发到目的地点中，会改变边的流量<br>
-	 * 
-	 * @param fromNode
-	 * @param toNodes
-	 */
+	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
 	public static Map<Integer, TransferInfo> getToServerCost(int fromNode,int fromDemand, Set<Integer> toNodes) {
 
 		// 使用了多少个服务节点
@@ -35,9 +29,7 @@ public final class Router {
 		TransferInfo[] transferInfos = new TransferInfo[Global.nodeNum];
 	
 		// 自己到自己的距离为0
-		ArrayList<Integer> nodes = new ArrayList<Integer>();
-		nodes.add(fromNode);
-		transferInfos[fromNode] = new TransferInfo(0, nodes);
+		transferInfos[fromNode] = new TransferInfo(0, new int[]{fromNode});
 
 		while (notVisitNodeNum > 0) {
 
@@ -69,7 +61,7 @@ public final class Router {
 
 			// 是服务器
 			if (toNodes.contains(minCostNodeID)) {
-				int usedDemand = Global.useBandWidth(fromDemand,minCostInfo.nodes);
+				int usedDemand = Global.useBandWidth(fromDemand,minCostInfo.viaNodes);
 				// 可以消耗
 				if (usedDemand > 0) {
 					usedToNodeNum++;
@@ -99,8 +91,10 @@ public final class Router {
 				int newCost = minCost + edge.cost;
 				if (newCost < oldCost) {
 					costInfo.cost = newCost;
-					costInfo.nodes = new ArrayList<Integer>(minCostInfo.nodes);
-					costInfo.nodes.add(toNodeId);
+					// 添加路径
+					int nodeSize = minCostInfo.viaNodes.length;
+					costInfo.viaNodes = Arrays.copyOf(minCostInfo.viaNodes,nodeSize+1);
+					costInfo.viaNodes[nodeSize] = toNodeId;
 				}
 
 			}

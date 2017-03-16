@@ -1,10 +1,8 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /** 服务器 */
 public final class Server {
@@ -28,80 +26,80 @@ public final class Server {
 	 * 转移到另一个服务器，并返回价格<br>
 	 * 注意：可能cost会改变(又返回之前的点)
 	 */
-	public int transferTo(Server toServer, TransferInfo transferInfo) {
+	public void transferTo(Server toServer, TransferInfo transferInfo) {
 		
-		Set<Integer> consumerIds = new HashSet<Integer>(); 
-		for(ServerInfo info : serverInfos ){
-			consumerIds.add(info.consumerId);
-		}
-		
-		int bandWidth = transferInfo.avaliableBandWidth;
-		int transferCost = 0;
-		
-		ArrayList<Integer> viaNodes = transferInfo.nodes;
-		// 去头
-		ArrayList<Integer> transferNodes = new ArrayList<Integer>();
-		for(int i=1;i<viaNodes.size();++i){
-			transferNodes.add(viaNodes.get(i));
-		}
-		
+		int leftTransferBandWidth = transferInfo.avaliableBandWidth;
+
 		LinkedList<ServerInfo> needRemoveServerInfos = new LinkedList<ServerInfo>();
+		
 		for(ServerInfo localServerInfo : serverInfos){
+			
+			// 剩余要传的的和本地的最小值
+			int transferBandWidth = Math.min(leftTransferBandWidth, localServerInfo.provideBandWidth);
+			
+			// 转移路径节点数
+			int transferNodesSize = transferInfo.viaNodes.length;
+			// 当前服务路径节点数
+			int nodeSize = localServerInfo.viaNodes.length;
+			// 虽然分配了，但是新的部分目前为0
+			int[] nodes = Arrays.copyOf(localServerInfo.viaNodes, nodeSize+transferNodesSize);
+			
+			// 去头
+			for(int pos = 1;pos<transferNodesSize;++pos){
+				int transferNode = transferInfo.viaNodes[pos];
 				
-			int transferBandWidth = Math.min(bandWidth, localServerInfo.bandWidth);
-			// 转移给新的
-			
-			ArrayList<Integer> nodes = new ArrayList<Integer>(localServerInfo.nodes);
-			for(Integer transferNode : transferNodes){
-				if(nodes.contains(transferNode)){  // 存在回路
-					nodes.add(transferNode);
-					int index = nodes.indexOf(transferNode);
-					// 删除回路影响
-					for(int i=index;i<nodes.size()-1;++i){
-			
-						Edge edge = Global.graph[nodes.get(i)][nodes.get(i+1)];
+				// 重复的下标
+				int repeatIndex = -1;
+				for(int index=0;index<nodeSize;++index){
+					if(nodes[index]==transferNode){
+						repeatIndex = index;
+						break;
+					}
+				}
+				if(repeatIndex==-1){ 
+					// 不存在回路，直接添加	
+					nodes[nodeSize++] = transferNode;
+				}else{ // repeatIndex!=-1  
+					// 存在回路
 					
-						transferCost -= transferBandWidth * edge.cost;
+					// 添加节点,并改变大小
+					nodes[nodeSize++] = transferNode;
+					
+					// 删除回路影响,恢复消耗的带宽
+					for(int i=repeatIndex;i<nodeSize-1;++i){
+						Edge edge = Global.graph[nodes[i]][nodes[i+1]];
 						edge.leftBandWidth += transferBandWidth;
 					}
-					// 删除回路
-					ArrayList<Integer> newNodes = new ArrayList<Integer>(index+1);
-					for(int i=0;i<=index;++i){
-						newNodes.add(nodes.get(i));
-					}
-					nodes = newNodes;
-				}else{ // 不存在回路
-					nodes.add(transferNode);
-					int size = nodes.size();
-					Edge edge = Global.graph[nodes.get(size-2)][nodes.get(size-1)];
-					transferCost += transferBandWidth * edge.cost;
-				}
+					
+					// 删除回路,指针前移到重复位置吗，之后的不要 [0,repeatIndex]
+					nodeSize = repeatIndex+1;
+				}	
 			}
-			
-			ServerInfo toServerInfo = new ServerInfo(localServerInfo.consumerId,transferBandWidth,nodes);
+		
+			ServerInfo toServerInfo = new ServerInfo(localServerInfo.consumerId,transferBandWidth,Arrays.copyOf(nodes, nodeSize));
 			toServer.serverInfos.add(toServerInfo);
 			// 更新当前的
-			localServerInfo.bandWidth -= transferBandWidth;
-			if(localServerInfo.bandWidth==0){ // 已经全部转移
+			localServerInfo.provideBandWidth -= transferBandWidth;
+			if(localServerInfo.provideBandWidth==0){ // 已经全部转移
 				needRemoveServerInfos.add(localServerInfo);
 			}
 			
+			
+			leftTransferBandWidth -= transferBandWidth;
 			// 已经完成
-			bandWidth -= transferBandWidth;
-			if(bandWidth==0){
+			if(leftTransferBandWidth==0){
 				break;
 			}
+			
 		}
 		serverInfos.removeAll(needRemoveServerInfos);
-		
-		return transferCost;
 	}
 	
 	/** 获得服务器所有的需求 */
 	public int getDemand() {
 		int demand = 0;
 		for(ServerInfo info : serverInfos){
-			demand+=info.bandWidth;
+			demand += info.provideBandWidth;
 		}
 		return demand;
 	}
@@ -114,9 +112,7 @@ public final class Server {
 	public Server(Integer consumerId,int nodeId,int demand) {
 		super();
 		this.nodeId = nodeId;
-		ArrayList<Integer> viaNodes = new ArrayList<Integer>();
-		viaNodes.add(nodeId);
-		serverInfos.add(new ServerInfo(consumerId,demand,viaNodes));
+		serverInfos.add(new ServerInfo(consumerId,demand,new int[]{nodeId}));
 	}
 
 	/**
@@ -126,13 +122,13 @@ public final class Server {
 		List<String> solution = new LinkedList<String>();
 		for(ServerInfo serverInfo : serverInfos){
 			StringBuilder builder = new StringBuilder();
-			for(int i=serverInfo.nodes.size()-1;i>=0;--i){
-				builder.append(serverInfo.nodes.get(i));
+			for(int i=serverInfo.viaNodes.length-1;i>=0;--i){
+				builder.append(serverInfo.viaNodes[i]);
 				builder.append(" ");
 			}
 			builder.append(serverInfo.consumerId);
 			builder.append(" ");
-			builder.append(serverInfo.bandWidth);
+			builder.append(serverInfo.provideBandWidth);
 
 			solution.add(builder.toString());
 		}

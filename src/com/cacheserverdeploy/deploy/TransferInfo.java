@@ -1,7 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
-
 /**
  * 传送的消耗 
  * 
@@ -17,12 +15,12 @@ public final class TransferInfo {
 	int cost; 
 	
 	/** 经过的节点ID,包括了首尾 */
-	ArrayList<Integer> nodes;
+	int[] viaNodes;
 	
-	public TransferInfo(int cost,ArrayList<Integer> nodes) {
+	public TransferInfo(int cost,int[] viaNodes) {
 		super();
 		this.cost = cost;
-		this.nodes = nodes;
+		this.viaNodes = viaNodes;
 	}
 	
 }
