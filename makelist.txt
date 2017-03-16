@@ -3,6 +3,7 @@ com/filetool/util/FileUtil.java
 com/filetool/util/LogUtil.java
 com/cacheserverdeploy/deploy/Deploy.java
 com/cacheserverdeploy/deploy/Edge.java
+com/cacheserverdeploy/deploy/GAOptimizer.java
 com/cacheserverdeploy/deploy/Global.java
 com/cacheserverdeploy/deploy/GreedyOptimizer.java
 com/cacheserverdeploy/deploy/HeuristicOptimizer.java

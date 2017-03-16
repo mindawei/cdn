@@ -16,7 +16,7 @@ public final class Global {
 	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 60 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -32,7 +32,9 @@ public final class Global {
 	public static String[] soluttion;
 	/** 最优多少种方案 */
 	public static int bestServerNum;
-
+	
+	public static int[] bestGene;
+	
 	/** 最多费用 */
 	public static int MAX_COST;
 
@@ -110,12 +112,22 @@ public final class Global {
 		System.out.println(buildInfo);
 	}
 
+   public static int[] getGene(){
+		int[] gene = new int[nodeNum];
+		for(Server server : servers){
+			gene[server.nodeId] = 1;
+		}
+		return gene;
+	}
+	
 	/** 初始化解：将服务器直接放在消费节点上 */
 	public static void initSolution() {
 		minCost = getTotalCost();
 		soluttion = getSolution();
 		bestServerNum = servers.size();
 		MAX_COST = Global.minCost;
+		bestGene = getGene();
+		
 		System.out.println("MAX_COST：" + MAX_COST);
 		
 		// 初始连接关系
@@ -142,14 +154,14 @@ public final class Global {
 
 		if (IS_DEBUG) {
 			System.out.println("newMinCost:" + newMinCost);
-			System.out
-					.println(newMinCost < Global.minCost ? "better" : "worse");
+			// System.out.println(newMinCost < Global.minCost ? "better" : "worse");
 		}
 
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
 			soluttion = newSoluttion;
 			bestServerNum = servers.size();
+			bestGene = getGene();
 			return true;
 		} else {
 			return false;

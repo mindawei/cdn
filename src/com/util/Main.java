@@ -1,6 +1,7 @@
 package com.util;
 
 import com.cacheserverdeploy.deploy.Deploy;
+import com.cacheserverdeploy.deploy.Global;
 import com.filetool.util.FileUtil;
 import com.filetool.util.LogUtil;
 import com.util.FilePath;
@@ -49,6 +50,7 @@ public class Main
             FileUtil.write(resultFilePath, new String[] { "NA" }, false);
         }
         LogUtil.printLog("End");
+    	
     }
     
     private static boolean hasResults(String[] resultContents)
