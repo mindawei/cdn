@@ -17,10 +17,9 @@ public abstract class Optimizer {
 	abstract void optimize();
 	
 	final void move(int[] arr) {
-		Map<String, Server> newServers = new HashMap<String, Server>();
-		for (int i =0;i<arr.length;++i){
-			if(arr[i]==1){
-				String nodeId = String.valueOf(i);
+		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+		for (int nodeId =0;nodeId<arr.length;++nodeId){
+			if(arr[nodeId]==1){
 				newServers.put(nodeId, new Server(nodeId));
 			}	
 		}	
@@ -31,10 +30,10 @@ public abstract class Optimizer {
 	final void move(MoveAction moveAction) {
 		
 		// 替换旧的Server
-		Map<String, Server> newServers = new HashMap<String, Server>();
+		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		
 		for (Server server : Global.servers){
-			if(!server.nodeId.equals(moveAction.oldServerNodeId)){
+			if(server.nodeId != moveAction.oldServerNodeId){
 				newServers.put(server.nodeId, new Server(server.nodeId));
 			}	
 		}	
@@ -43,7 +42,7 @@ public abstract class Optimizer {
 		move(newServers);
 	}
 	
-	private void move(Map<String, Server> newServers){
+	private void move(Map<Integer, Server> newServers){
 		// 拆一台装一台没有费用
 		// int mergeCost = 0;	
 		List<Server> oldServers = new ArrayList<Server>(Global.servers);
@@ -67,15 +66,15 @@ public abstract class Optimizer {
 	 * 
 	 * @return 转移部分的网络花费，不成功或者就在本地时返回0
 	 */
-	final void transfer(Server fromServer, Map<String, Server> toServers) {
+	final void transfer(Server fromServer, Map<Integer, Server> toServers) {
 		
-		String fromNode = fromServer.nodeId;
+		int fromNode = fromServer.nodeId;
 
-		Map<String, TransferInfo> toServerCost = Router.getToServerCost(
+		Map<Integer, TransferInfo> toServerCost = Router.getToServerCost(
 				fromNode, fromServer.getDemand(), toServers.keySet());
 
-		for (Map.Entry<String, TransferInfo> entry : toServerCost.entrySet()) {
-			String nodeId = entry.getKey();
+		for (Map.Entry<Integer, TransferInfo> entry : toServerCost.entrySet()) {
+			int nodeId = entry.getKey();
 			Server server = toServers.get(nodeId);
 			TransferInfo transferInfo = entry.getValue();
 			fromServer.transferTo(server, transferInfo);

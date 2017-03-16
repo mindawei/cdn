@@ -32,10 +32,10 @@ public class Checker {
 	     // printLine(resultContent);
 	     Parser.buildNetwork(graphContent);
 	    
-	     Map<String,Integer> consumerDemands = new HashMap<String,Integer>();
+	     Map<Integer,Integer> consumerDemands = new HashMap<Integer,Integer>();
 	     for(Server server : Global.servers){
 	    	 ServerInfo serverInfo = server.serverInfos.get(0);
-	    	 String consumerId = serverInfo.consumerId;
+	    	 Integer consumerId = serverInfo.consumerId;
 	    	 int demand = serverInfo.bandWidth;
 	    	 consumerDemands.put(consumerId, demand);
 	     }
@@ -49,11 +49,12 @@ public class Checker {
 	    	 String[] parts = line.split(" ");
 	    	 int size = parts.length;
 	    	 int bandwidth = Integer.parseInt(parts[size-1]);
-	    	 String consumerId = parts[size-2];
+	    	 Integer consumerId = Integer.parseInt(parts[size-2]);
 	    	 for(int j=0;j<size-3;++j){
-	    		 Edge edge = Global.getEdge(parts[j], parts[j+1]);
-	    		 edge.bandWidth -= bandwidth;
-	    		 if(edge.bandWidth<0){
+	    		 Edge edge = Global.graph[Integer.parseInt(parts[j])][Integer.parseInt( parts[j+1])];
+	 			
+	    		 edge.leftBandWidth -= bandwidth;
+	    		 if(edge.leftBandWidth<0){
 	    			 System.out.println("edge.bandWidth<0:"+line);
 	    			 System.exit(0);
 	    		 }  
@@ -66,7 +67,7 @@ public class Checker {
 	    	 servers.add(parts[0]);
 	     }
 	     
-	     for(Map.Entry<String,Integer> consumerDemand : consumerDemands.entrySet()){
+	     for(Map.Entry<Integer,Integer> consumerDemand : consumerDemands.entrySet()){
 	    	 if(consumerDemand.getValue()!=0){
 	    		 System.out.print("consumerDemand.getValue()!=0 : ");
 	    		 System.out.println(consumerDemand.getKey()+" "+consumerDemand.getValue());

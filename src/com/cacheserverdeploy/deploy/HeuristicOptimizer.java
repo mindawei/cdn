@@ -41,7 +41,7 @@ public class HeuristicOptimizer extends Optimizer {
 			return;
 		}
 	
-		int[] arr = new int[Global.nodes.size()];
+		int[] arr = new int[Global.nodeNum];
 		Arrays.fill(arr, 0);
 
 		walk(arr, maxServerNum, 0);

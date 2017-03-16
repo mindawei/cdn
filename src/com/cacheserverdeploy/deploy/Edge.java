@@ -8,33 +8,33 @@ package com.cacheserverdeploy.deploy;
 public final class Edge {	
 	
 	/** 剩余网络带宽 */
-	public int bandWidth;
-	
+	public  int leftBandWidth;
+
+	private int savedBandWidth;
+
 	/** 单位网络租用费 */
 	public final int cost;
 
 	public final int initBandWidth;
 	
-	public void reset() {
-		bandWidth = initBandWidth;
-	}
-	
 	public Edge(int bandWidth, int cost) {
 		this.initBandWidth = bandWidth;
-		this.bandWidth = bandWidth;
+		this.leftBandWidth = bandWidth;
 		this.cost = cost;
 	}
 	
-	private int savedBandWidth;
+	public void reset() {
+		leftBandWidth = initBandWidth;
+	}
 	
 	/** 保存 */
 	public void saveCurrentBandWidth(){
-		savedBandWidth = bandWidth;
+		savedBandWidth = leftBandWidth;
 	}
 	
 	/** 恢复 */
 	public void goBackBandWidth(){
-		bandWidth = savedBandWidth;
+		leftBandWidth = savedBandWidth;
 	}
 	
 }

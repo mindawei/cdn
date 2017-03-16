@@ -8,10 +8,10 @@ package com.cacheserverdeploy.deploy;
  */
 public final class MoveAction {
 	
-	final String oldServerNodeId;
-	final String newServerNodeId;
+	final int oldServerNodeId;
+	final int newServerNodeId;
 
-	public MoveAction(String oldServerNodeId, String newServerNodeId) {
+	public MoveAction(int oldServerNodeId, int newServerNodeId) {
 		super();
 		this.oldServerNodeId = oldServerNodeId;
 		this.newServerNodeId = newServerNodeId;

@@ -1,13 +1,8 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * 全局参数，方便访问
@@ -19,15 +14,15 @@ public final class Global {
 
 	/** 是否是调试 */
 	static final boolean IS_DEBUG = false;
-	
+
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L ;
-	
-	/** 是否超时*/
-	static boolean isTimeOut(){
+	static final long TIME_OUT = System.currentTimeMillis() + 60 * 1000L;
+
+	/** 是否超时 */
+	static boolean isTimeOut() {
 		return System.currentTimeMillis() > TIME_OUT;
 	}
-	   
+
 	/** 无穷大 */
 	public static final int INFINITY = Integer.MAX_VALUE;
 
@@ -37,49 +32,49 @@ public final class Global {
 	public static String[] soluttion;
 	/** 最优多少种方案 */
 	public static int bestServerNum;
-	
+
 	/** 最多费用 */
 	public static int MAX_COST;
-	
-	/** 消费者数 */
-	public static int consumerNum;
 
 	/** 每台部署的成本：[0,5000]的整数 */
 	public static int depolyCostPerServer;
 
-	/** 节点缓存 */
-	public static final Set<String> nodes = new HashSet<String>();
+	/** 节点数:不超过1000个 ,从0开始 */
+	public static int nodeNum;
+	/** 消费者数 */
+	public static int consumerNum;
 
-	/** 边 */
-	public static final Map<String, Map<String, Edge>> edges = new HashMap<String, Map<String, Edge>>();
-
+	/** 地图 */
+	public static Edge[][] graph;
+	/** 地图上的边 */
+	public static Edge[] edges;
+	/** 连接关系：下游节点 */
+	public static int[][] connections; 
+		
 	/** 放置的服务器 */
 	public static ArrayList<Server> servers = new ArrayList<Server>();
 
 	/** 备份 */
 	private static ArrayList<Server> copyServers;
-	
+
 	/** 备份 */
 	private static ArrayList<Server> initServers;
 
-
-	
 	/** 初始化 */
-	public static void initRest(){
+	public static void initRest() {
 		initServers = new ArrayList<Server>(servers.size());
 		for (Server server : servers) {
 			initServers.add(server.copy());
 		}
 	}
-	
+
 	/** 重置 */
-	public static void reset(){
+	public static void reset() {
 		// 恢复edge的带宽值
-		for (Map<String, Edge> map : edges.values()) {
-			for (Edge edge : map.values()) {
-				edge.reset();
-			}
+		for (Edge edge : edges) {
+			edge.reset();
 		}
+
 		servers = new ArrayList<Server>(servers.size());
 		for (Server server : initServers) {
 			servers.add(server.copy());
@@ -89,13 +84,10 @@ public final class Global {
 	/** 保存当前状态 */
 	public static void save() {
 		// 保存edge的带宽值
-		for (Map<String, Edge> map : edges.values()) {
-			for (Edge edge : map.values()) {
-				edge.saveCurrentBandWidth();
-			}
+		for (Edge edge : edges) {
+			edge.saveCurrentBandWidth();
 		}
-		
-		
+
 		copyServers = new ArrayList<Server>(servers.size());
 		for (Server server : servers) {
 			copyServers.add(server.copy());
@@ -105,18 +97,16 @@ public final class Global {
 	/** 恢复之前的保存状态 */
 	public static void goBack() {
 		// 恢复edge的带宽值
-		for (Map<String, Edge> map : edges.values()) {
-			for (Edge edge : map.values()) {
-				edge.goBackBandWidth();
-			}
+		for (Edge edge : edges) {
+			edge.goBackBandWidth();
 		}
 		servers = copyServers;
 	}
 
 	/** 打印网络信息 */
 	public static void printNetworkInfo() {
-		String buildInfo = String.format("节点数：%d,消费节点数：%d,每台部署成本：%d",
-				nodes.size(), servers.size(), Global.depolyCostPerServer);
+		String buildInfo = String.format("节点数：%d,消费节点数：%d,每台部署成本：%d", nodeNum,
+				servers.size(), Global.depolyCostPerServer);
 		System.out.println(buildInfo);
 	}
 
@@ -126,25 +116,42 @@ public final class Global {
 		soluttion = getSolution();
 		bestServerNum = servers.size();
 		MAX_COST = Global.minCost;
-		System.out.println("MAX_COST："+MAX_COST);
+		System.out.println("MAX_COST：" + MAX_COST);
+		
+		// 初始连接关系
+		connections = new int[nodeNum][];
+		for(int fromNode=0;fromNode<nodeNum;++fromNode){
+			ArrayList<Integer> toNodeIds = new ArrayList<Integer>();
+			for (int toNodeId = 0; toNodeId < nodeNum; ++toNodeId) {
+				if (graph[fromNode][toNodeId] != null) {
+					toNodeIds.add(toNodeId);
+				}
+			}
+			connections[fromNode] = new int[toNodeIds.size()];
+			for(int i=0;i<toNodeIds.size();++i){
+				connections[fromNode][i] = toNodeIds.get(i);
+			}
+		}
+		
 	}
 
-	/** 更新值 ，是否更好*/
+	/** 更新值 ，是否更好 */
 	public static boolean updateSolution() {
 		int newMinCost = getTotalCost();
 		String[] newSoluttion = getSolution();
-		
-		if(IS_DEBUG){
-			System.out.println("newMinCost:"+newMinCost);
-			System.out.println(newMinCost < Global.minCost?"better":"worse");
+
+		if (IS_DEBUG) {
+			System.out.println("newMinCost:" + newMinCost);
+			System.out
+					.println(newMinCost < Global.minCost ? "better" : "worse");
 		}
-		
+
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
 			soluttion = newSoluttion;
 			bestServerNum = servers.size();
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -204,53 +211,29 @@ public final class Global {
 		System.out.println("---------------");
 	}
 
-	/** 添加一条边 */
-	public static void addEdge(String fromNodeId, String toNodeId, Edge edge) {
-		if (!edges.containsKey(fromNodeId)) {
-			edges.put(fromNodeId, new HashMap<String, Edge>());
-		}
 
-		Map<String, Edge> outEdges = edges.get(fromNodeId);
-		outEdges.put(toNodeId, edge);
-	}
-
-	/** 获得一条边,不存在则返回null */
-	public static Edge getEdge(String fromNodeId, String toNodeId) {
-		if (!edges.containsKey(fromNodeId)) {
-			return null;
-		}
-		return edges.get(fromNodeId).get(toNodeId);
-	}
-
-	/** 获得下游Node */
-	@SuppressWarnings("unchecked")
-	public static Set<String> getToNodeIds(String fromNodeId) {
-		if (!edges.containsKey(fromNodeId)) {
-			return Collections.EMPTY_SET;
-		}
-		return edges.get(fromNodeId).keySet();
-	}
 
 	/**
 	 * 消耗带宽最大带宽
+	 * 
 	 * @return 消耗掉的带宽
 	 */
-	public static int useBandWidth(int demand, ArrayList<String> nodes) {
+	public static int useBandWidth(int demand, ArrayList<Integer> nodes) {
 		if (demand == 0) {
 			return 0;
 		}
 		int minBindWidth = Global.INFINITY;
 		for (int i = 0; i < nodes.size() - 1; ++i) {
-			Edge edge = getEdge(nodes.get(i), nodes.get(i + 1));
-			minBindWidth = Math.min(edge.bandWidth, minBindWidth);
+			Edge edge = graph[nodes.get(i)][nodes.get(i + 1)];
+			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
 		}
 		if (minBindWidth == 0) {
 			return 0;
 		}
 		int usedBindWidth = Math.min(minBindWidth, demand);
 		for (int i = 0; i < nodes.size() - 1; ++i) {
-			Edge edge = getEdge(nodes.get(i), nodes.get(i + 1));
-			edge.bandWidth -= usedBindWidth;
+			Edge edge = graph[nodes.get(i)][nodes.get(i + 1)];
+			edge.leftBandWidth -= usedBindWidth;
 		}
 		return usedBindWidth;
 	}

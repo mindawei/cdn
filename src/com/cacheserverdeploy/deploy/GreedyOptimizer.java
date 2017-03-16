@@ -23,7 +23,7 @@ public final class GreedyOptimizer extends Optimizer {
 			// 可选方案
 			List<MoveAction> moveActions = new LinkedList<MoveAction>();
 			for(Server server : Global.servers){		
-				for(String toNodeId : Global.nodes){
+				for(int toNodeId =0;toNodeId<Global.nodeNum;++toNodeId){
 					moveActions.add(new MoveAction(server.nodeId, toNodeId));
 				}
 			}
