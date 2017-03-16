@@ -17,15 +17,15 @@ import java.util.Set;
  */
 public final class Global {
 
-	public static final boolean IS_DEBUG = false;
+	/** 是否是调试 */
+	static final boolean IS_DEBUG = true;
 	
-	public static final long startTime = System.nanoTime();
-
-	public static final long executeTime = 2 * 1000 * 1000 * 1000; // 2s
+	/** 何时超时 */
+	static final long TIME_OUT = System.currentTimeMillis() + 15 * 1000L ;
 	
-	public static boolean isTimeOut(){
-		long estimatedTime = System.nanoTime() - startTime;
-		return estimatedTime > executeTime;
+	/** 是否超时*/
+	static boolean isTimeOut(){
+		return System.currentTimeMillis() > TIME_OUT;
 	}
 	   
 	/** 无穷大 */
@@ -35,6 +35,9 @@ public final class Global {
 	public static int minCost;
 	/** 解决方案 */
 	public static String[] soluttion;
+	
+	/** 最多费用 */
+	public static int MAX_COST;
 
 	/** 每台部署的成本：[0,5000]的整数 */
 	public static int depolyCostPerServer;
@@ -114,6 +117,8 @@ public final class Global {
 	public static void initSolution() {
 		Global.minCost = getTotalCost();
 		Global.soluttion = getSolution();
+		MAX_COST = Global.minCost;
+		System.out.println("MAX_COST："+MAX_COST);
 	}
 
 	/** 更新值 ，是否更好*/
@@ -219,7 +224,6 @@ public final class Global {
 
 	/**
 	 * 消耗带宽最大带宽
-	 * 
 	 * @return 消耗掉的带宽
 	 */
 	public static int useBandWidth(int demand, ArrayList<String> nodes) {

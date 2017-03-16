@@ -23,17 +23,17 @@ public class Deploy
     	
     	Global.initSolution();
      	
-    	Global.initRest();
+    	// Global.initRest();
     	
     	List<Optimizer> optimizers = new LinkedList<Optimizer>();
     	
     	// 局部最优
     	optimizers.add(new GreedyOptimizer());
-    	//optimizers.add(new HeuristicOptimizer(null));
+    	optimizers.add(new HeuristicOptimizer());
     	
     	// 1 边界合并
     	for(Optimizer optimizer : optimizers){
-    		Global.reset();
+    		// Global.reset();
     		optimizer.optimize();
     		if(Global.IS_DEBUG){
     			System.out.println(optimizer.getClass().getSimpleName());
