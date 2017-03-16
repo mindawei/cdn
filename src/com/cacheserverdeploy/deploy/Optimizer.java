@@ -16,6 +16,17 @@ public abstract class Optimizer {
 	/** 优化，优化过后会改变全局状态 */
 	abstract void optimize();
 	
+	final void move(int[] arr) {
+		Map<String, Server> newServers = new HashMap<String, Server>();
+		for (int i =0;i<arr.length;++i){
+			if(arr[i]==1){
+				String nodeId = String.valueOf(i);
+				newServers.put(nodeId, new Server(nodeId));
+			}	
+		}	
+		move(newServers);
+	}
+	
 	/** 移动 */
 	final void move(MoveAction moveAction) {
 		
@@ -29,6 +40,10 @@ public abstract class Optimizer {
 		}	
 		newServers.put(moveAction.newServerNodeId,new Server(moveAction.newServerNodeId));
 	
+		move(newServers);
+	}
+	
+	private void move(Map<String, Server> newServers){
 		// 拆一台装一台没有费用
 		// int mergeCost = 0;	
 		List<Server> oldServers = new ArrayList<Server>(Global.servers);

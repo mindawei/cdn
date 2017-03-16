@@ -10,14 +10,14 @@ public final class Parser {
 	/** 构建图 */
 	public static void buildNetwork(String[] graphContent){
 		 
-//		// 多少个网络节点，多少条链路，多少个消费节点
-//		String[] line0 = graphContent[0].split(" ");
+		// 多少个网络节点，多少条链路，多少个消费节点
+		String[] line0 = graphContent[0].split(" ");
 //		/** 网络节点数：不超过1000个 */
 //		int nodeNum = Integer.parseInt(line0[0]);
 //		/** 链路数：每个节点的链路数量不超过20条，推算出总共不超过20000 */
 //		int edgeNum = Integer.parseInt(line0[1]);
-//		/** 消费节点数：不超过500个 */
-//		int consumerNum = Integer.parseInt(line0[2]);
+		/** 消费节点数：不超过500个 */
+		Global.consumerNum = Integer.parseInt(line0[2]);
 		
 		// 空行
 		

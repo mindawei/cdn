@@ -18,10 +18,10 @@ import java.util.Set;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = true;
+	static final boolean IS_DEBUG = false;
 	
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 15 * 1000L ;
+	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L ;
 	
 	/** 是否超时*/
 	static boolean isTimeOut(){
@@ -35,9 +35,14 @@ public final class Global {
 	public static int minCost;
 	/** 解决方案 */
 	public static String[] soluttion;
+	/** 最优多少种方案 */
+	public static int bestServerNum;
 	
 	/** 最多费用 */
 	public static int MAX_COST;
+	
+	/** 消费者数 */
+	public static int consumerNum;
 
 	/** 每台部署的成本：[0,5000]的整数 */
 	public static int depolyCostPerServer;
@@ -56,6 +61,8 @@ public final class Global {
 	
 	/** 备份 */
 	private static ArrayList<Server> initServers;
+
+
 	
 	/** 初始化 */
 	public static void initRest(){
@@ -115,8 +122,9 @@ public final class Global {
 
 	/** 初始化解：将服务器直接放在消费节点上 */
 	public static void initSolution() {
-		Global.minCost = getTotalCost();
-		Global.soluttion = getSolution();
+		minCost = getTotalCost();
+		soluttion = getSolution();
+		bestServerNum = servers.size();
 		MAX_COST = Global.minCost;
 		System.out.println("MAX_COST："+MAX_COST);
 	}
@@ -134,6 +142,7 @@ public final class Global {
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
 			soluttion = newSoluttion;
+			bestServerNum = servers.size();
 			return true;
 		}else{
 			return false;
