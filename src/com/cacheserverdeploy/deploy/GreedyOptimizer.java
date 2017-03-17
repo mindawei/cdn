@@ -11,6 +11,8 @@ import java.util.List;
  */
 public final class GreedyOptimizer extends Optimizer {
 	
+	int lastCost = Global.INFINITY;
+	
 	@Override
 	void optimize() {
 	
@@ -50,12 +52,15 @@ public final class GreedyOptimizer extends Optimizer {
 			// 移动
 			move(bestMoveAction);
 			boolean better = Global.updateSolution();
-			if(!better){
-				break; // 返回
+			if(!better){ 
+				break;
 			}
 					
 		}
 		
 	}
+	
+	
+	
 
 }

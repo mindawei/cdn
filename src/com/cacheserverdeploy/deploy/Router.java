@@ -2,6 +2,8 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,12 +16,12 @@ import java.util.Set;
 public final class Router {
 
 	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
-	public static Map<Integer, TransferInfo> getToServerCost(int fromNode,int fromDemand, Set<Integer> toNodes) {
+	public static List<TransferInfo> getToServerCost(int fromNode,int fromDemand, Set<Integer> toNodes) {
 
 		// 使用了多少个服务节点
 		int usedToNodeNum = 0;
 
-		Map<Integer, TransferInfo> returnMap = new HashMap<Integer, TransferInfo>(toNodes.size());
+		List<TransferInfo> result = new LinkedList<TransferInfo>();
 		
 		int notVisitNodeNum = Global.nodeNum;
 		// 0 未访问  1访问过
@@ -31,6 +33,8 @@ public final class Router {
 		// 自己到自己的距离为0
 		transferInfos[fromNode] = new TransferInfo(0, new int[]{fromNode});
 
+		boolean fromDemandSmaller = false;
+		
 		while (notVisitNodeNum > 0) {
 
 			// 寻找下一个最近点
@@ -66,10 +70,14 @@ public final class Router {
 				if (usedDemand > 0) {
 					usedToNodeNum++;
 					minCostInfo.avaliableBandWidth = usedDemand;
-					returnMap.put(minCostNodeID, minCostInfo);
+					minCostInfo.serverNode = minCostNodeID;					
+					result.add(minCostInfo);
 					fromDemand -= usedDemand;
+					fromDemandSmaller = true;
 					if (fromDemand == 0 || toNodes.size() == usedToNodeNum) {
-						return returnMap;
+						return result;
+					}else{
+						break;
 					}
 				}
 			}
@@ -80,14 +88,25 @@ public final class Router {
 				if (visited[toNodeId] == 1) { 
 					continue;
 				}
+				int[] viaNodes = transferInfos[minCostNodeID].viaNodes;
+				int minBindWidth = Global.INFINITY;
+				for (int i = viaNodes.length - 1; i >=1; --i) {
+					Edge edge = Global.graph[viaNodes[i]][viaNodes[i -1]];
+					minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
+				}
+				if(minBindWidth==0){
+					continue;
+				}
 				
 				if (transferInfos[toNodeId] == null) {
 					transferInfos[toNodeId] = new TransferInfo(Global.INFINITY,null);
 				}
+				
 
+				Edge edge = Global.graph[minCostNodeID][toNodeId];
 				TransferInfo costInfo = transferInfos[toNodeId];
 				int oldCost = costInfo.cost;
-				Edge edge = Global.graph[minCostNodeID][toNodeId];
+				//Edge edge = Global.graph[minCostNodeID][toNodeId];
 				int newCost = minCost + edge.cost;
 				if (newCost < oldCost) {
 					costInfo.cost = newCost;
@@ -100,7 +119,11 @@ public final class Router {
 			}
 			
 		}
-		return returnMap;
+		
+		if(fromDemandSmaller&&fromDemand>0){
+			result.addAll(getToServerCost(fromNode, fromDemand, toNodes));
+		}
+		return result;
 	}
 	
 	

@@ -89,13 +89,11 @@ public abstract class Optimizer {
 		
 		int fromNode = fromServer.nodeId;
 
-		Map<Integer, TransferInfo> toServerCost = Router.getToServerCost(
+		List<TransferInfo> transferInfos = Router.getToServerCost(
 				fromNode, fromServer.getDemand(), toServers.keySet());
 
-		for (Map.Entry<Integer, TransferInfo> entry : toServerCost.entrySet()) {
-			int nodeId = entry.getKey();
-			Server server = toServers.get(nodeId);
-			TransferInfo transferInfo = entry.getValue();
+		for (TransferInfo transferInfo : transferInfos) {
+			Server server = toServers.get(transferInfo.serverNode);
 			fromServer.transferTo(server, transferInfo);
 		}
 		
