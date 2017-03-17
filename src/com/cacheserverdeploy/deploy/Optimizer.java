@@ -40,10 +40,12 @@ public abstract class Optimizer {
 	
 		move(newServers);
 	}
+
 	
 	private void move(Map<Integer, Server> newServers){
 		// 拆一台装一台没有费用
 		// int mergeCost = 0;	
+		Global.reset(); // 开始的服务器
 		List<Server> oldServers = new ArrayList<Server>(Global.servers);
 		for (Server oldServer : oldServers) {
 			transfer(oldServer, newServers);
@@ -58,6 +60,24 @@ public abstract class Optimizer {
 			}
 		}
 	}
+	
+//	private void move(Map<Integer, Server> newServers){
+//		// 拆一台装一台没有费用
+//		// int mergeCost = 0;	
+//		List<Server> oldServers = new ArrayList<Server>(Global.servers);
+//		for (Server oldServer : oldServers) {
+//			transfer(oldServer, newServers);
+//			if (oldServer.getDemand() == 0) { // 真正拆除
+//				Global.servers.remove(oldServer);
+//			} 
+//		}
+//		
+//		for(Server newServer : newServers.values()){
+//			if (newServer.getDemand() > 0) { // 真正安装
+//				Global.servers.add(newServer);
+//			}
+//		}
+//	}
 
 	/**
 	 * 尽可能地转移需求 <br>

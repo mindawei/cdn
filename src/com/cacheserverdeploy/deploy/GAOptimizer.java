@@ -12,11 +12,12 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * 遗传算法
+ * 遗传算法,效果不是很明显
  * 
  * @author mindw
  * @date 2017年3月16日
  */
+@Deprecated
 public final class GAOptimizer extends Optimizer {
 	
 	/** 最多多少个 */
