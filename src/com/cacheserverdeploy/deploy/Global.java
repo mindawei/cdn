@@ -225,29 +225,5 @@ public final class Global {
 
 
 
-	/**
-	 * 消耗带宽最大带宽
-	 * 
-	 * @return 消耗掉的带宽
-	 */
-	public static int useBandWidth(int demand, int[] nodeIds) {
-		if (demand == 0) {
-			return 0;
-		}
-		int minBindWidth = Global.INFINITY;
-		for (int i = 0; i < nodeIds.length - 1; ++i) {
-			Edge edge = graph[nodeIds[i]][nodeIds[i + 1]];
-			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-		}
-		if (minBindWidth == 0) {
-			return 0;
-		}
-		int usedBindWidth = Math.min(minBindWidth, demand);
-		for (int i = 0; i < nodeIds.length - 1; ++i) {
-			Edge edge = graph[nodeIds[i]][nodeIds[i + 1]];
-			edge.leftBandWidth -= usedBindWidth;
-		}
-		return usedBindWidth;
-	}
 
 }

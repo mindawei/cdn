@@ -61,7 +61,7 @@ public final class Router {
 
 			// 是服务器
 			if (toNodes.contains(minCostNodeID)) {
-				int usedDemand = Global.useBandWidth(fromDemand,minCostInfo.viaNodes);
+				int usedDemand = useBandWidth(fromDemand,minCostInfo.viaNodes);
 				// 可以消耗
 				if (usedDemand > 0) {
 					usedToNodeNum++;
@@ -102,5 +102,32 @@ public final class Router {
 		}
 		return returnMap;
 	}
+	
+	
+	/**
+	 * 消耗带宽最大带宽
+	 * 
+	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
+	 */
+	public static int useBandWidth(int demand, int[] nodeIds) {
+		if (demand == 0) {
+			return 0;
+		}
+		int minBindWidth = Global.INFINITY;
+		for (int i = nodeIds.length - 1; i >=1; --i) {
+			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
+			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
+		}
+		if (minBindWidth == 0) {
+			return 0;
+		}
+		int usedBindWidth = Math.min(minBindWidth, demand);
+		for (int i = nodeIds.length - 1; i >=1; --i) {
+			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
+			edge.leftBandWidth -= usedBindWidth;
+		}
+		return usedBindWidth;
+	}
+
 
 }

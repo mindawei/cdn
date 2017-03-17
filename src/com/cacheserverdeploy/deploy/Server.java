@@ -65,9 +65,9 @@ public final class Server {
 					// 添加节点,并改变大小
 					nodes[nodeSize++] = transferNode;
 					
-					// 删除回路影响,恢复消耗的带宽
-					for(int i=repeatIndex;i<nodeSize-1;++i){
-						Edge edge = Global.graph[nodes[i]][nodes[i+1]];
+					// 删除回路影响,恢复消耗的带宽,反方向
+					for (int i = nodeSize-1; i >=repeatIndex+1; --i) {
+						Edge edge = Global.graph[nodes[i]][nodes[i -1]];	
 						edge.leftBandWidth += transferBandWidth;
 					}
 					
