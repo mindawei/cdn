@@ -1,8 +1,6 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,6 +26,8 @@ public abstract class Optimizer {
 	
 	/** 移动 */
 	final void move(MoveAction moveAction) {
+		
+		
 		// 替换旧的Server
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		
@@ -37,18 +37,22 @@ public abstract class Optimizer {
 			}	
 		}	
 		newServers.put(moveAction.newServerNodeId,new Server(moveAction.newServerNodeId));
-	
+		
 		move(newServers);
 	}
 
 	
 	private void move(Map<Integer, Server> newServers){
 		// 拆一台装一台没有费用
-		// int mergeCost = 0;	
 		Global.reset(); // 开始的服务器
-		List<Server> oldServers = new ArrayList<Server>(Global.servers);
+		Server[] oldServers = new Server[Global.servers.size()];
+		for(int i=0;i<Global.servers.size();++i){
+			oldServers[i] = Global.servers.get(i);
+		}
+		
+		Router.transfer(oldServers, newServers);
+		
 		for (Server oldServer : oldServers) {
-			transfer(oldServer, newServers);
 			if (oldServer.getDemand() == 0) { // 真正拆除
 				Global.servers.remove(oldServer);
 			} 
@@ -61,42 +65,9 @@ public abstract class Optimizer {
 		}
 	}
 	
-//	private void move(Map<Integer, Server> newServers){
-//		// 拆一台装一台没有费用
-//		// int mergeCost = 0;	
-//		List<Server> oldServers = new ArrayList<Server>(Global.servers);
-//		for (Server oldServer : oldServers) {
-//			transfer(oldServer, newServers);
-//			if (oldServer.getDemand() == 0) { // 真正拆除
-//				Global.servers.remove(oldServer);
-//			} 
-//		}
-//		
-//		for(Server newServer : newServers.values()){
-//			if (newServer.getDemand() > 0) { // 真正安装
-//				Global.servers.add(newServer);
-//			}
-//		}
-//	}
+	
+	
 
-	/**
-	 * 尽可能地转移需求 <br>
-	 * 转移后会改变fromServer 和 toServer的状态<br>
-	 * 
-	 * @return 转移部分的网络花费，不成功或者就在本地时返回0
-	 */
-	final void transfer(Server fromServer, Map<Integer, Server> toServers) {
-		
-		int fromNode = fromServer.nodeId;
 
-		List<TransferInfo> transferInfos = Router.getToServerCost(
-				fromNode, fromServer.getDemand(), toServers.keySet());
-
-		for (TransferInfo transferInfo : transferInfos) {
-			Server server = toServers.get(transferInfo.serverNode);
-			fromServer.transferTo(server, transferInfo);
-		}
-		
-	}
 	
 }

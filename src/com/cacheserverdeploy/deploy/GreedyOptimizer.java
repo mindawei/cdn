@@ -10,8 +10,11 @@ import java.util.List;
  * @date 2017年3月12日
  */
 public final class GreedyOptimizer extends Optimizer {
-	
+		
 	int lastCost = Global.INFINITY;
+	
+	 // private final Random random = new Random(47);
+
 	
 	@Override
 	void optimize() {
@@ -51,9 +54,39 @@ public final class GreedyOptimizer extends Optimizer {
 			
 			// 移动
 			move(bestMoveAction);
-			boolean better = Global.updateSolution();
-			if(!better){ 
+//			boolean better = Global.updateSolution();
+//			if(!better){ 
+//				break;
+//			}
+			
+			int cost = Global.updateSolution();
+			if(cost<lastCost){ // better
+				lastCost = cost;
+				// System.out.println("best cost:"+lastCost);
+			}else{
 				break;
+				
+//				Global.reset();
+//				int maxRound = 10000;
+//				int[] gene = new int[Global.nodeNum];
+//				int num = Global.consumerNum;
+//				
+//				for(Server server :Global.servers){
+//					gene[server.nodeId] = 1;
+//				}
+//				while(maxRound-->0&&num>0){
+//					int node = random.nextInt(Global.nodeNum);
+//					if(gene[node]==0){
+//						gene[node] = 1;
+//						num--;
+//					}
+//				}
+//				for(Server server :Global.servers){
+//					gene[server.nodeId] = 0;
+//				}
+//				move(gene);
+//				lastCost = Global.updateSolution();
+				
 			}
 					
 		}

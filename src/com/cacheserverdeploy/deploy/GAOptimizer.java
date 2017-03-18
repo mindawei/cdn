@@ -24,6 +24,8 @@ public final class GAOptimizer extends Optimizer {
 	private int maxNum = 500;
 	private int initNum = 1000;
 	
+	int lastCost = Global.INFINITY;
+	
 	private Random random = new Random(47);
 	
 	private final class Info implements Comparable<Info>{
@@ -269,9 +271,32 @@ public final class GAOptimizer extends Optimizer {
 			
 			// 移动
 			move(bestMoveAction);
-			boolean better = Global.updateSolution();
-			if(!better){
-				break; // 返回
+			int cost = Global.updateSolution();
+			if(cost<lastCost){ // better
+				lastCost = cost;
+				System.out.println("best cost:"+lastCost);
+			}else{
+				Global.reset();
+				int maxRound = 10000;
+				int[] gene = new int[Global.nodeNum];
+				int num = Global.consumerNum;
+				
+				for(Server server :Global.servers){
+					gene[server.nodeId] = 1;
+				}
+				while(maxRound-->0&&num>0){
+					int node = random.nextInt(Global.nodeNum);
+					if(gene[node]==0){
+						gene[node] = 1;
+						num--;
+					}
+				}
+				for(Server server :Global.servers){
+					gene[server.nodeId] = 0;
+				}
+				move(gene);
+				lastCost = Global.updateSolution();
+				
 			}
 					
 		}

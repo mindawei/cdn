@@ -16,7 +16,7 @@ public final class Global {
 	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 60 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -128,7 +128,9 @@ public final class Global {
 		MAX_COST = Global.minCost;
 		bestGene = getGene();
 		
-		System.out.println("MAX_COST：" + MAX_COST);
+		if(IS_DEBUG){
+			System.out.println("MAX_COST：" + MAX_COST);
+		}
 		
 		// 初始连接关系
 		connections = new int[nodeNum][];
@@ -148,13 +150,13 @@ public final class Global {
 	}
 
 	/** 更新值 ，是否更好 */
-	public static boolean updateSolution() {
+	public static int updateSolution() {
 		int newMinCost = getTotalCost();
 		String[] newSoluttion = getSolution();
 
 		if (IS_DEBUG) {
 			System.out.println("newMinCost:" + newMinCost);
-			// System.out.println(newMinCost < Global.minCost ? "better" : "worse");
+			System.out.println(newMinCost < Global.minCost ? "better" : "worse");
 		}
 
 		if (newMinCost < Global.minCost) {
@@ -162,10 +164,11 @@ public final class Global {
 			soluttion = newSoluttion;
 			bestServerNum = servers.size();
 			bestGene = getGene();
-			return true;
+			//return true;
 		} else {
-			return false;
+			//return false;
 		}
+		return newMinCost;
 	}
 
 	/**
