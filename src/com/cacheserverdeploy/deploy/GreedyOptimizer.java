@@ -53,7 +53,7 @@ public final class GreedyOptimizer extends Optimizer {
 			}
 			
 			// 移动
-			move(bestMoveAction);
+			moveBset(bestMoveAction);
 //			boolean better = Global.updateSolution();
 //			if(!better){ 
 //				break;

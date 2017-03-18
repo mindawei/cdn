@@ -7,7 +7,10 @@ package com.cacheserverdeploy.deploy;
  * @date 2017年3月12日
  */
 public final class TransferInfo {
-		
+	
+	/** 服务节点 */
+	int serverNode;
+	
 	Server fromServer;
 	
 	/** 可提供的带宽 */
@@ -18,6 +21,12 @@ public final class TransferInfo {
 	
 	/** 经过的节点ID,包括了首尾,从消费者开始，服务器路径应该逆向 */
 	int[] viaNodes;
+	
+	public TransferInfo(int cost,int[] viaNodes) {
+		super();
+		this.cost = cost;
+		this.viaNodes = viaNodes;
+	}
 	
 	public TransferInfo(Server fromServer,int cost,int[] viaNodes) {
 		super();
