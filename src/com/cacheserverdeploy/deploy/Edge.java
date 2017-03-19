@@ -28,7 +28,7 @@ public final class Edge {
 	}
 	
 	/** 保存 */
-	public void saveCurrentBandWidth(){
+	public void saveBandWidth(){
 		savedBandWidth = leftBandWidth;
 	}
 	

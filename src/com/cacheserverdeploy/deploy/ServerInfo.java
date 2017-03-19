@@ -1,7 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.Arrays;
-
 /**
  * 服务信息
  * 
@@ -23,11 +21,14 @@ public final class ServerInfo {
 	/** 提供的带宽  */
     public int provideBandWidth;
 
-    /** 单位费用 */
-	private final int unitBandWidthCost;
-
 	/** 带宽费*/
 	public int getBandWidthCost(){
+		// 基于 viaNodes 不可变
+		int unitBandWidthCost = 0;
+		for(int i=0;i<viaNodes.length-1;++i){
+			Edge edge = Global.graph[viaNodes[i]][viaNodes[i+1]];
+			unitBandWidthCost += edge.cost;
+		}
 		return provideBandWidth * unitBandWidthCost;
 	}
 	
@@ -35,18 +36,6 @@ public final class ServerInfo {
 		this.consumerId = consumerId;
 		this.provideBandWidth = provideBandWidth;
 		this.viaNodes = viaNodes;
-		
-		// 基于 viaNodes 不可变
-		int cost = 0;
-		for(int i=0;i<viaNodes.length-1;++i){
-			Edge edge = Global.graph[viaNodes[i]][viaNodes[i+1]];
-			cost += edge.cost;
-		}
-		this.unitBandWidthCost = cost;
-	}
-
-	public ServerInfo copy() {
-		return new ServerInfo(consumerId, provideBandWidth, Arrays.copyOf(viaNodes,viaNodes.length));
 	}
 	
 }

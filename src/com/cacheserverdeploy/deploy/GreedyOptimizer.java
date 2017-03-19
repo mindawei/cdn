@@ -1,7 +1,8 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 贪心搜索，寻找一个最优解，达到具备最优解后就马上退出
@@ -9,15 +10,11 @@ import java.util.List;
  * @author mindw
  * @date 2017年3月12日
  */
-public final class GreedyOptimizer extends Optimizer {
-		
-	int lastCost = Global.INFINITY;
-	
-	 // private final Random random = new Random(47);
+public final class GreedyOptimizer {
 
-	
-	@Override
-	void optimize() {
+	static void optimize() {
+		
+		long t = System.currentTimeMillis();
 	
 		while(true) {
 			
@@ -26,74 +23,82 @@ public final class GreedyOptimizer extends Optimizer {
 			}
 			
 			// 可选方案
-			List<MoveAction> moveActions = new LinkedList<MoveAction>();
-			for(Server server : Global.servers){		
-				for(int toNodeId =0;toNodeId<Global.nodeNum;++toNodeId){
-					moveActions.add(new MoveAction(server.nodeId, toNodeId));
-				}
-			}
-			
-			MoveAction bestMoveAction = null;
 			int minCost = Global.INFINITY;
+			int bestFromNode =-1;
+			int bestToNode =-1;
 			
-			for (MoveAction moveAction : moveActions) {
-				Global.save();
-				// 启发函数： 花费 + 这个点的移动频率
-				move(moveAction);
-				int cost = Global.getTotalCost();
-				if (cost < minCost) {
-					minCost = cost;
-					bestMoveAction = moveAction;
+			ArrayList<Server> oldGlobalServers = Global.getBestServers();
+			for(Server server : oldGlobalServers){		
+				int fromNode = server.node;
+				for(int toNode =0;toNode<Global.nodeNum;++toNode){
+					// 防止自己到自己
+					if(fromNode==toNode){
+						continue;
+					}
+					
+					Global.saveBandWidth();
+					ArrayList<Server> nextGlobalServers = move(oldGlobalServers,fromNode,toNode);
+					int cost = Global.getTotalCost(nextGlobalServers);
+					if (cost < minCost) {
+						minCost = cost;
+						bestFromNode = fromNode;
+						bestToNode = toNode;
+					}
+					Global.goBackBandWidth();
 				}
-				Global.goBack();
 			}
-
-			if (bestMoveAction == null) {
+			
+			if (minCost == Global.INFINITY) {
 				break;
 			}
 			
 			// 移动
-			moveBset(bestMoveAction);
-//			boolean better = Global.updateSolution();
-//			if(!better){ 
-//				break;
-//			}
-			
-			int cost = Global.updateSolution();
-			if(cost<lastCost){ // better
-				lastCost = cost;
-				// System.out.println("best cost:"+lastCost);
-			}else{
+			ArrayList<Server> nextGlobalServers = move(oldGlobalServers,bestFromNode,bestToNode);
+			boolean better = Global.updateSolution(nextGlobalServers);
+			 
+			if(!better){ // better
 				break;
-				
-//				Global.reset();
-//				int maxRound = 10000;
-//				int[] gene = new int[Global.nodeNum];
-//				int num = Global.consumerNum;
-//				
-//				for(Server server :Global.servers){
-//					gene[server.nodeId] = 1;
-//				}
-//				while(maxRound-->0&&num>0){
-//					int node = random.nextInt(Global.nodeNum);
-//					if(gene[node]==0){
-//						gene[node] = 1;
-//						num--;
-//					}
-//				}
-//				for(Server server :Global.servers){
-//					gene[server.nodeId] = 0;
-//				}
-//				move(gene);
-//				lastCost = Global.updateSolution();
-				
 			}
-					
+		}
+
+		if(Global.IS_DEBUG){
+			System.out.println("use:"+(System.currentTimeMillis()-t));
+		}
+	}
+
+	/** 移动 */
+	private static ArrayList<Server> move(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
+		
+		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+		for (Server server : oldGlobalServers) {
+			if (server.node != fromServerNode) {
+				newServers.put(server.node, new Server(server.node));
+			}
+		}
+		newServers.put(toServerNode, new Server(toServerNode));
+				
+				
+		Global.resetEdgeBandWidth();
+	
+		Server[] consumerServers = Global.getConsumerServer();
+		
+		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
+			Server consumerServer = consumerServers[consumerId];
+			Router.transfer(consumerId,consumerServer,newServers);
+			if (consumerServer.getDemand()>0) {
+				nextGlobalServers.add(consumerServer);
+			}
 		}
 		
+		for(Server newServer : newServers.values()){
+			if (newServer.getDemand() > 0) { // 真正安装
+				nextGlobalServers.add(newServer);
+			}
+		}
+		
+		return nextGlobalServers;
 	}
 	
 	
-	
-
 }

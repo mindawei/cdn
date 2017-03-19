@@ -31,9 +31,11 @@ public class Checker {
 	     String[] resultContent = FileUtil.read(resultFilePath, null);
 	     // printLine(resultContent);
 	     Parser.buildNetwork(graphContent);
+	     
+	     Global.init();
 	    
 	     Map<Integer,Integer> consumerDemands = new HashMap<Integer,Integer>();
-	     for(Server server : Global.servers){
+	     for(Server server : Global.getBestServers()){
 	    	 ServerInfo serverInfo = server.serverInfos.get(0);
 	    	 Integer consumerId = serverInfo.consumerId;
 	    	 int demand = serverInfo.provideBandWidth;
@@ -60,6 +62,7 @@ public class Checker {
 	    		 }  
 	    		 cost+=bandwidth*edge.cost;
 	    	 }
+	    	 
 	    	 int demand = consumerDemands.get(consumerId);
 	    	 demand-=bandwidth;
 	    	 consumerDemands.put(consumerId,demand);

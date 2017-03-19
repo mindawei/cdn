@@ -1,10 +1,6 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.LinkedList;
-import java.util.List;
-
-public class Deploy
-{
+public class Deploy{
     /**
      * 你需要完成的入口
      * <功能详细描述>
@@ -16,33 +12,15 @@ public class Deploy
     {
         /**do your work here**/
     	Parser.buildNetwork(graphContent);
-       
-    	if(Global.IS_DEBUG){
-        	Global.printNetworkInfo();
-        }
-    	
-    	Global.initSolution();
      	
-    	Global.initRest();
+    	Global.init();
+
+    	GreedyOptimizer.optimize();
+    	if(Global.IS_DEBUG){
+    		Global.printBestSolution();
+      	}
     	
-    	List<Optimizer> optimizers = new LinkedList<Optimizer>();
-    	
-    	// 局部最优
-    	optimizers.add(new GreedyOptimizer());
-//    	optimizers.add(new HeuristicOptimizer());
-//    	optimizers.add(new GAOptimizer());
-    	
-    	// 1 边界合并
-    	for(Optimizer optimizer : optimizers){
-    		// Global.reset();
-    		optimizer.optimize();
-    		if(Global.IS_DEBUG){
-    			System.out.println(optimizer.getClass().getSimpleName());
-    			System.out.println(Global.getTotalCost());
-      		}
-    	}
-    	
-    	String[] solution = Global.getBestSolution();
+    	String[] solution = Global.bsetSoluttion;
     	return solution;    
     }
 

@@ -24,13 +24,17 @@ public final class Parser {
 		Global.edges = new Edge[edgeNum*2];
 		
 		/** 消费节点数：不超过500个 */
-		Global.consumerNum = Integer.parseInt(line0[2]);
+		int consumerNum=  Integer.parseInt(line0[2]);
+		Global.consumerNum = consumerNum;
+		Global.consumerNodes = new int[consumerNum];
+		Global.consumerDemands = new int[consumerNum];
 		
 		// 空行
 		
 		// 每台部署的成本
 		String line2 = graphContent[2];
-		Global.depolyCostPerServer = Integer.parseInt(line2);
+		int depolyCostPerServer = Integer.parseInt(line2);
+		Global.depolyCostPerServer = depolyCostPerServer;
 		
 		// 空行
 		int lineIndex  = 4;
@@ -45,6 +49,11 @@ public final class Parser {
 		for (int index = lineIndex; index < graphContent.length; ++index) {
 			line = graphContent[index];
 			buildConsumer(line);
+		}
+		
+		if(Global.IS_DEBUG){
+			String info = String.format("节点数：%d,消费节点数：%d,每台部署成本：%d", nodeNum,consumerNum, depolyCostPerServer);
+			System.out.println(info);
 		}
 		
 	}
@@ -84,9 +93,10 @@ public final class Parser {
 	 */
 	private static void buildConsumer(String line){
 		String[] strs = line.split(" ");
-		Integer consumerId = Integer.parseInt(strs[0]);
+		int consumerId = Integer.parseInt(strs[0]);
 		int nodeId = Integer.parseInt(strs[1]);
 		int demand = Integer.parseInt(strs[2]);
-		Global.servers.add(new Server(consumerId,nodeId,demand));
+		Global.consumerNodes[consumerId] = nodeId;
+		Global.consumerDemands[consumerId] = demand;
 	}
 }

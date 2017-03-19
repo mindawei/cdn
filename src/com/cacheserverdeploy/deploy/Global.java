@@ -1,6 +1,7 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public final class Global {
 	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 75 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -24,113 +25,75 @@ public final class Global {
 	}
 
 	/** 无穷大 */
-	public static final int INFINITY = Integer.MAX_VALUE;
+	static final int INFINITY = Integer.MAX_VALUE;
 
 	/** 最小费用 */
-	public static int minCost;
+	static int minCost = INFINITY;
 	/** 解决方案 */
-	public static String[] soluttion;
-	/** 最优多少种方案 */
-	public static int bestServerNum;
+	static String[] bsetSoluttion;
 	
-	public static int[] bestGene;
-	
-	/** 最多费用 */
-	public static int MAX_COST;
-
 	/** 每台部署的成本：[0,5000]的整数 */
 	public static int depolyCostPerServer;
 
 	/** 节点数:不超过1000个 ,从0开始 */
-	public static int nodeNum;
+	static int nodeNum;
 	/** 消费者数 */
-	public static int consumerNum;
+	static int consumerNum;
+	/** 消费者所在的节点ID下标 */
+	static int[] consumerNodes;
+	static int[] consumerDemands;
 
 	/** 地图 */
 	public static Edge[][] graph;
 	/** 地图上的边 */
 	public static Edge[] edges;
 	/** 连接关系：下游节点 */
-	public static int[][] connections; 
+	static int[][] connections; 
+	
+	/** 消费者到所有节点的费用 */
+	static int[][] allCost;
+	static int[][][] allViaNode;
 		
 	/** 放置的服务器 */
-	public static ArrayList<Server> servers = new ArrayList<Server>();
-
-	/** 备份 */
-	private static ArrayList<Server> copyServers;
-
-	/** 备份 */
-	private static ArrayList<Server> initServers;
-
-	/** 初始化 */
-	public static void initRest() {
-		initServers = new ArrayList<Server>(servers.size());
-		for (Server server : servers) {
-			initServers.add(server.copy());
-		}
+	private static ArrayList<Server> bestServers;
+	
+	public static ArrayList<Server> getBestServers() {
+		return bestServers;
 	}
-
+	
+	static Server[] getConsumerServer(){
+		Server[] servers = new Server[consumerNum];
+		for(int i=0;i<consumerNum;++i){
+			servers[i] = new Server(i,consumerNodes[i],consumerDemands[i]);
+		}
+		return servers;
+	}
+	
 	/** 重置 */
-	public static void reset() {
+	public static void resetEdgeBandWidth() {
 		// 恢复edge的带宽值
 		for (Edge edge : edges) {
 			edge.reset();
 		}
-
-		servers = new ArrayList<Server>(servers.size());
-		for (Server server : initServers) {
-			servers.add(server.copy());
-		}
 	}
 
-	/** 保存当前状态 */
-	public static void save() {
+	public static void saveBandWidth() {
 		// 保存edge的带宽值
 		for (Edge edge : edges) {
-			edge.saveCurrentBandWidth();
-		}
-
-		copyServers = new ArrayList<Server>(servers.size());
-		for (Server server : servers) {
-			copyServers.add(server.copy());
+			edge.saveBandWidth();
 		}
 	}
-
+	
 	/** 恢复之前的保存状态 */
-	public static void goBack() {
+	public static void goBackBandWidth() {
 		// 恢复edge的带宽值
 		for (Edge edge : edges) {
 			edge.goBackBandWidth();
 		}
-		servers = copyServers;
 	}
-
-	/** 打印网络信息 */
-	public static void printNetworkInfo() {
-		String buildInfo = String.format("节点数：%d,消费节点数：%d,每台部署成本：%d", nodeNum,
-				servers.size(), Global.depolyCostPerServer);
-		System.out.println(buildInfo);
-	}
-
-   public static int[] getGene(){
-		int[] gene = new int[nodeNum];
-		for(Server server : servers){
-			gene[server.nodeId] = 1;
-		}
-		return gene;
-	}
-	
-	/** 初始化解：将服务器直接放在消费节点上 */
-	public static void initSolution() {
-		minCost = getTotalCost();
-		soluttion = getSolution();
-		bestServerNum = servers.size();
-		MAX_COST = Global.minCost;
-		bestGene = getGene();
 		
-		if(IS_DEBUG){
-			System.out.println("MAX_COST：" + MAX_COST);
-		}
+	/** 初始化解：将服务器直接放在消费节点上 */
+	public static void init() {
 		
 		// 初始连接关系
 		connections = new int[nodeNum][];
@@ -147,28 +110,38 @@ public final class Global {
 			}
 		}
 		
+		// 初始费用缓存
+		initAllCost();
+		
+		// 初始解
+		ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerNum);
+		for(int i=0;i<consumerNum;++i){
+			nextGlobalServers.add(new Server(i,consumerNodes[i],consumerDemands[i]));
+		}		
+		updateSolution(nextGlobalServers);
+		
 	}
+	
+	
 
 	/** 更新值 ，是否更好 */
-	public static int updateSolution() {
-		int newMinCost = getTotalCost();
-		String[] newSoluttion = getSolution();
-
+	public static boolean updateSolution(ArrayList<Server> nextGlobalServers) {
+		
+		int newMinCost = getTotalCost(nextGlobalServers);
+		
 		if (IS_DEBUG) {
 			System.out.println("newMinCost:" + newMinCost);
 			System.out.println(newMinCost < Global.minCost ? "better" : "worse");
 		}
-
+		
 		if (newMinCost < Global.minCost) {
+			bestServers = nextGlobalServers;
 			minCost = newMinCost;
-			soluttion = newSoluttion;
-			bestServerNum = servers.size();
-			bestGene = getGene();
-			//return true;
+			bsetSoluttion = getSolution(bestServers);
+			return true;
 		} else {
-			//return false;
+			return false;
 		}
-		return newMinCost;
 	}
 
 	/**
@@ -181,10 +154,9 @@ public final class Global {
 	 * 每条网络路径由若干网络节点构成，路径的起始节点ID-01表示该节点部署了视频内容服务器，终止节点为某个消费节点<br>
 	 * </blockquote>
 	 */
-	private static String[] getSolution() {
-
+	private static String[] getSolution(ArrayList<Server> servers) {
 		List<String> ls = new LinkedList<String>();
-		for (Server server : Global.servers) {
+		for (Server server : servers) {
 			ls.addAll(server.getSolution());
 		}
 
@@ -198,15 +170,10 @@ public final class Global {
 		return solution;
 	}
 
-	/** 获得最优解 */
-	public static String[] getBestSolution() {
-		return Global.soluttion;
-	}
-
 	/** 获得总的费用 */
-	public static int getTotalCost() {
+	public static int getTotalCost(ArrayList<Server> servers) {
 		int toatlCost = 0;
-		for (Server server : Global.servers) {
+		for (Server server : servers) {
 			toatlCost += server.getCost();
 		}
 		return toatlCost;
@@ -220,13 +187,130 @@ public final class Global {
 		System.out.println("最优解：");
 		System.out.println("总的费用：" + Global.minCost);
 		System.out.println();
-		for (String line : Global.soluttion) {
+		for (String line : bsetSoluttion) {
 			System.out.println(line);
 		}
 		System.out.println("---------------");
 	}
+	
+	/**
+	 * 消耗带宽最大带宽
+	 * 
+	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
+	 */
+	static int useBandWidth(int demand, int[] nodeIds) {
+		if (demand == 0) {
+			return 0;
+		}
+		int minBindWidth = Global.INFINITY;
+		for (int i = nodeIds.length - 1; i >=1; --i) {
+			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
+			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
+		}
+		if (minBindWidth == 0) {
+			return 0;
+		}
+		int usedBindWidth = Math.min(minBindWidth, demand);
+		for (int i = nodeIds.length - 1; i >=1; --i) {
+			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
+			edge.leftBandWidth -= usedBindWidth;
+		}
+		return usedBindWidth;
+	}
+	
+	
+	public static void returnBandWidth(int bindWidth, int[] nodeIds) {
+		if (bindWidth == 0) {
+			return;
+		}
+		for (int i = nodeIds.length - 1; i >=1; --i) {
+			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
+			edge.leftBandWidth += bindWidth;
+		}
+	}
+	
+	/**
+	 * 消耗带宽最大带宽
+	 * 
+	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
+	 */
+	static int getBandWidthCanUsed(int demand, int[] nodeIds) {
+		if (demand == 0) {
+			return 0;
+		}
+		int minBindWidth = Global.INFINITY;
+		for (int i = nodeIds.length - 1; i >=1; --i) {
+			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
+			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
+		}
+		return minBindWidth;
+	}
 
+	
+	private static void initAllCost(){
+		allCost = new int[consumerNum][nodeNum];
+		allViaNode = new int[consumerNum][nodeNum][];
+		
+		for(int i=0;i<consumerNum;++i){
+			initCost(i);
+		}
+	}
+	
+	private static void initCost(int consumerId) {
 
+		int[] costs = allCost[consumerId];
+		Arrays.fill(costs, INFINITY);
+		
+		int[] visited = new int[nodeNum];
 
+		int[][] viaNodes = allViaNode[consumerId];
+		
+		int startNode = consumerNodes[consumerId];
+		costs[startNode] = 0;
+		viaNodes[startNode] = new int[]{startNode};
+		
+		while (true) {
 
+			// 寻找下一个最近点
+			int minCost = INFINITY;
+			int fromNode = -1;
+			for (int node =0;node<nodeNum;++node) {
+				// 1 访问过了 或者 2 还没信息（cost 无穷大）
+				if(visited[node]==1){
+					continue;
+				}
+				if (costs[node] < minCost) {
+					minCost = costs[node];
+					fromNode = node;
+				}
+			}
+
+			// 其余都不可达
+			if (fromNode == -1) {
+				break;
+			}
+
+			// 访问过了
+			visited[fromNode] = 1;
+
+			// 更新
+			for (int toNode : connections[fromNode]) {
+				Edge edge = Global.graph[fromNode][toNode];
+				int newCost = minCost + edge.cost;
+				if (newCost < costs[toNode]) {
+					costs[toNode] = newCost;
+					// 添加路径
+					
+					// 添加路径
+					int nodeSize = viaNodes[fromNode].length;
+					viaNodes[toNode] = Arrays.copyOf(viaNodes[fromNode],nodeSize+1);
+					viaNodes[toNode][nodeSize] = toNode;
+				}
+			}
+			
+		}
+		
+	}
+
+	
 }
