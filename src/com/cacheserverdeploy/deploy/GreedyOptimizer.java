@@ -48,6 +48,8 @@ public final class GreedyOptimizer {
 				}
 			}
 			
+			
+			
 			if (minCost == Global.INFINITY) {
 				break;
 			}
@@ -57,6 +59,8 @@ public final class GreedyOptimizer {
 			boolean better = Global.updateSolution(nextGlobalServers);
 			 
 			if(!better){ // better
+				Global.optimize();
+				
 				break;
 			}
 		}

@@ -18,7 +18,7 @@ public final class Server {
 		this.node = node;
 	}
 	
-	public Server(Integer consumerId,int node,int demand) {
+	public Server(int consumerId,int node,int demand) {
 		super();
 		this.node = node;
 		serverInfos.add(new ServerInfo(consumerId,demand,new int[]{node}));

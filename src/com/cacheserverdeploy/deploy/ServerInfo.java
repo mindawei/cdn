@@ -1,5 +1,7 @@
 package com.cacheserverdeploy.deploy;
 
+import java.util.Arrays;
+
 /**
  * 服务信息
  * 
@@ -37,5 +39,14 @@ public final class ServerInfo {
 		this.provideBandWidth = provideBandWidth;
 		this.viaNodes = viaNodes;
 	}
+
+	@Override
+	public String toString() {
+		return "ServerInfo [consumerId=" + consumerId + ", viaNodes="
+				+ Arrays.toString(viaNodes) + ", provideBandWidth="
+				+ provideBandWidth + "]";
+	}
+	
+	
 	
 }

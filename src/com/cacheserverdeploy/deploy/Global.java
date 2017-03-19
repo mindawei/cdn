@@ -2,8 +2,10 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 全局参数，方便访问
@@ -14,7 +16,7 @@ import java.util.List;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = false;
+	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
@@ -143,6 +145,7 @@ public final class Global {
 			return false;
 		}
 	}
+
 
 	/**
 	 * 获得解决方案，格式如下:<br>
@@ -312,5 +315,55 @@ public final class Global {
 		
 	}
 
+	/** 对接进行优化 */
+	public static void optimize() {
+		
+		System.out.println("Global optimize TODO");
+//		
+//		// 检查每个边出去的费用和在自己的费用
+//		Map<Integer,Integer> costs = new HashMap<Integer,Integer>();
+//		
+//		for(int consumerId =0;consumerId<consumerNum;++consumerId){
+//			costs.put(consumerId, 0);
+//		}
+//		
+//		for(Server server :bestServers){
+//			int serverNode = server.node;
+//			for(int consumerId =0;consumerId<consumerNum;++consumerId){
+//				if(consumerNodes[consumerId]==serverNode){
+//					costs.put(consumerId, depolyCostPerServer);
+//					break;
+//				}
+//			}		
+//		}
+//		
+//		
+//		for(Server server : bestServers){
+//			for(ServerInfo info : server.serverInfos){
+//				int cost = costs.get(info.consumerId);
+//				cost+=info.getBandWidthCost();
+//				costs.put(info.consumerId, cost);
+//			}
+//		}
+//		
+//		int total = 0;
+//		List<Integer> needRemovedConsumeIds = new ArrayList<Integer>();
+//		for(Map.Entry<Integer,Integer> entry : costs.entrySet()){
+//			
+//			System.out.println(entry.getKey()+" : "+entry.getValue());
+//			total+=entry.getValue();
+//			if(entry.getValue()>depolyCostPerServer){
+//				needRemovedConsumeIds.add(entry.getKey());
+//				
+//			}
+//		}
+//		System.out.println("total:"+total);
+//		System.out.println("depolyCostPerServer:"+depolyCostPerServer);
+//		
+	
+	}
+	
+	
+	
 	
 }
