@@ -11,43 +11,64 @@ import java.util.Map;
  */
 public final class RouterComplex {
 	
+	private static class CostInfo {
+		
+		Server fromServer;
+		
+		/** 到达需要的费用：单位花费 */
+		int cost; 
+		
+		/** 经过的节点ID,包括了首尾,从消费者开始，服务器路径应该逆向 */
+		int[] viaNodes;
+		
+		public CostInfo(Server fromServer,int cost,int[] viaNodes) {
+			super();
+			this.fromServer = fromServer;
+			this.cost = cost;
+			this.viaNodes = viaNodes;
+		}
+			
+	}
+	
 	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
 	public static void transfer(Server[] fromServers, Map<Integer, Server> toServers) {
 		// 0 未访问  1访问过
 		int layerNum = fromServers.length;
 		int totalFromDemand = 0;
 		int[] fromDemands = new int[layerNum];
-		int[][] visited = new int[layerNum][Global.nodeNum];
+		int[] notVisitedServerNum = new int[layerNum];
+		int[] fromCosts = new int[layerNum];
+		
+		int serverNum = toServers.size();
 		for (int layer = 0; layer < layerNum; ++layer) {
-			visited[layer] = new int[Global.nodeNum];
-			// 自己到自己的距离为0
 			Server fromServer = fromServers[layer];	
 			// 需求
 			int fromDemand = fromServer.getDemand();
+			notVisitedServerNum[layer] = serverNum;
+			fromCosts[layer] =0;
 			fromDemands[layer] = fromDemand;
 			totalFromDemand += fromDemand;
 		}
 		
-		_transfer(fromServers, toServers, fromDemands, totalFromDemand,visited);
+		_transfer(fromServers, toServers, fromDemands, totalFromDemand,notVisitedServerNum,fromCosts);
 	}
 
 	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
-	private static void _transfer(Server[] fromServers, Map<Integer, Server> toServers,int[] fromDemands,int totalFromDemand,int[][] visited) {
+	private static void _transfer(Server[] fromServers, Map<Integer, Server> toServers,int[] fromDemands,int totalFromDemand,int[] notVisitedServerNum,int[] fromCosts) {
 
 		// 0 未访问  1访问过
 		int layerNum = fromServers.length;
+		int[][] visited = new int[layerNum][Global.nodeNum];
 		
-		TransferInfo[][] transferInfos = new TransferInfo[layerNum][Global.nodeNum];	
+		CostInfo[][] transferInfos = new CostInfo[layerNum][Global.nodeNum];	
 		for (int layer = 0; layer < layerNum; ++layer) {
-			// 全部未访问过
-			Arrays.fill(visited[layer], 0);
-			
+
 			// 初始化
-			transferInfos[layer] = new TransferInfo[Global.nodeNum];
+			transferInfos[layer] = new CostInfo[Global.nodeNum];
 			// 自己到自己的距离为0
 			Server fromServer = fromServers[layer];
 			int fromNode = fromServer.node;
-			transferInfos[layer][fromNode] = new TransferInfo(fromServer, 0 , new int[] { fromNode });
+			transferInfos[layer][fromNode] = new CostInfo(fromServer, 0 , new int[] { fromNode });
 		}
 		
 		boolean fromDemandSmaller = false;
@@ -63,10 +84,12 @@ public final class RouterComplex {
 			for (int layer =0;layer<layerNum;++layer) {
 				for (int node = 0; node < Global.nodeNum; ++node) {
 					// 1 访问过了 或者 2 还没信息（cost 无穷大）
-					if (visited[layer][node] == 1) {
+					if (visited[layer][node] == 1 
+							|| notVisitedServerNum[layer]==0
+							|| fromDemands[layer]==0) {
 						continue;
 					}
-					TransferInfo transferInfo = transferInfos[layer][node];
+					CostInfo transferInfo = transferInfos[layer][node];
 					if(transferInfo==null){
 						continue;
 					}
@@ -97,36 +120,28 @@ public final class RouterComplex {
 			visited[minFromLayer][minCostNode] = 1;
 			
 			
-			TransferInfo minCostInfo = transferInfos[minFromLayer][minCostNode];
+			CostInfo minCostInfo = transferInfos[minFromLayer][minCostNode];
+			// 减枝
+			if(fromDemands[minFromLayer]*minCost+fromCosts[minFromLayer]>=Global.depolyCostPerServer){
+				totalFromDemand -= fromDemands[minFromLayer];
+				fromDemands[minFromLayer]=0;
+				fromDemandSmaller = true;
+				break;
+			}
 
 			// 是服务器
 			if (toServers.containsKey(minCostNode)) {
 				int usedDemand = Global.useBandWidth(fromDemands[minFromLayer],minCostInfo.viaNodes);
 				// 可以消耗
 				if (usedDemand > 0) {
-					minCostInfo.avaliableBandWidth = usedDemand;
-					Server oldServer = minCostInfo.fromServer;
-					Server newServer = toServers.get(minCostNode);
-					
-					Global.transferTo(oldServer,newServer,minCostInfo.avaliableBandWidth,minCostInfo.viaNodes);
-							
-					
+					fromCosts[minFromLayer]+= usedDemand * minCost;
+					notVisitedServerNum[minFromLayer]--;
+					Global.transferTo(minCostInfo.fromServer,toServers.get(minCostNode),usedDemand,minCostInfo.viaNodes);
 					totalFromDemand -= usedDemand;
 					fromDemands[minFromLayer]-=usedDemand;
 					fromDemandSmaller = true;
 					break;
 				}
-			}
-
-			// 道路上是否还有流量
-			int[] viaNodes = transferInfos[minFromLayer][minCostNode].viaNodes;
-			int minBindWidth = Global.INFINITY;
-			for (int i = viaNodes.length - 1; i >=1; --i) {
-				Edge edge = Global.graph[viaNodes[i]][viaNodes[i -1]];
-				minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-			}
-			if(minBindWidth==0){
-				continue;
 			}
 			
 			// 更新
@@ -135,13 +150,16 @@ public final class RouterComplex {
 				if (visited[minFromLayer][toNodeId] == 1) { 
 					continue;
 				}
-			
+				Edge edge = Global.graph[minCostNode][toNodeId];
+				if(edge.leftBandWidth==0){
+					continue;
+				}
+
 				if (transferInfos[minFromLayer][toNodeId] == null) {
-					transferInfos[minFromLayer][toNodeId] = new TransferInfo(transferInfos[minFromLayer][minCostNode].fromServer,Global.INFINITY,null);
+					transferInfos[minFromLayer][toNodeId] = new CostInfo(transferInfos[minFromLayer][minCostNode].fromServer,Global.INFINITY,null);
 				}
 				
-				Edge edge = Global.graph[minCostNode][toNodeId];
-				TransferInfo costInfo = transferInfos[minFromLayer][toNodeId];
+				CostInfo costInfo = transferInfos[minFromLayer][toNodeId];
 				int oldCost = costInfo.cost;
 				int newCost = minCost + edge.cost;
 				if (newCost < oldCost) {
@@ -155,7 +173,7 @@ public final class RouterComplex {
 		}
 		
 		if(fromDemandSmaller&&totalFromDemand>0){
-			_transfer(fromServers, toServers, fromDemands, totalFromDemand,visited);
+			_transfer(fromServers, toServers, fromDemands, totalFromDemand,notVisitedServerNum,fromCosts);
 		}
 	}
 	

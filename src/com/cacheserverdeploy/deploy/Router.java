@@ -43,7 +43,7 @@ public final class Router {
 			// 访问过了
 			visited[serverNode] = 1;
 			
-			// 中庸的减枝
+			// 减枝
 			if(totalCost+fromDemand*minCost>=Global.depolyCostPerServer){
 				break;
 			}
