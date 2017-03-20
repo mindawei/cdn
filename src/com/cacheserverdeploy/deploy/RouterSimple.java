@@ -8,7 +8,7 @@ import java.util.Map;
  * @author mindw
  * @date 2017年3月11日
  */
-public final class Router {
+public final class RouterSimple {
 	
 	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
 	public static void transfer(int consumerId,Server fromServer, Map<Integer, Server> toServers) {

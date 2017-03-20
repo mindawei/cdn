@@ -24,6 +24,11 @@ public final class Global {
 	static boolean isTimeOut() {
 		return System.currentTimeMillis() > TIME_OUT;
 	}
+	
+	/** 是否困难 */
+	static boolean isNpHard;
+	
+	private static final int NP_HARD_THRESHOLD = 100000;
 
 	/** 无穷大 */
 	static final int INFINITY = Integer.MAX_VALUE;
@@ -111,16 +116,24 @@ public final class Global {
 			}
 		}
 		
-		// 初始费用缓存
-		initAllCost();
-		
 		// 初始解
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerNum);
-		for(int i=0;i<consumerNum;++i){
-			nextGlobalServers.add(new Server(i,consumerNodes[i],consumerDemands[i]));
-		}		
-		updateSolution(nextGlobalServers);
+		for (int i = 0; i < consumerNum; ++i) {
+			nextGlobalServers.add(new Server(i, consumerNodes[i], consumerDemands[i]));
+		}
+		updateSolution(nextGlobalServers);				
+
+		// 判断任务难易 
+		int On = nodeNum * nodeNum * consumerNum;
+		isNpHard = On > NP_HARD_THRESHOLD;
+		if (isNpHard){
+			// 初始费用缓存
+			initAllCost();
+		}
 		
+		if(IS_DEBUG){
+			System.out.println("On:"+On+" isNpHard:"+isNpHard);
+		}
 	}
 	
 	

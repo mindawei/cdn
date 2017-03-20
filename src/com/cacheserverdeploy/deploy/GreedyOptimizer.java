@@ -37,7 +37,7 @@ public final class GreedyOptimizer {
 					}
 					
 					Global.saveBandWidth();
-					ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,fromNode,toNode);
+					ArrayList<Server> nextGlobalServers = move(oldGlobalServers,fromNode,toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
 						minCost = cost;
@@ -53,7 +53,7 @@ public final class GreedyOptimizer {
 			}
 			
 			// 移动
-			ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,bestFromNode,bestToNode);
+			ArrayList<Server> nextGlobalServers = move(oldGlobalServers,bestFromNode,bestToNode);
 			boolean better = Global.updateSolution(nextGlobalServers);
 			 
 			if(!better){ // better
@@ -66,9 +66,18 @@ public final class GreedyOptimizer {
 			System.out.println("use:"+(System.currentTimeMillis()-t));
 		}
 	}
+	
+	private static ArrayList<Server> move(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode){
+		if(Global.isNpHard){
+			return moveSimple(oldGlobalServers, fromServerNode, toServerNode);
+		}else{
+			return moveComplex(oldGlobalServers, fromServerNode, toServerNode);
+		}
+	}
+		
 
 	/** 简单移动比较快 */
-	private static ArrayList<Server> move(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
+	private static ArrayList<Server> moveSimple(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
 		
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		for (Server server : oldGlobalServers) {
@@ -85,7 +94,7 @@ public final class GreedyOptimizer {
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
 		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
 			Server consumerServer = consumerServers[consumerId];
-			Router.transfer(consumerId,consumerServer,newServers);
+			RouterSimple.transfer(consumerId,consumerServer,newServers);
 			if (consumerServer.getDemand()>0) {
 				nextGlobalServers.add(consumerServer);
 			}
