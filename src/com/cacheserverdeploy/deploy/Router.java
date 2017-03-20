@@ -18,6 +18,7 @@ public final class Router {
 
 		int[] costs = Global.allCost[consumerId];
 		int fromDemand = Global.consumerDemands[consumerId];
+		int totalCost = 0;
 		
 		while (true) {
 
@@ -44,7 +45,7 @@ public final class Router {
 			visited[serverNode] = 1;
 			
 			// 中庸的减枝
-			if(fromDemand*minCost>=Global.depolyCostPerServer){
+			if(totalCost+fromDemand*minCost>=Global.depolyCostPerServer){
 				break;
 			}
 			
@@ -54,6 +55,7 @@ public final class Router {
 			// 可以消耗
 			if (usedDemand > 0) {
 				fromDemand -= usedDemand;
+				totalCost+=usedDemand*minCost;
 				transferTo(fromServer, toServers.get(serverNode), usedDemand,viaNodes);
 				if (fromDemand == 0) {
 					break;
