@@ -2,6 +2,7 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -361,7 +362,37 @@ public final class Global {
 	
 	}
 	
-	
+	/** 
+	 * 转移到另一个服务器，并返回价格<br>
+	 * 注意：可能cost会改变(又返回之前的点)
+	 */
+	static void transferTo(Server fromServer,Server toServer,int avaliableBandWidth,int[] viaNodes ) {
+		
+		Iterator<ServerInfo> iterator = fromServer.serverInfos.iterator();
+		while(iterator.hasNext()){
+			ServerInfo fromServerInfo = iterator.next();
+			// 剩余要传的的和本地的最小值
+			int transferBandWidth = Math.min(avaliableBandWidth, fromServerInfo.provideBandWidth);
+			
+			int[] fromNodes = fromServerInfo.viaNodes;
+			
+			// 虽然分配了，但是新的部分目前为0
+			int[] nodes = new int[fromNodes.length+viaNodes.length-1];
+				
+			System.arraycopy(fromNodes, 0, nodes, 0, fromNodes.length);
+			// 去头
+			System.arraycopy(viaNodes, 1, nodes, fromNodes.length, viaNodes.length-1);
+			
+			ServerInfo toServerInfo = new ServerInfo(fromServerInfo.consumerId,transferBandWidth,nodes);
+			toServer.serverInfos.add(toServerInfo);
+			// 更新当前的
+			fromServerInfo.provideBandWidth -= transferBandWidth;
+			if(fromServerInfo.provideBandWidth==0){ // 已经全部转移
+				iterator.remove();
+			}
+		}
+		
+	}
 	
 	
 }

@@ -37,7 +37,7 @@ public final class GreedyOptimizer {
 					}
 					
 					Global.saveBandWidth();
-					ArrayList<Server> nextGlobalServers = move(oldGlobalServers,fromNode,toNode);
+					ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,fromNode,toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
 						minCost = cost;
@@ -48,19 +48,16 @@ public final class GreedyOptimizer {
 				}
 			}
 			
-			
-			
 			if (minCost == Global.INFINITY) {
 				break;
 			}
 			
 			// 移动
-			ArrayList<Server> nextGlobalServers = move(oldGlobalServers,bestFromNode,bestToNode);
+			ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,bestFromNode,bestToNode);
 			boolean better = Global.updateSolution(nextGlobalServers);
 			 
 			if(!better){ // better
 				Global.optimize();
-				
 				break;
 			}
 		}
@@ -70,7 +67,7 @@ public final class GreedyOptimizer {
 		}
 	}
 
-	/** 移动 */
+	/** 简单移动比较快 */
 	private static ArrayList<Server> move(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
 		
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
@@ -80,7 +77,6 @@ public final class GreedyOptimizer {
 			}
 		}
 		newServers.put(toServerNode, new Server(toServerNode));
-				
 				
 		Global.resetEdgeBandWidth();
 	
@@ -104,5 +100,36 @@ public final class GreedyOptimizer {
 		return nextGlobalServers;
 	}
 	
+	/** 复杂移动比较费时间 */
+	private static ArrayList<Server>  moveComplex(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode){
+		
+		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+		for (Server server : oldGlobalServers) {
+			if (server.node != fromServerNode) {
+				newServers.put(server.node, new Server(server.node));
+			}
+		}
+		newServers.put(toServerNode, new Server(toServerNode));
+				
+		Global.resetEdgeBandWidth();
 	
+		Server[] consumerServers = Global.getConsumerServer();
+		
+		RouterComplex.transfer(consumerServers, newServers);
+		
+		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+		for(Server consumerServer : consumerServers){
+			if (consumerServer.getDemand() > 0) { // 真正安装
+				nextGlobalServers.add(consumerServer);
+			}
+		}
+		
+		for(Server newServer : newServers.values()){
+			if (newServer.getDemand() > 0) { // 真正安装
+				nextGlobalServers.add(newServer);
+			}
+		}
+		
+		return nextGlobalServers;
+	}
 }
