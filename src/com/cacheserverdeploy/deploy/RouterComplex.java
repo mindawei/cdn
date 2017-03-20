@@ -150,15 +150,15 @@ public final class RouterComplex {
 				if (visited[minFromLayer][toNodeId] == 1) { 
 					continue;
 				}
-				Edge edge = Global.graph[minCostNode][toNodeId];
+									
+				Edge edge = Global.graph[toNodeId][minCostNode];
 				if(edge.leftBandWidth==0){
 					continue;
 				}
 
 				if (transferInfos[minFromLayer][toNodeId] == null) {
 					transferInfos[minFromLayer][toNodeId] = new CostInfo(transferInfos[minFromLayer][minCostNode].fromServer,Global.INFINITY,null);
-				}
-				
+				}				
 				CostInfo costInfo = transferInfos[minFromLayer][toNodeId];
 				int oldCost = costInfo.cost;
 				int newCost = minCost + edge.cost;

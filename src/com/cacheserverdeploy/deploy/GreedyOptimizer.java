@@ -71,7 +71,8 @@ public final class GreedyOptimizer {
 		if(Global.isNpHard){
 			return moveSimple(oldGlobalServers, fromServerNode, toServerNode);
 		}else{
-			return moveComplex(oldGlobalServers, fromServerNode, toServerNode);
+			return moveMiddle(oldGlobalServers, fromServerNode, toServerNode);
+			// return moveComplex(oldGlobalServers, fromServerNode, toServerNode);
 		}
 	}
 		
@@ -109,8 +110,8 @@ public final class GreedyOptimizer {
 		return nextGlobalServers;
 	}
 	
-	/** 复杂移动比较费时间 */
-	private static ArrayList<Server>  moveComplex(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode){
+	/** 简单移动比较快 */
+	private static ArrayList<Server> moveMiddle(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
 		
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		for (Server server : oldGlobalServers) {
@@ -124,11 +125,11 @@ public final class GreedyOptimizer {
 	
 		Server[] consumerServers = Global.getConsumerServer();
 		
-		RouterComplex.transfer(consumerServers, newServers);
-		
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for(Server consumerServer : consumerServers){
-			if (consumerServer.getDemand() > 0) { // 真正安装
+		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
+			Server consumerServer = consumerServers[consumerId];
+			RouterMiddle.transfer(consumerServer,newServers,0);
+			if (consumerServer.getDemand()>0) {
 				nextGlobalServers.add(consumerServer);
 			}
 		}
@@ -141,4 +142,37 @@ public final class GreedyOptimizer {
 		
 		return nextGlobalServers;
 	}
+	
+//	/** 复杂移动比较费时间 */
+//	private static ArrayList<Server>  moveComplex(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode){
+//		
+//		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+//		for (Server server : oldGlobalServers) {
+//			if (server.node != fromServerNode) {
+//				newServers.put(server.node, new Server(server.node));
+//			}
+//		}
+//		newServers.put(toServerNode, new Server(toServerNode));
+//				
+//		Global.resetEdgeBandWidth();
+//	
+//		Server[] consumerServers = Global.getConsumerServer();
+//		
+//		RouterComplex.transfer(consumerServers, newServers);
+//		
+//		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+//		for(Server consumerServer : consumerServers){
+//			if (consumerServer.getDemand() > 0) { // 真正安装
+//				nextGlobalServers.add(consumerServer);
+//			}
+//		}
+//		
+//		for(Server newServer : newServers.values()){
+//			if (newServer.getDemand() > 0) { // 真正安装
+//				nextGlobalServers.add(newServer);
+//			}
+//		}
+//		
+//		return nextGlobalServers;
+//	}
 }

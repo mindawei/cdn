@@ -17,7 +17,7 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = false;
+	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
@@ -30,7 +30,7 @@ public final class Global {
 	/** 是否困难 */
 	static boolean isNpHard;
 	
-	private static final int NP_HARD_THRESHOLD = 100000;
+	private static final int NP_HARD_THRESHOLD = 1000000;
 
 	/** 无穷大 */
 	static final int INFINITY = Integer.MAX_VALUE;
@@ -332,9 +332,9 @@ public final class Global {
 	/** 对接进行优化 */
 	public static void optimize() {
 		
-		if(!isNpHard){
-			return;
-		}
+//		if(!isNpHard){
+//			return;
+//		}
 
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		for (Server server : bestServers) {
