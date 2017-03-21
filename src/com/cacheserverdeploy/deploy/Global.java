@@ -17,7 +17,7 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = true;
+	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
@@ -128,7 +128,6 @@ public final class Global {
 		// 判断任务难易 
 		int On = nodeNum * nodeNum * consumerNum;
 		isNpHard = On > NP_HARD_THRESHOLD;
-		isNpHard = false;
 		if (isNpHard){
 			// 初始费用缓存
 			initAllCost();
@@ -328,42 +327,38 @@ public final class Global {
 		
 	}
 
-	/** 对接进行优化 */
+	/** 对解进行优化  */
 	public static void optimize() {
 		
-//		if(!isNpHard){
-//			return;
-//		}
+		if(isTimeOut()){
+			return;
+		}
 
-		//boolean better = false;
-		//do {
-			Map<Integer, Server> newServers = new HashMap<Integer, Server>();
-			for (Server server : bestServers) {
-				newServers.put(server.node, new Server(server.node));
+		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+		for (Server server : bestServers) {
+			newServers.put(server.node, new Server(server.node));
+		}
+
+		Global.resetEdgeBandWidth();
+
+		Server[] consumerServers = Global.getConsumerServer();
+
+		RouterComplex.transfer(consumerServers, newServers);
+
+		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+		for (Server consumerServer : consumerServers) {
+			if (consumerServer.getDemand() > 0) { // 真正安装
+				nextGlobalServers.add(consumerServer);
 			}
+		}
 
-			Global.resetEdgeBandWidth();
-
-			Server[] consumerServers = Global.getConsumerServer();
-
-			RouterComplex.transfer(consumerServers, newServers);
-
-			ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-			for (Server consumerServer : consumerServers) {
-				if (consumerServer.getDemand() > 0) { // 真正安装
-					nextGlobalServers.add(consumerServer);
-				}
+		for (Server newServer : newServers.values()) {
+			if (newServer.getDemand() > 0) { // 真正安装
+				nextGlobalServers.add(newServer);
 			}
+		}
+		updateSolution(nextGlobalServers);
 
-			for (Server newServer : newServers.values()) {
-				if (newServer.getDemand() > 0) { // 真正安装
-					nextGlobalServers.add(newServer);
-				}
-			}
-			updateSolution(nextGlobalServers);
-
-		//} while (better && !isTimeOut());
-		GreedyOptimizerComplex.optimize();
 	}
 	
 	/** 

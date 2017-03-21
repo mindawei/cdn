@@ -57,13 +57,12 @@ public final class GreedyOptimizer {
 			boolean better = Global.updateSolution(nextGlobalServers);
 			 
 			if(!better){ // better
-				Global.optimize();
 				break;
 			}
 		}
 
 		if(Global.IS_DEBUG){
-			System.out.println("use:"+(System.currentTimeMillis()-t));
+			System.out.println("阶段1耗时: "+(System.currentTimeMillis()-t));
 		}
 	}
 	

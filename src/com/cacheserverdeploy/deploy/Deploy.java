@@ -16,6 +16,9 @@ public class Deploy{
     	Global.init();
 
     	GreedyOptimizer.optimize();
+    	Global.optimize();
+    	GreedyOptimizerComplex.optimize();
+    	
     	if(Global.IS_DEBUG){
     		Global.printBestSolution();
       	}

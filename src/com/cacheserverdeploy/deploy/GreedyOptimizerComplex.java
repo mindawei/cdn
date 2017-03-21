@@ -17,11 +17,7 @@ public final class GreedyOptimizerComplex {
 		long t = System.currentTimeMillis();
 	
 		while(true) {
-			
-			if(Global.isTimeOut()){
-				break;
-			}
-			
+				
 			// 可选方案
 			int minCost = Global.INFINITY;
 			int bestFromNode =-1;
@@ -36,6 +32,10 @@ public final class GreedyOptimizerComplex {
 						continue;
 					}
 					
+					if(Global.isTimeOut()){
+						return;
+					}
+					
 					Global.saveBandWidth();
 					ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,fromNode,toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
@@ -46,10 +46,6 @@ public final class GreedyOptimizerComplex {
 					}
 					Global.goBackBandWidth();
 					
-					if(Global.isTimeOut()){
-						break;
-					}
-					
 				}
 			}
 			
@@ -58,11 +54,11 @@ public final class GreedyOptimizerComplex {
 			}
 			
 			// 移动
+			if(Global.isTimeOut()){
+				return;
+			}
 			ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,bestFromNode,bestToNode);
 			boolean better = Global.updateSolution(nextGlobalServers);
-			if(Global.isTimeOut()){
-				break;
-			}
 			
 			if(!better){ // better
 				break;
@@ -70,7 +66,7 @@ public final class GreedyOptimizerComplex {
 		}
 
 		if(Global.IS_DEBUG){
-			System.out.println("phase 2 use:"+(System.currentTimeMillis()-t));
+			System.out.println("阶段2耗时: "+(System.currentTimeMillis()-t));
 		}
 	}
 	

@@ -5,6 +5,7 @@ com/cacheserverdeploy/deploy/Deploy.java
 com/cacheserverdeploy/deploy/Edge.java
 com/cacheserverdeploy/deploy/Global.java
 com/cacheserverdeploy/deploy/GreedyOptimizer.java
+com/cacheserverdeploy/deploy/GreedyOptimizerComplex.java
 com/cacheserverdeploy/deploy/Parser.java
 com/cacheserverdeploy/deploy/RouterComplex.java
 com/cacheserverdeploy/deploy/RouterMiddle.java
