@@ -70,7 +70,8 @@ public final class GreedyOptimizer {
 	private static ArrayList<Server> move(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode){
 		if(Global.isNpHard){
 			return moveSimple(oldGlobalServers, fromServerNode, toServerNode);
-		}else{
+		}
+		else{
 			return moveMiddle(oldGlobalServers, fromServerNode, toServerNode);
 			// return moveComplex(oldGlobalServers, fromServerNode, toServerNode);
 		}

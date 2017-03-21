@@ -128,6 +128,7 @@ public final class Global {
 		// 判断任务难易 
 		int On = nodeNum * nodeNum * consumerNum;
 		isNpHard = On > NP_HARD_THRESHOLD;
+		isNpHard = false;
 		if (isNpHard){
 			// 初始费用缓存
 			initAllCost();
@@ -137,8 +138,6 @@ public final class Global {
 			System.out.println("On:"+On+" isNpHard:"+isNpHard);
 		}
 	}
-	
-	
 
 	/** 更新值 ，是否更好 */
 	public static boolean updateSolution(ArrayList<Server> nextGlobalServers) {
@@ -336,30 +335,35 @@ public final class Global {
 //			return;
 //		}
 
-		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
-		for (Server server : bestServers) {
-			newServers.put(server.node, new Server(server.node));
-		}
-					
-		Global.resetEdgeBandWidth();
-	
-		Server[] consumerServers = Global.getConsumerServer();
-		
-		RouterComplex.transfer(consumerServers, newServers);
-		
-		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for(Server consumerServer : consumerServers){
-			if (consumerServer.getDemand() > 0) { // 真正安装
-				nextGlobalServers.add(consumerServer);
+		//boolean better = false;
+		//do {
+			Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+			for (Server server : bestServers) {
+				newServers.put(server.node, new Server(server.node));
 			}
-		}
-		
-		for(Server newServer : newServers.values()){
-			if (newServer.getDemand() > 0) { // 真正安装
-				nextGlobalServers.add(newServer);
+
+			Global.resetEdgeBandWidth();
+
+			Server[] consumerServers = Global.getConsumerServer();
+
+			RouterComplex.transfer(consumerServers, newServers);
+
+			ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+			for (Server consumerServer : consumerServers) {
+				if (consumerServer.getDemand() > 0) { // 真正安装
+					nextGlobalServers.add(consumerServer);
+				}
 			}
-		}
-		updateSolution(nextGlobalServers);
+
+			for (Server newServer : newServers.values()) {
+				if (newServer.getDemand() > 0) { // 真正安装
+					nextGlobalServers.add(newServer);
+				}
+			}
+			updateSolution(nextGlobalServers);
+
+		//} while (better && !isTimeOut());
+		GreedyOptimizerComplex.optimize();
 	}
 	
 	/** 
