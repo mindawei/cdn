@@ -10,14 +10,18 @@ import java.util.Map;
  * @author mindw
  * @date 2017年3月12日
  */
-public final class GreedyOptimizerComplex {
+public final class GreedyOptimizerSimple {
 
 	static void optimize() {
 		
 		long t = System.currentTimeMillis();
 	
 		while(true) {
-				
+			
+			if(Global.isTimeOut()){
+				break;
+			}
+			
 			// 可选方案
 			int minCost = Global.INFINITY;
 			int bestFromNode =-1;
@@ -32,22 +36,15 @@ public final class GreedyOptimizerComplex {
 						continue;
 					}
 					
-					if(Global.isTimeOut()){
-						return;
-					}
-					
 					Global.saveBandWidth();
-					ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,fromNode,toNode);
+					ArrayList<Server> nextGlobalServers = moveSimple(oldGlobalServers,fromNode,toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
-					Global.updateSolution(nextGlobalServers);
-					
 					if (cost < minCost) {
 						minCost = cost;
 						bestFromNode = fromNode;
 						bestToNode = toNode;
 					}
 					Global.goBackBandWidth();
-					
 				}
 			}
 			
@@ -56,24 +53,21 @@ public final class GreedyOptimizerComplex {
 			}
 			
 			// 移动
-			if(Global.isTimeOut()){
-				return;
-			}
-			ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,bestFromNode,bestToNode);
+			ArrayList<Server> nextGlobalServers = moveSimple(oldGlobalServers,bestFromNode,bestToNode);
 			boolean better = Global.updateSolution(nextGlobalServers);
-			
+			 
 			if(!better){ // better
 				break;
 			}
 		}
 
 		if(Global.IS_DEBUG){
-			System.out.println("阶段2耗时: "+(System.currentTimeMillis()-t));
+			System.out.println("moveSimple 耗时: "+(System.currentTimeMillis()-t));
 		}
 	}
-	
-	/** 复杂移动比较费时间 */
-	private static ArrayList<Server>  moveComplex(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode){
+
+	/** 简单移动比较快 */
+	private static ArrayList<Server> moveSimple(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
 		
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		for (Server server : oldGlobalServers) {
@@ -87,11 +81,11 @@ public final class GreedyOptimizerComplex {
 	
 		Server[] consumerServers = Global.getConsumerServer();
 		
-		RouterComplex.transfer(consumerServers, newServers);
-		
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for(Server consumerServer : consumerServers){
-			if (consumerServer.getDemand() > 0) { // 真正安装
+		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
+			Server consumerServer = consumerServers[consumerId];
+			RouterSimple.transfer(consumerId,consumerServer,newServers);
+			if (consumerServer.getDemand()>0) {
 				nextGlobalServers.add(consumerServer);
 			}
 		}

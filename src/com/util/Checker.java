@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import com.cacheserverdeploy.deploy.Edge;
 import com.cacheserverdeploy.deploy.Global;
@@ -42,7 +43,7 @@ public class Checker {
 	    	 consumerDemands.put(consumerId, demand);
 	     }
 	    
-	     Set<String> servers = new HashSet<String>();
+	     Set<Integer> servers = new TreeSet<Integer>();
 	     
 	     int cost = 0;
 	     for(int i=2;i<resultContent.length;++i){
@@ -67,7 +68,7 @@ public class Checker {
 	    	 demand-=bandwidth;
 	    	 consumerDemands.put(consumerId,demand);
 	    	 
-	    	 servers.add(parts[0]);
+	    	 servers.add(Integer.parseInt(parts[0]));
 	     }
 	     
 	     for(Map.Entry<Integer,Integer> consumerDemand : consumerDemands.entrySet()){
@@ -81,6 +82,11 @@ public class Checker {
 	     cost += servers.size() * Global.depolyCostPerServer;
 	     System.out.println("ok");
 	     System.out.println("费用："+cost+" 服务器数："+servers.size());
+	     for(int node :servers){
+	    	 System.out.print(node+", ");
+	     }
+	     System.out.println();
+	     
 	     printLine(resultContent);
 	    
 	}

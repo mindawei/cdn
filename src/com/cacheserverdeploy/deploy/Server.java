@@ -39,16 +39,7 @@ public final class Server {
 	public List<String> getSolution() {
 		List<String> solution = new LinkedList<String>();
 		for(ServerInfo serverInfo : serverInfos){
-			StringBuilder builder = new StringBuilder();
-			for(int i=serverInfo.viaNodes.length-1;i>=0;--i){
-				builder.append(serverInfo.viaNodes[i]);
-				builder.append(" ");
-			}
-			builder.append(serverInfo.consumerId);
-			builder.append(" ");
-			builder.append(serverInfo.provideBandWidth);
-
-			solution.add(builder.toString());
+			solution.add(serverInfo.getSolution());
 		}
 		return solution;
 	}

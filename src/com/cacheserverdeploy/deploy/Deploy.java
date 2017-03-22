@@ -12,18 +12,28 @@ public class Deploy{
     {
         /**do your work here**/
     	Parser.buildNetwork(graphContent);
-     	
+    
     	Global.init();
-
-    	GreedyOptimizer.optimize();
-    	Global.optimize();
-    	GreedyOptimizerComplex.optimize();
+    		
+    	if(Global.isNpHardest){
+    		GreedyOptimizerSimplest.optimize();
+    	}else if(Global.isNpHard){
+    		GreedyOptimizerSimple.optimize();
+    		Global.optimize2(); // 当中一个过度解
+    		GreedyOptimizerMiddle.optimize();
+    		Global.optimize();
+    	}else{
+    		GreedyOptimizerMiddle.optimize();
+    		Global.optimize2(); // 当中一个过度解
+    		GreedyOptimizerComplex.optimize();
+    		Global.optimize(); // 当中一个过度解
+    	}
     	
     	if(Global.IS_DEBUG){
     		Global.printBestSolution();
       	}
     	
-    	String[] solution = Global.bsetSoluttion;
+    	String[] solution = Global.bsetSolution;
     	return solution;    
     }
 

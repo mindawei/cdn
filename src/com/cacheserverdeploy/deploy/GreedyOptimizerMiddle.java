@@ -10,7 +10,7 @@ import java.util.Map;
  * @author mindw
  * @date 2017年3月12日
  */
-public final class GreedyOptimizerComplex {
+public final class GreedyOptimizerMiddle {
 
 	static void optimize() {
 		
@@ -37,10 +37,8 @@ public final class GreedyOptimizerComplex {
 					}
 					
 					Global.saveBandWidth();
-					ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,fromNode,toNode);
+					ArrayList<Server> nextGlobalServers = moveMiddle(oldGlobalServers,fromNode,toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
-					Global.updateSolution(nextGlobalServers);
-					
 					if (cost < minCost) {
 						minCost = cost;
 						bestFromNode = fromNode;
@@ -59,7 +57,7 @@ public final class GreedyOptimizerComplex {
 			if(Global.isTimeOut()){
 				return;
 			}
-			ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,bestFromNode,bestToNode);
+			ArrayList<Server> nextGlobalServers = moveMiddle(oldGlobalServers,bestFromNode,bestToNode);
 			boolean better = Global.updateSolution(nextGlobalServers);
 			
 			if(!better){ // better
@@ -72,8 +70,8 @@ public final class GreedyOptimizerComplex {
 		}
 	}
 	
-	/** 复杂移动比较费时间 */
-	private static ArrayList<Server>  moveComplex(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode){
+	/** 简单移动比较快 */
+	private static ArrayList<Server> moveMiddle(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
 		
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		for (Server server : oldGlobalServers) {
@@ -87,11 +85,11 @@ public final class GreedyOptimizerComplex {
 	
 		Server[] consumerServers = Global.getConsumerServer();
 		
-		RouterComplex.transfer(consumerServers, newServers);
-		
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for(Server consumerServer : consumerServers){
-			if (consumerServer.getDemand() > 0) { // 真正安装
+		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
+			Server consumerServer = consumerServers[consumerId];
+			RouterMiddle.transfer(consumerServer,newServers,0);
+			if (consumerServer.getDemand()>0) {
 				nextGlobalServers.add(consumerServer);
 			}
 		}

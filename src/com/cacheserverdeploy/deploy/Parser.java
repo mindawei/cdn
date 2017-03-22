@@ -18,6 +18,18 @@ public final class Parser {
 		int nodeNum = Integer.parseInt(line0[0]);
 		Global.nodeNum = nodeNum;
 		Global.graph = new Edge[nodeNum][nodeNum];
+		
+		// mcmfCost和mcmfBandWidth分别存放路径费用和带宽限制
+		int mcmfNodeNum = nodeNum+2;
+		Global.mcmfNodeNum = mcmfNodeNum;
+		Global.mcmfPre = new int[mcmfNodeNum];
+		Global.mcmfCost = new int[mcmfNodeNum][mcmfNodeNum];
+		Global.mcmfBandWidth = new int[mcmfNodeNum][mcmfNodeNum];
+		Global.dist = new int[mcmfNodeNum];
+		
+		// 多源多汇问题，定义一个超级源点s,一个超级汇点e
+		Global.sourceNode =nodeNum;
+		Global.endNode = nodeNum+1;
 	
 		/** 链路数：每个节点的链路数量不超过20条，推算出总共不超过20000 */
 		int edgeNum = Integer.parseInt(line0[1]);
@@ -84,6 +96,13 @@ public final class Parser {
 		Edge backEdge = new Edge(bandwidth, cost);
 		Global.edges[edgeIndex++] = backEdge;
 		Global.graph[toNode][fromNode] = backEdge;
+		
+		// 最小费用最大流数据部分
+		Global.mcmfBandWidth[fromNode][toNode] = bandwidth;
+		Global.mcmfBandWidth[toNode][fromNode] = bandwidth;
+		
+		Global.mcmfCost[fromNode][toNode] = cost;
+		Global.mcmfCost[toNode][fromNode] = cost;
 	
 	}
 	
@@ -94,9 +113,17 @@ public final class Parser {
 	private static void buildConsumer(String line){
 		String[] strs = line.split(" ");
 		int consumerId = Integer.parseInt(strs[0]);
-		int nodeId = Integer.parseInt(strs[1]);
+		int node = Integer.parseInt(strs[1]);
 		int demand = Integer.parseInt(strs[2]);
-		Global.consumerNodes[consumerId] = nodeId;
+		Global.consumerNodes[consumerId] = node;
 		Global.consumerDemands[consumerId] = demand;
+		Global.consumerTotalDemnad += demand;
+		
+		Global.mapClient.put(node, consumerId);
+
+		// 定义消费节点到超级汇点的带宽 消费节点的需求带宽
+		Global.mcmfBandWidth[node][Global.endNode] = demand;
+		Global.mcmfCost[node][Global.endNode] = 0;
+		
 	}
 }

@@ -1,6 +1,7 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 服务信息
@@ -45,6 +46,18 @@ public final class ServerInfo {
 		return "ServerInfo [consumerId=" + consumerId + ", viaNodes="
 				+ Arrays.toString(viaNodes) + ", provideBandWidth="
 				+ provideBandWidth + "]";
+	}
+	
+	public String getSolution() {
+		StringBuilder builder = new StringBuilder();
+		for(int i=viaNodes.length-1;i>=0;--i){
+			builder.append(viaNodes[i]);
+			builder.append(" ");
+		}
+		builder.append(consumerId);
+		builder.append(" ");
+		builder.append(provideBandWidth);
+		return builder.toString();
 	}
 	
 	
