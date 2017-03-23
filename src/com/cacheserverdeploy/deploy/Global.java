@@ -239,6 +239,42 @@ public final class Global {
 	}
 	
 	/**
+	 * 消耗带宽最大带宽
+	 * 
+	 * @return 消耗掉的带宽
+	 */
+	static int useBandWidthByPreNode(int demand, int consumerId, int serverNode) {
+		int[] preNodes = allPreNodes[consumerId];
+		int node1 = serverNode;
+		int node0 = preNodes[node1];
+		
+		int minBindWidth = Global.INFINITY;
+		while(node0!=-1){
+			Edge edge = Global.graph[node1][node0];
+			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
+			
+			node1 = node0;
+			node0 = preNodes[node0];
+		}
+		if (minBindWidth == 0) {
+			return 0;
+		}
+		
+		int usedBindWidth = Math.min(minBindWidth, demand);
+		
+		node1 = serverNode;
+		node0 = preNodes[node1];
+		while(node0!=-1){
+			Edge edge = Global.graph[node1][node0];
+			edge.leftBandWidth -= usedBindWidth;
+			
+			node1 = node0;
+			node0 = preNodes[node0];
+		}
+		return usedBindWidth;
+	}
+	
+	/**
 	 * 可以消耗带宽最大带宽
 	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
 	 */
