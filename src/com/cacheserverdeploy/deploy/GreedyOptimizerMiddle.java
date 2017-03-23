@@ -10,7 +10,7 @@ import java.util.Map;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerMiddle extends GreedyOptimizer{
+public class GreedyOptimizerMiddle extends GreedyOptimizer{
 
 	@Override
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {

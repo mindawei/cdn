@@ -4,13 +4,13 @@ com/filetool/util/LogUtil.java
 com/cacheserverdeploy/deploy/Deploy.java
 com/cacheserverdeploy/deploy/Edge.java
 com/cacheserverdeploy/deploy/Global.java
+com/cacheserverdeploy/deploy/GreedyOptimizer.java
 com/cacheserverdeploy/deploy/GreedyOptimizerComplex.java
+com/cacheserverdeploy/deploy/GreedyOptimizerMCMF.java
 com/cacheserverdeploy/deploy/GreedyOptimizerMiddle.java
+com/cacheserverdeploy/deploy/GreedyOptimizerRandom.java
 com/cacheserverdeploy/deploy/GreedyOptimizerSimple.java
-com/cacheserverdeploy/deploy/GreedyOptimizerSimplest.java
+com/cacheserverdeploy/deploy/GreedyOptimizerTabuSearch.java
 com/cacheserverdeploy/deploy/Parser.java
-com/cacheserverdeploy/deploy/RouterComplex.java
-com/cacheserverdeploy/deploy/RouterMiddle.java
-com/cacheserverdeploy/deploy/RouterSimple.java
 com/cacheserverdeploy/deploy/Server.java
 com/cacheserverdeploy/deploy/ServerInfo.java

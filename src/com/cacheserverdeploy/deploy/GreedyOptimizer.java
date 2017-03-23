@@ -20,20 +20,18 @@ public abstract class GreedyOptimizer {
 			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
 		}
 
+		if (Global.isTimeOut()) {
+			return;
+		}
+
 		long t = System.currentTimeMillis();
 
-		if (!Global.isTimeOut()) {
-			// 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法  
-			ArrayList<Server> nextGlobalServers = moveLocal(Global.getBestServers());
-			Global.updateSolution(nextGlobalServers);
-		}
+		// 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法  
+		ArrayList<Server> nextGlobalServers = moveLocal(Global.getBestServers());
+		Global.updateSolution(nextGlobalServers);
 		
 		while (true) {
-
-			if (Global.isTimeOut()) {
-				break;
-			}
-
+			
 			// 可选方案
 			int minCost = Global.INFINITY;
 			int bestFromNode = -1;
@@ -52,7 +50,7 @@ public abstract class GreedyOptimizer {
 						return;
 					}
 
-					ArrayList<Server> nextGlobalServers = move(oldGlobalServers, fromNode, toNode);
+					nextGlobalServers = move(oldGlobalServers, fromNode, toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
 						minCost = cost;
@@ -66,13 +64,18 @@ public abstract class GreedyOptimizer {
 				break;
 			}
 
+			if (Global.isTimeOut()) {
+				return;
+			}
+			
 			// 移动
-			ArrayList<Server> nextGlobalServers = move(oldGlobalServers, bestFromNode, bestToNode);
+			nextGlobalServers = move(oldGlobalServers, bestFromNode, bestToNode);
 			boolean better = Global.updateSolution(nextGlobalServers);
 
 			if (!better) { // better
 				break;
 			}
+			
 		}
 
 		if (Global.IS_DEBUG) {
@@ -81,7 +84,7 @@ public abstract class GreedyOptimizer {
 	}
 
 	/** 进行一步移动 */
-	private ArrayList<Server> move(ArrayList<Server> oldGlobalServers, int fromServerNode, int toServerNode) {
+	protected ArrayList<Server> move(ArrayList<Server> oldGlobalServers, int fromServerNode, int toServerNode) {
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		for (Server server : oldGlobalServers) {
 			if (server.node != fromServerNode) {
@@ -98,7 +101,7 @@ public abstract class GreedyOptimizer {
 	}
 
 	/** 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法   */
-	private ArrayList<Server> moveLocal(ArrayList<Server> oldGlobalServers) {
+	protected ArrayList<Server> moveLocal(ArrayList<Server> oldGlobalServers) {
 		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
 		for (Server server : oldGlobalServers) {
 			newServers.put(server.node, new Server(server.node));

@@ -15,10 +15,10 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = true;
+	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 60 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -40,6 +40,13 @@ public final class Global {
 
 	/** 最小费用 */
 	private static int minCost = INFINITY;
+	private static int initCost;
+	
+	/** 初始解是否陷入局部最优了 */
+	static boolean isDropInInit(){
+		return initCost == minCost;
+	}
+	
 	/** 解决方案 */
 	private static String[] bsetSolution;
 
@@ -98,17 +105,24 @@ public final class Global {
 		}
 		updateSolution(nextGlobalServers);	
 		
+		initCost = minCost;
+		
 		// 判断任务难易 
 		int On = nodeNum * nodeNum * consumerNum;
 		isNpHardest = On>NP_HARDEST_THRESHOLD;
 		isNpHard = On > NP_HARD_THRESHOLD;
 		if(IS_DEBUG){
+			System.out.println("initCost:"+initCost);
 			System.out.println("On:"+On+" isNpHard:"+isNpHard);
 		}
 	}
 	
 	public static ArrayList<Server> getBestServers() {
 		return bestServers;
+	}
+	
+	public static void setBestServers(ArrayList<Server> nextGlobalServers) {
+		bestServers = nextGlobalServers;
 	}
 	
 	public static String[] getBsetSolution() {
