@@ -116,21 +116,6 @@ public final class Global {
 			}
 		}
 		
-		// 出不去的一些点
-//		ArrayList<Integer> canNotOut = new ArrayList<Integer>();
-//		for(int consumerId=0;consumerId<consumerNum;++consumerId){
-//			int consumerNode = consumerNodes[consumerId];
-//			int bandWidth = 0;
-//			for(int toNode : connections[consumerNode]){
-//				Edge edge = graph[toNode][consumerNode];
-//				bandWidth+=edge.initBandWidth;
-//			}
-//			if(bandWidth<consumerDemands[consumerId]){
-//				canNotOut.add(consumerId);
-//			}
-//		}
-//		System.out.println("canNotOut:"+canNotOut);
-		
 		// 初始解
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerNum);
 		for (int i = 0; i < consumerNum; ++i) {
@@ -145,10 +130,10 @@ public final class Global {
 		
 		isNpHardest = On>NP_HARDEST_THRESHOLD;
 		isNpHard = On > NP_HARD_THRESHOLD;
-		if (!isNpHardest && isNpHard){
+//		if (!isNpHardest && isNpHard){
 			// 初始费用缓存
 			initAllCost();
-		}
+//		}
 		
 		if(IS_DEBUG){
 			System.out.println("On:"+On+" isNpHard:"+isNpHard);
@@ -386,40 +371,6 @@ public final class Global {
 		}
 	
 		transfer(toServerNodes);	
-	}
-
-	/** 对解进行优化  */
-	public static void optimize2() {
-		
-		if(isTimeOut()){
-			return;
-		}
-
-		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
-		for (Server server : bestServers) {
-			newServers.put(server.node, new Server(server.node));
-		}
-
-		Global.resetEdgeBandWidth();
-
-		Server[] consumerServers = Global.getConsumerServer();
-
-		RouterComplex.transfer(consumerServers, newServers);
-
-		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for (Server consumerServer : consumerServers) {
-			if (consumerServer.getDemand() > 0) { // 真正安装
-				nextGlobalServers.add(consumerServer);
-			}
-		}
-
-		for (Server newServer : newServers.values()) {
-			if (newServer.getDemand() > 0) { // 真正安装
-				nextGlobalServers.add(newServer);
-			}
-		}
-		updateSolution(nextGlobalServers);
-
 	}
 	
 	/** 

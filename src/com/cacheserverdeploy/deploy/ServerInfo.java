@@ -1,7 +1,6 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * 服务信息
@@ -59,7 +58,5 @@ public final class ServerInfo {
 		builder.append(provideBandWidth);
 		return builder.toString();
 	}
-	
-	
-	
+
 }

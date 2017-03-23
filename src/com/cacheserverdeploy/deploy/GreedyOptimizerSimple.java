@@ -1,90 +1,20 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 贪心搜索，寻找一个最优解，达到具备最优解后就马上退出
- * 
- * @author mindw
- * @date 2017年3月12日
+/** 
+ * 简单移动比较快 
  */
-public final class GreedyOptimizerSimple {
-
-	static void optimize() {
-		
-		long t = System.currentTimeMillis();
+public final class GreedyOptimizerSimple extends GreedyOptimizer{
 	
-		while(true) {
-			
-			if(Global.isTimeOut()){
-				break;
-			}
-			
-			// 可选方案
-			int minCost = Global.INFINITY;
-			int bestFromNode =-1;
-			int bestToNode =-1;
-			
-			ArrayList<Server> oldGlobalServers = Global.getBestServers();
-			for(Server server : oldGlobalServers){		
-				int fromNode = server.node;
-				for(int toNode =0;toNode<Global.nodeNum;++toNode){
-					// 防止自己到自己
-					if(fromNode==toNode){
-						continue;
-					}
-					
-					//Global.saveBandWidth();
-					ArrayList<Server> nextGlobalServers = moveSimple(oldGlobalServers,fromNode,toNode);
-					int cost = Global.getTotalCost(nextGlobalServers);
-					if (cost < minCost) {
-						minCost = cost;
-						bestFromNode = fromNode;
-						bestToNode = toNode;
-					}
-					//Global.goBackBandWidth();
-				}
-			}
-			
-			if (minCost == Global.INFINITY) {
-				break;
-			}
-			
-			// 移动
-			ArrayList<Server> nextGlobalServers = moveSimple(oldGlobalServers,bestFromNode,bestToNode);
-			boolean better = Global.updateSolution(nextGlobalServers);
-			 
-			if(!better){ // better
-				break;
-			}
-		}
-
-		if(Global.IS_DEBUG){
-			System.out.println("moveSimple 耗时: "+(System.currentTimeMillis()-t));
-		}
-	}
-
-	/** 简单移动比较快 */
-	private static ArrayList<Server> moveSimple(ArrayList<Server> oldGlobalServers,int fromServerNode,int toServerNode) {
-		
-		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
-		for (Server server : oldGlobalServers) {
-			if (server.node != fromServerNode) {
-				newServers.put(server.node, new Server(server.node));
-			}
-		}
-		newServers.put(toServerNode, new Server(toServerNode));
-				
-		Global.resetEdgeBandWidth();
-	
-		Server[] consumerServers = Global.getConsumerServer();
+	@Override
+	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
 		
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
 		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
 			Server consumerServer = consumerServers[consumerId];
-			RouterSimple.transfer(consumerId,consumerServer,newServers);
+			transfer(consumerId,consumerServer,newServers);
 			if (consumerServer.getDemand()>0) {
 				nextGlobalServers.add(consumerServer);
 			}
@@ -99,4 +29,58 @@ public final class GreedyOptimizerSimple {
 		return nextGlobalServers;
 	}
 	
+	
+	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
+	private void transfer(int consumerId,Server fromServer, Map<Integer, Server> toServers) {
+		// 0 未访问  1访问过
+		int[] visited = new int[Global.nodeNum];
+
+		int[] costs = Global.allCost[consumerId];
+		int fromDemand = Global.consumerDemands[consumerId];
+		int totalCost = 0;
+		
+		while (true) {
+
+			// 寻找下一个最近点
+			int minCost = Global.INFINITY;
+			int serverNode = -1;
+			for (int node : toServers.keySet()) {
+				// 1 访问过了 或者 2 还没信息（cost 无穷大）
+				if(visited[node]==1){
+					continue;
+				}
+				int cost = costs[node];
+				if (cost < minCost) {
+					minCost = cost;
+					serverNode = node;
+				}
+			}
+
+			// 其余都不可达
+			if (serverNode == -1) {
+				break;
+			}
+			// 访问过了
+			visited[serverNode] = 1;
+			
+			// 减枝
+			if(totalCost+fromDemand*minCost>=Global.depolyCostPerServer){
+				break;
+			}
+			
+			// 是服务器
+			int[] viaNodes = Global.allViaNode[consumerId][serverNode];
+			int usedDemand = Global.useBandWidth(fromDemand, viaNodes);
+			// 可以消耗
+			if (usedDemand > 0) {
+				fromDemand -= usedDemand;
+				totalCost+=usedDemand*minCost;
+				Global.transferTo(fromServer, toServers.get(serverNode), usedDemand,viaNodes);
+				if (fromDemand == 0) {
+					break;
+				}
+			}
+		}
+	
+	}
 }

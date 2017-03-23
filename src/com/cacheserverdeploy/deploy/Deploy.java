@@ -14,20 +14,24 @@ public class Deploy{
     	Parser.buildNetwork(graphContent);
     
     	Global.init();
+    	
+    	new GreedyOptimizerSimple().optimize();
+		new GreedyOptimizerMiddle().optimize();
+		new GreedyOptimizerComplex().optimize();
+		Global.optimize(); 
     		
-    	if(Global.isNpHardest){
-    		GreedyOptimizerSimplest.optimize();
-    	}else if(Global.isNpHard){
-    		GreedyOptimizerSimple.optimize();
-    		Global.optimize2(); // 当中一个过度解
-    		GreedyOptimizerMiddle.optimize();
-    		Global.optimize();
-    	}else{
-    		GreedyOptimizerMiddle.optimize();
-    		Global.optimize2(); // 当中一个过度解
-    		GreedyOptimizerComplex.optimize();
-    		Global.optimize(); // 当中一个过度解
-    	}
+//    	if(Global.isNpHardest){
+//    		new GreedyOptimizerMiddle().optimize();
+//    	}else if(Global.isNpHard){
+//    		new GreedyOptimizerSimple().optimize();
+//    		// 当中一个过度解
+//    		new GreedyOptimizerMiddle().optimize();
+//    		Global.optimize();
+//    	}else{
+//    		new GreedyOptimizerMiddle().optimize();
+//    		new GreedyOptimizerComplex().optimize();
+//    		Global.optimize(); 
+//    	}
     	
     	if(Global.IS_DEBUG){
     		Global.printBestSolution();
