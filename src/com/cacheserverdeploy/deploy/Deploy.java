@@ -36,5 +36,4 @@ public class Deploy{
     	String[] solution = Global.bsetSolution;
     	return solution;    
     }
-
 }

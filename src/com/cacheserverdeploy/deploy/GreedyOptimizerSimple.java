@@ -36,7 +36,7 @@ public final class GreedyOptimizerSimple {
 						continue;
 					}
 					
-					Global.saveBandWidth();
+					//Global.saveBandWidth();
 					ArrayList<Server> nextGlobalServers = moveSimple(oldGlobalServers,fromNode,toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
@@ -44,7 +44,7 @@ public final class GreedyOptimizerSimple {
 						bestFromNode = fromNode;
 						bestToNode = toNode;
 					}
-					Global.goBackBandWidth();
+					//Global.goBackBandWidth();
 				}
 			}
 			

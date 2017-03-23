@@ -36,7 +36,7 @@ public final class GreedyOptimizerComplex {
 						return;
 					}
 					
-					Global.saveBandWidth();
+					//Global.saveBandWidth();
 					ArrayList<Server> nextGlobalServers = moveComplex(oldGlobalServers,fromNode,toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					Global.updateSolution(nextGlobalServers);
@@ -46,7 +46,7 @@ public final class GreedyOptimizerComplex {
 						bestFromNode = fromNode;
 						bestToNode = toNode;
 					}
-					Global.goBackBandWidth();
+					//Global.goBackBandWidth();
 					
 				}
 			}

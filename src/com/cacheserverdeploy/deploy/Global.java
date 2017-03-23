@@ -20,7 +20,7 @@ import java.util.TreeSet;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = false;
+	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
@@ -95,21 +95,6 @@ public final class Global {
 		// 恢复edge的带宽值
 		for (Edge edge : edges) {
 			edge.reset();
-		}
-	}
-
-	public static void saveBandWidth() {
-		// 保存edge的带宽值
-		for (Edge edge : edges) {
-			edge.saveBandWidth();
-		}
-	}
-	
-	/** 恢复之前的保存状态 */
-	public static void goBackBandWidth() {
-		// 恢复edge的带宽值
-		for (Edge edge : edges) {
-			edge.goBackBandWidth();
 		}
 	}
 		

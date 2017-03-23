@@ -8,10 +8,8 @@ package com.cacheserverdeploy.deploy;
 public final class Edge {	
 	
 	/** 剩余网络带宽 */
-	public  int leftBandWidth;
-
-	private int savedBandWidth;
-
+	public int leftBandWidth;
+	
 	/** 单位网络租用费 */
 	public final int cost;
 
@@ -25,16 +23,6 @@ public final class Edge {
 	
 	public void reset() {
 		leftBandWidth = initBandWidth;
-	}
-	
-	/** 保存 */
-	public void saveBandWidth(){
-		savedBandWidth = leftBandWidth;
-	}
-	
-	/** 恢复 */
-	public void goBackBandWidth(){
-		leftBandWidth = savedBandWidth;
 	}
 	
 }
