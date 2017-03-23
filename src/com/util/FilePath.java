@@ -8,7 +8,7 @@ public class FilePath {
 //	public static final String graphFilePath = "case_example/case2.txt";
 //  public static final String graphFilePath = "case_example/case3.txt";
 //	public static final String graphFilePath = "case_example/case4.txt";
-  public static final String graphFilePath = "case_example/case50.txt";
+//  public static final String graphFilePath = "case_example/case50.txt";
 //   public static final String graphFilePath = "case_example/case99.txt";
 
 	public static final String resultFilePath = "result/0.txt";
@@ -29,7 +29,6 @@ public class FilePath {
 	// use:16319
 	
 	// TODO
-	// 1 指针
 	// 3避免局部最优
 	
 }

@@ -72,31 +72,7 @@ public final class Global {
 			
 	/** 放置的服务器 */
 	private static ArrayList<Server> bestServers;
-	
-	
-	public static ArrayList<Server> getBestServers() {
-		return bestServers;
-	}
-	
-	public static String[] getBsetSolution() {
-		return bsetSolution;
-	}
-	
-	static Server[] getConsumerServer(){
-		Server[] servers = new Server[consumerNum];
-		for(int i=0;i<consumerNum;++i){
-			servers[i] = new Server(i,consumerNodes[i],consumerDemands[i]);
-		}
-		return servers;
-	}
-	
-	/** 重置edge的带宽值 */
-	public static void resetEdgeBandWidth() {
-		for (Edge edge : edges) {
-			edge.reset();
-		}
-	}
-		
+
 	/** 初始化解：将服务器直接放在消费节点上 */
 	public static void init() {
 		
@@ -130,6 +106,30 @@ public final class Global {
 			System.out.println("On:"+On+" isNpHard:"+isNpHard);
 		}
 	}
+	
+	public static ArrayList<Server> getBestServers() {
+		return bestServers;
+	}
+	
+	public static String[] getBsetSolution() {
+		return bsetSolution;
+	}
+	
+	static Server[] getConsumerServer(){
+		Server[] servers = new Server[consumerNum];
+		for(int i=0;i<consumerNum;++i){
+			servers[i] = new Server(i,consumerNodes[i],consumerDemands[i]);
+		}
+		return servers;
+	}
+	
+	/** 重置edge的带宽值 */
+	public static void resetEdgeBandWidth() {
+		for (Edge edge : edges) {
+			edge.reset();
+		}
+	}
+	
 
 	/** 更新值 ，是否更好 */
 	public static boolean updateSolution(ArrayList<Server> nextGlobalServers) {
@@ -201,25 +201,6 @@ public final class Global {
 		System.out.println("---------------");
 	}
 	
-	
-		
-	/**
-	 * 可以消耗带宽最大带宽
-	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
-	 */
-	static int getBandWidthCanUsed(int demand, int[] nodeIds) {
-		if (demand == 0) {
-			return 0;
-		}
-		int minBindWidth = Global.INFINITY;
-		for (int i = nodeIds.length - 1; i >=1; --i) {
-			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
-			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-		}
-		return minBindWidth;
-	}
-
-
 	/** 打印解决方案细节 */
 	public static void printBestSolution(String[] bsetSoluttion) {
 		System.out.println("---------------");

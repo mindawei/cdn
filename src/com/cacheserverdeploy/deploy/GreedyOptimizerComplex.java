@@ -97,35 +97,22 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 			int minCost = Global.INFINITY;
 			int minFromLayer = -1;
 			int minCostNode = -1;
-			//int maxBandWidthCanUsed = -1; 
 			
 			for (int layer =0;layer<layerNum;++layer) {
 				for (int node = 0; node < Global.nodeNum; ++node) {
 					// 1 访问过了 或者 2 还没信息（cost 无穷大）
-					if (visited[layer][node] == 1 
-							|| notVisitedServerNum[layer]==0
-							|| fromDemands[layer]==0) {
+					if (visited[layer][node] == 1 || notVisitedServerNum[layer]==0|| fromDemands[layer]==0) {
 						continue;
 					}
 					CostInfo transferInfo = transferInfos[layer][node];
 					if(transferInfo==null){
 						continue;
 					}
-					int cost = transferInfos[layer][node].cost;
-					//int fromDemand = fromDemands[layer];
-					//int bandWidthCanUsed = Global.getBandWidthCanUsed(fromDemand, transferInfo.viaNodes);
-			
-//					if(bandWidthCanUsed==0){
-//						continue;
-//					}
-					
-					if (cost < minCost
-							|| (cost==minCost)){
-							//&&bandWidthCanUsed>maxBandWidthCanUsed)) {
+					int cost = transferInfos[layer][node].cost;				
+					if (cost < minCost){
 						minCost = cost;
 						minFromLayer = layer;
 						minCostNode = node;
-						//maxBandWidthCanUsed = bandWidthCanUsed;
 					}
 				}
 			}
@@ -137,7 +124,6 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 			
 			// 访问过了
 			visited[minFromLayer][minCostNode] = 1;
-			
 			
 			CostInfo minCostInfo = transferInfos[minFromLayer][minCostNode];
 			// 减枝

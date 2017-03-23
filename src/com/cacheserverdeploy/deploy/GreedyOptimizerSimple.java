@@ -2,7 +2,6 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Map;
 
 /** 
@@ -85,7 +84,6 @@ public final class GreedyOptimizerSimple extends GreedyOptimizer{
 			}
 			
 			// 是服务器
-			//int usedDemand = Global.useBandWidth(fromDemand, viaNodes);
 			int usedDemand = useBandWidthByPreNode(fromDemand, consumerId,serverNode);
 			
 			// 可以消耗
@@ -94,21 +92,25 @@ public final class GreedyOptimizerSimple extends GreedyOptimizer{
 				totalCost+=usedDemand*minCost;
 		
 				// 适配
-				LinkedList<Integer> lsNodes = new LinkedList<Integer>();
 				int[] preNodes = allPreNodes[consumerId];
+				
+				// 计算长度
+				int len = 0;
 				int pre = serverNode;
 				while(pre!=-1){
-					lsNodes.addFirst(pre);
+					len++;
 					pre = preNodes[pre];
 				}
-				int[] viaNodes = new int[lsNodes.size()];
-				int index = 0;
-				for(int node : lsNodes){
-					viaNodes[index++] = node;
+	
+				// 逐个添加
+				int[] viaNodes = new int[len];
+				pre = serverNode;
+				while(pre!=-1){
+					viaNodes[--len] = pre;	
+					pre = preNodes[pre];
 				}
-				transferTo(fromServer, toServers.get(serverNode), usedDemand,viaNodes);
 				
-				// Global.transferTo(fromServer, toServers.get(serverNode), usedDemand,consumerId,serverNode);
+				transferTo(fromServer, toServers.get(serverNode), usedDemand,viaNodes);
 				
 				if (fromDemand == 0) {
 					break;
@@ -117,7 +119,7 @@ public final class GreedyOptimizerSimple extends GreedyOptimizer{
 		}
 	
 	}
-
+	
 	/**
 	 * 消耗带宽最大带宽
 	 * @return 消耗掉的带宽
