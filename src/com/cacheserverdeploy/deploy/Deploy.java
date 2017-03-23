@@ -17,7 +17,7 @@ public class Deploy{
     	
     	new GreedyOptimizerSimple().optimize();
 		new GreedyOptimizerMiddle().optimize();
-		new GreedyOptimizerComplex().optimize();
+		// new GreedyOptimizerComplex().optimize();
 		Global.optimize(); 
     		
 //    	if(Global.isNpHardest){

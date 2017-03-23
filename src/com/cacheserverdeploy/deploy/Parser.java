@@ -16,30 +16,26 @@ public final class Parser {
 		String[] line0 = graphContent[0].split(" ");
 		/** 网络节点数：不超过1000个 */
 		int nodeNum = Integer.parseInt(line0[0]);
-		Global.nodeNum = nodeNum;
-		Global.graph = new Edge[nodeNum][nodeNum];
-		
-		// mcmfCost和mcmfBandWidth分别存放路径费用和带宽限制
 		int mcmfNodeNum = nodeNum+2;
+		Global.nodeNum = nodeNum;
 		Global.mcmfNodeNum = mcmfNodeNum;
-		Global.mcmfPre = new int[mcmfNodeNum];
-		Global.mcmfCost = new int[mcmfNodeNum][mcmfNodeNum];
-		Global.mcmfBandWidth = new int[mcmfNodeNum][mcmfNodeNum];
-		Global.dist = new int[mcmfNodeNum];
-		
+		Global.graph = new Edge[mcmfNodeNum][mcmfNodeNum];
+	
 		// 多源多汇问题，定义一个超级源点s,一个超级汇点e
 		Global.sourceNode =nodeNum;
 		Global.endNode = nodeNum+1;
 	
 		/** 链路数：每个节点的链路数量不超过20条，推算出总共不超过20000 */
 		int edgeNum = Integer.parseInt(line0[1]);
-		Global.edges = new Edge[edgeNum*2];
 		
 		/** 消费节点数：不超过500个 */
 		int consumerNum=  Integer.parseInt(line0[2]);
 		Global.consumerNum = consumerNum;
 		Global.consumerNodes = new int[consumerNum];
 		Global.consumerDemands = new int[consumerNum];
+		
+		// 多个边加上超级汇点
+		Global.edges = new Edge[edgeNum*2+consumerNum*2];
 		
 		// 空行
 		
@@ -98,11 +94,11 @@ public final class Parser {
 		Global.graph[toNode][fromNode] = backEdge;
 		
 		// 最小费用最大流数据部分
-		Global.mcmfBandWidth[fromNode][toNode] = bandwidth;
-		Global.mcmfBandWidth[toNode][fromNode] = bandwidth;
-		
-		Global.mcmfCost[fromNode][toNode] = cost;
-		Global.mcmfCost[toNode][fromNode] = cost;
+//		Global.mcmfBandWidth[fromNode][toNode] = bandwidth;
+//		Global.mcmfBandWidth[toNode][fromNode] = bandwidth;
+//		
+//		Global.mcmfCost[fromNode][toNode] = cost;
+//		Global.mcmfCost[toNode][fromNode] = cost;
 	
 	}
 	
@@ -119,11 +115,17 @@ public final class Parser {
 		Global.consumerDemands[consumerId] = demand;
 		Global.consumerTotalDemnad += demand;
 		
-		Global.mapClient.put(node, consumerId);
+		Global.nodeToConsumerId.put(node, consumerId);
 
 		// 定义消费节点到超级汇点的带宽 消费节点的需求带宽
-		Global.mcmfBandWidth[node][Global.endNode] = demand;
-		Global.mcmfCost[node][Global.endNode] = 0;
+		Edge goEdege = new Edge(demand, 0);
+		Global.edges[edgeIndex++] = goEdege;
+		Global.graph[node][Global.endNode] = goEdege;
+		
+		Edge backEdge = new Edge(0, 0);
+		Global.edges[edgeIndex++] = backEdge;
+		Global.graph[Global.endNode][node] = backEdge;
+		
 		
 	}
 }

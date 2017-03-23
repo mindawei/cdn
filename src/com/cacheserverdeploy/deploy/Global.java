@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -51,6 +50,11 @@ public final class Global {
 	/** 每台部署的成本：[0,5000]的整数 */
 	public static int depolyCostPerServer;
 
+	/** 增加两个超级会点*/
+	static int mcmfNodeNum;
+	static int sourceNode;
+	static int endNode;
+	
 	/** 节点数:不超过1000个 ,从0开始 */
 	static int nodeNum;
 	/** 消费者数 */
@@ -61,7 +65,7 @@ public final class Global {
 	/** 消费者需求总和*/
 	static int consumerTotalDemnad = 0;
 	/** 网络节点ID - >  消费节点ID */
-	static Map<Integer,Integer> mapClient = new HashMap<Integer,Integer>();
+	static Map<Integer,Integer> nodeToConsumerId = new HashMap<Integer,Integer>();
 		
 
 	/** 地图 */
@@ -188,7 +192,7 @@ public final class Global {
 	}
 	
 	
-	private static String[] getSolution(List<ServerInfo> serverInfos){
+	static String[] getSolution(List<ServerInfo> serverInfos){
 		
 		String[] solution = new String[serverInfos.size() + 2];
 		solution[0] = String.valueOf(serverInfos.size());
@@ -249,17 +253,6 @@ public final class Global {
 			edge.leftBandWidth -= usedBindWidth;
 		}
 		return usedBindWidth;
-	}
-	
-	
-	public static void returnBandWidth(int bindWidth, int[] nodeIds) {
-		if (bindWidth == 0) {
-			return;
-		}
-		for (int i = nodeIds.length - 1; i >=1; --i) {
-			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
-			edge.leftBandWidth += bindWidth;
-		}
 	}
 	
 	/**
@@ -346,9 +339,7 @@ public final class Global {
 	}
 	
 	
-	/**
-	 * 打印解决方案细节
-	 */
+	/** 打印解决方案细节 */
 	public static void printBestSolution(String[] bsetSoluttion) {
 		System.out.println("---------------");
 		System.out.println();
@@ -364,13 +355,14 @@ public final class Global {
 		if(isTimeOut()){
 			return;
 		}
+		Global.resetEdgeBandWidth();
 		
 		Set<Integer> toServerNodes = new TreeSet<Integer>();
 		for (Server server : bestServers) {
 			toServerNodes.add(server.node);
 		}
 	
-		transfer(toServerNodes);	
+		GreedyOptimizerMCMF.transfer(toServerNodes);	
 	}
 	
 	/** 
@@ -404,143 +396,5 @@ public final class Global {
 		}
 		
 	}
-	
-	/////////////////////////////////////////////
-	
-	
-	
-	static int mcmfNodeNum;
-	static int[] mcmfPre;
-	static int[][] mcmfBandWidth;
-	static int[][] mcmfCost;
-	static int sourceNode;
-	static int endNode;
-	static int dist[];
-
-	private static List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
-	
-	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
-	public static void transfer(Set<Integer> toServerNodes) {
-		
-		if (IS_DEBUG) {
-			
-			System.out.println("optimize toServerNodes.size():"+toServerNodes.size());
-			
-			for (int serverNode : toServerNodes) {
-				System.out.print(serverNode + ", ");
-			}
-			System.out.println();
-		}
-	
-		serverInfos.clear();
-		// 源头
-		Arrays.fill(mcmfBandWidth[sourceNode], 0);
-		for(int toServerNode : toServerNodes){
-			mcmfBandWidth[sourceNode][toServerNode] = Integer.MAX_VALUE;
-		}
-		int mcmfMinCost = mcmf(sourceNode, endNode, copyArray2(mcmfBandWidth), mcmfCost) 
-				+ toServerNodes.size() * depolyCostPerServer;
-
-		if(mcmfMinCost<minCost){
-			if(IS_DEBUG){
-				System.out.println("better mcmfMinCost :"+mcmfMinCost+" minCost:"+minCost);
-			}
-			String[] mcmfSoluttion = getSolution(serverInfos);
-			bsetSolution = mcmfSoluttion;
-			Global.printBestSolution(mcmfSoluttion);
-		}else{
-			if(IS_DEBUG){
-				System.out.println("not better mcmfMinCost :"+mcmfMinCost+" minCost:"+minCost);
-			}
-		}		
-	}
-
-	/**
-	 * @return 返回费用,不存在解决方案则为无穷大
-	 */
-	public static int mcmf(int s,int t,int[][]bandWidth,int[][]cost){
-		int minFlow;
-		int sumFlow = 0;
-		int minCost = 0;
-		while(spfa(s,t,bandWidth,cost)&&!isTimeOut()){
-					
-			minFlow = Integer.MAX_VALUE;
-			for(int i=t;i!=s;i=mcmfPre[i]){
-				if(bandWidth[mcmfPre[i]][i]<minFlow){
-					minFlow = bandWidth[mcmfPre[i]][i];
-				}
-			}
-			
-			sumFlow+=minFlow;
-			for(int i=t;i!=s;i=mcmfPre[i]){
-				bandWidth[mcmfPre[i]][i]-=minFlow;
-				bandWidth[i][mcmfPre[i]]+=minFlow;
-				// minCost += cost[mcmfPre[i]][i]*minFlow;
-			}
-			minCost += dist[t]*minFlow;
-			
-			// 保存服务信息,从消费者开始的 -> 服务器
-			LinkedList<Integer> nodes = new LinkedList<Integer>();
-			for(int i=mcmfPre[t];i!=s;i=mcmfPre[i]){
-				nodes.add(i);
-			}
-			int consumerId = mapClient.get(nodes.getFirst());
-			int[] viaNodes = new int[nodes.size()];
-			int index = 0;
-			for(int node : nodes){
-				viaNodes[index++] = node;
-			}
-			ServerInfo serverInfo = new ServerInfo(consumerId, minFlow, viaNodes);
-			serverInfos.add(serverInfo);
-		}
-		
-		if(sumFlow>=consumerTotalDemnad){
-			return minCost;
-		}else{
-			return INFINITY;
-		}
-	}
-
-	public static boolean spfa(int s, int t, int[][] bandWidth, int[][] cost) {
-		boolean vis[] = new boolean[mcmfNodeNum];
-		Queue<Integer> q = new LinkedList<Integer>();
-		for (int i = 0; i <= t; i++) {
-			vis[i] = false;
-			dist[i] = INFINITY;
-		}
-		vis[s] = true;
-		dist[s] = 0;
-		q.offer(s);
-		while (!q.isEmpty()) {
-			int u = q.poll();
-			vis[u] = false;
-			for (int v = 0; v <= t; v++) {
-				if (bandWidth[u][v] != 0
-						&& dist[v] > dist[u] + cost[u][v]) {
-					dist[v] = dist[u] + cost[u][v];
-					mcmfPre[v] = u;
-					if (!vis[v]) {
-						q.offer(v);
-						vis[v] = true;
-					}
-				}
-			}
-		}
-		if (dist[t] == INFINITY) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-	
-	static int[][] copyArray2(int[][] array) {
-		int[][] copyArray = new int[array.length][];
-		for (int i = 0; i < array.length; i++) {
-			copyArray[i] = new int[array[i].length];
-			System.arraycopy(array[i], 0, copyArray[i], 0, array[i].length);
-		}
-		return copyArray;
-	}
-	
 	
 }
