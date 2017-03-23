@@ -44,7 +44,8 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 	
 		int notVisitNodeNum = Global.nodeNum;
 		// 0 未访问  1访问过
-		int[] visited = new int[Global.nodeNum];
+		boolean[] visited = new boolean[Global.nodeNum];
+		Arrays.fill(visited, false);
 		int[] costs = new int[Global.nodeNum]; 
 		Arrays.fill(costs, Global.INFINITY);
 		int[][] allViaNodes = new int[Global.nodeNum][];
@@ -62,7 +63,7 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 			int minCostNode = -1;
 			for (int node =0;node<Global.nodeNum;++node) {
 				// 1 访问过了 或者 2 还没信息（cost 无穷大）
-				if(visited[node]==1){
+				if(visited[node]){
 					continue;
 				}
 				int cost = costs[node];
@@ -78,7 +79,7 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 			}
 
 			// 访问过了
-			visited[minCostNode] = 1;
+			visited[minCostNode] = true;
 			notVisitNodeNum--;
 
 			// 减枝
@@ -105,7 +106,7 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 			// 更新
 			for (int toNode : Global.connections[minCostNode]) {
 				// 访问过
-				if (visited[toNode] == 1) { 
+				if (visited[toNode]) { 
 					continue;
 				}
 

@@ -113,6 +113,4 @@ public abstract class GreedyOptimizer {
 	/** 不同的搜索策略需要提供此方法 */
 	protected abstract ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers);
 
-	
-
 }

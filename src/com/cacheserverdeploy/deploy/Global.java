@@ -74,12 +74,10 @@ public final class Global {
 	
 	/** 消费者到所有节点的费用 */
 	static int[][] allCost;
-	static int[][][] allViaNode;
+	static int[][] allPreNodes;
 		
 	/** 放置的服务器 */
 	private static ArrayList<Server> bestServers;
-	
-	
 	
 	
 	public static ArrayList<Server> getBestServers() {
@@ -259,9 +257,10 @@ public final class Global {
 	
 	private static void initAllCost(){
 		allCost = new int[consumerNum][nodeNum];
-		allViaNode = new int[consumerNum][nodeNum][];
+		allPreNodes = new int[consumerNum][nodeNum];
 		
 		for(int i=0;i<consumerNum;++i){
+			Arrays.fill(allPreNodes[i], -1);
 			initCost(i);
 		}
 	}
@@ -273,12 +272,11 @@ public final class Global {
 		
 		int[] visited = new int[nodeNum];
 
-		int[][] viaNodes = allViaNode[consumerId];
+		int[] preNodes = allPreNodes[consumerId];
 		
 		int startNode = consumerNodes[consumerId];
 		costs[startNode] = 0;
-		viaNodes[startNode] = new int[]{startNode};
-		
+	
 		while (true) {
 
 			// 寻找下一个最近点
@@ -310,11 +308,7 @@ public final class Global {
 				if (newCost < costs[toNode]) {
 					costs[toNode] = newCost;
 					// 添加路径
-					
-					// 添加路径
-					int nodeSize = viaNodes[fromNode].length;
-					viaNodes[toNode] = Arrays.copyOf(viaNodes[fromNode],nodeSize+1);
-					viaNodes[toNode][nodeSize] = toNode;
+					preNodes[toNode] = fromNode;
 				}
 			}
 			

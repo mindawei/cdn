@@ -7,31 +7,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-/** 
- * 复杂移动比较费时间
+/**
+ * 利用最大最小费用流进行优化
+ *
+ * @author mindw
+ * @date 2017年3月23日
  */
 public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 
 	@Override
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
 
-
-		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 		// 源头
 		Arrays.fill(Global.graph[Global.sourceNode], null);
 		for(int toServerNode : newServers.keySet()){
 			Global.graph[Global.sourceNode][toServerNode] = new Edge(Global.INFINITY, 0);
 			Global.graph[toServerNode][Global.sourceNode] = new Edge(0, 0);
 		}
-		int mcmfMinCost = mcmf(serverInfos);
+		
+		List<ServerInfo> serverInfos = mcmf();
 
-		if(mcmfMinCost<Global.INFINITY){
-//			if(Global.IS_DEBUG){
-//			System.out.println("better mcmfMinCost :"+mcmfMinCost+" minCost:"+Global.minCost);
-//		}
-//		String[] mcmfSoluttion = Global.getSolution(serverInfos);
-//		Global.bsetSolution = mcmfSoluttion;
-//		Global.printBestSolution(mcmfSoluttion);
+		if(serverInfos==null){ // 无解
+			
+			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerServers.length);
+			for(Server consumerServer : consumerServers){
+				nextGlobalServers.add(consumerServer);
+			}
+			return nextGlobalServers;
+			
+		}else{ // 有解
 			
 			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(newServers.size());
 			for(ServerInfo serverInfo : serverInfos){
@@ -44,42 +48,28 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 					nextGlobalServers.add(newServer);
 				}
 			}
-			
-//			if(Global.IS_DEBUG){
-//			System.out.println("better mcmfMinCost :"+(mcmfMinCost+nextGlobalServers.size()*Global.depolyCostPerServer)+" minCost:"+Global.minCost);
-//		}
 			return nextGlobalServers;
-			
-		}else{
-//			if(Global.IS_DEBUG){
-//				System.out.println("not better mcmfMinCost :"+mcmfMinCost+" minCost:"+Global.minCost);
-//			}
-			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerServers.length);
-			for(Server consumerServer : consumerServers){
-				nextGlobalServers.add(consumerServer);
-			}
-			return nextGlobalServers;
+
 		}		
 	
 	}
 	
 
-
 	/**
-	 * @return 返回费用,不存在解决方案则为无穷大
+	 * @return 返回路由,不存在解决方案则为无穷大
 	 */
-	private static int mcmf(List<ServerInfo> serverInfos){
+	private List<ServerInfo> mcmf(){
 		
-		int[] dist = new int[Global.mcmfNodeNum];
+		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
+		
 		int[] mcmfPre = new int[Global.mcmfNodeNum];
 		
 		int minFlow;
 		int sumFlow = 0;
-		int minCost = 0;
 		int s = Global.sourceNode;
 		int t = Global.endNode;
 	
-		while(spfa(s,t,dist,mcmfPre)&&!Global.isTimeOut()){
+		while(spfa(s,t,mcmfPre)&&!Global.isTimeOut()){
 					
 			minFlow = Integer.MAX_VALUE;
 			for(int i=t;i!=s;i=mcmfPre[i]){
@@ -97,7 +87,7 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 				Global.graph[i][mcmfPre[i]].leftBandWidth+=minFlow;
 				// minCost += cost[mcmfPre[i]][i]*minFlow;
 			}
-			minCost += dist[t]*minFlow;
+			//minCost += dist[t]*minFlow;
 			
 			// 保存服务信息,从消费者开始的 -> 服务器
 			LinkedList<Integer> nodes = new LinkedList<Integer>();
@@ -115,13 +105,15 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 		}
 		
 		if(sumFlow>=Global.consumerTotalDemnad){
-			return minCost;
+			return serverInfos;
 		}else{
-			return Global.INFINITY;
+			return null;
 		}
 	}
 
-	private static boolean spfa(int s, int t,int[] dist,int[] mcmfPre) {
+	private boolean spfa(int s, int t,int[] mcmfPre) {
+		
+		int[] dist = new int[Global.mcmfNodeNum];
 		boolean vis[] = new boolean[Global.mcmfNodeNum];
 		Queue<Integer> q = new LinkedList<Integer>();
 		for (int i = 0; i <= t; i++) {

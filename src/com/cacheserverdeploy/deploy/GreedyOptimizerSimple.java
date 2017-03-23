@@ -1,6 +1,7 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 
 /** 
@@ -69,7 +70,21 @@ public final class GreedyOptimizerSimple extends GreedyOptimizer{
 			}
 			
 			// 是服务器
-			int[] viaNodes = Global.allViaNode[consumerId][serverNode];
+			
+			// 适配
+			LinkedList<Integer> lsNodes = new LinkedList<Integer>();
+			int[] preNodes = Global.allPreNodes[consumerId];
+			int pre = serverNode;
+			while(pre!=-1){
+				lsNodes.addFirst(pre);
+				pre = preNodes[pre];
+			}
+			int[] viaNodes = new int[lsNodes.size()];
+			int index = 0;
+			for(int node : lsNodes){
+				viaNodes[index++] = node;
+			}
+			
 			int usedDemand = Global.useBandWidth(fromDemand, viaNodes);
 			// 可以消耗
 			if (usedDemand > 0) {
