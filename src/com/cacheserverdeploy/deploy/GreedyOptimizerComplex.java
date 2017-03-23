@@ -97,7 +97,7 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 			int minCost = Global.INFINITY;
 			int minFromLayer = -1;
 			int minCostNode = -1;
-			int maxBandWidthCanUsed = -1; 
+			//int maxBandWidthCanUsed = -1; 
 			
 			for (int layer =0;layer<layerNum;++layer) {
 				for (int node = 0; node < Global.nodeNum; ++node) {
@@ -112,19 +112,20 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 						continue;
 					}
 					int cost = transferInfos[layer][node].cost;
-					int fromDemand = fromDemands[layer];
-					int bandWidthCanUsed = Global.getBandWidthCanUsed(fromDemand, transferInfo.viaNodes);
+					//int fromDemand = fromDemands[layer];
+					//int bandWidthCanUsed = Global.getBandWidthCanUsed(fromDemand, transferInfo.viaNodes);
 			
-					if(bandWidthCanUsed==0){
-						continue;
-					}
+//					if(bandWidthCanUsed==0){
+//						continue;
+//					}
 					
 					if (cost < minCost
-							|| (cost==minCost&&bandWidthCanUsed>maxBandWidthCanUsed)) {
+							|| (cost==minCost)){
+							//&&bandWidthCanUsed>maxBandWidthCanUsed)) {
 						minCost = cost;
 						minFromLayer = layer;
 						minCostNode = node;
-						maxBandWidthCanUsed = bandWidthCanUsed;
+						//maxBandWidthCanUsed = bandWidthCanUsed;
 					}
 				}
 			}
@@ -149,12 +150,12 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 
 			// 是服务器
 			if (toServers.containsKey(minCostNode)) {
-				int usedDemand = Global.useBandWidth(fromDemands[minFromLayer],minCostInfo.viaNodes);
+				int usedDemand = useBandWidth(fromDemands[minFromLayer],minCostInfo.viaNodes);
 				// 可以消耗
 				if (usedDemand > 0) {
 					fromCosts[minFromLayer]+= usedDemand * minCost;
 					notVisitedServerNum[minFromLayer]--;
-					Global.transferTo(minCostInfo.fromServer,toServers.get(minCostNode),usedDemand,minCostInfo.viaNodes);
+					transferTo(minCostInfo.fromServer,toServers.get(minCostNode),usedDemand,minCostInfo.viaNodes);
 					totalFromDemand -= usedDemand;
 					fromDemands[minFromLayer]-=usedDemand;
 					fromDemandSmaller = true;

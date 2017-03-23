@@ -1,9 +1,7 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -71,11 +69,7 @@ public final class Global {
 	public static Edge[] edges;
 	/** 连接关系：下游节点 */
 	static int[][] connections; 
-	
-	/** 消费者到所有节点的费用 */
-	static int[][] allCost;
-	static int[][] allPreNodes;
-		
+			
 	/** 放置的服务器 */
 	private static ArrayList<Server> bestServers;
 	
@@ -130,14 +124,8 @@ public final class Global {
 		
 		// 判断任务难易 
 		int On = nodeNum * nodeNum * consumerNum;
-		
 		isNpHardest = On>NP_HARDEST_THRESHOLD;
 		isNpHard = On > NP_HARD_THRESHOLD;
-//		if (!isNpHardest && isNpHard){
-			// 初始费用缓存
-			initAllCost();
-//		}
-		
 		if(IS_DEBUG){
 			System.out.println("On:"+On+" isNpHard:"+isNpHard);
 		}
@@ -213,67 +201,8 @@ public final class Global {
 		System.out.println("---------------");
 	}
 	
-	/**
-	 * 消耗带宽最大带宽
-	 * 
-	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
-	 */
-	static int useBandWidth(int demand, int[] nodeIds) {
-		if (demand == 0) {
-			return 0;
-		}
-		int minBindWidth = Global.INFINITY;
-		for (int i = nodeIds.length - 1; i >=1; --i) {
-			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
-			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-		}
-		if (minBindWidth == 0) {
-			return 0;
-		}
-		int usedBindWidth = Math.min(minBindWidth, demand);
-		for (int i = nodeIds.length - 1; i >=1; --i) {
-			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
-			edge.leftBandWidth -= usedBindWidth;
-		}
-		return usedBindWidth;
-	}
 	
-	/**
-	 * 消耗带宽最大带宽
-	 * 
-	 * @return 消耗掉的带宽
-	 */
-	static int useBandWidthByPreNode(int demand, int consumerId, int serverNode) {
-		int[] preNodes = allPreNodes[consumerId];
-		int node1 = serverNode;
-		int node0 = preNodes[node1];
 		
-		int minBindWidth = Global.INFINITY;
-		while(node0!=-1){
-			Edge edge = Global.graph[node1][node0];
-			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-			
-			node1 = node0;
-			node0 = preNodes[node0];
-		}
-		if (minBindWidth == 0) {
-			return 0;
-		}
-		
-		int usedBindWidth = Math.min(minBindWidth, demand);
-		
-		node1 = serverNode;
-		node0 = preNodes[node1];
-		while(node0!=-1){
-			Edge edge = Global.graph[node1][node0];
-			edge.leftBandWidth -= usedBindWidth;
-			
-			node1 = node0;
-			node0 = preNodes[node0];
-		}
-		return usedBindWidth;
-	}
-	
 	/**
 	 * 可以消耗带宽最大带宽
 	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
@@ -290,69 +219,7 @@ public final class Global {
 		return minBindWidth;
 	}
 
-	
-	private static void initAllCost(){
-		allCost = new int[consumerNum][nodeNum];
-		allPreNodes = new int[consumerNum][nodeNum];
-		
-		for(int i=0;i<consumerNum;++i){
-			Arrays.fill(allPreNodes[i], -1);
-			initCost(i);
-		}
-	}
-	
-	private static void initCost(int consumerId) {
 
-		int[] costs = allCost[consumerId];
-		Arrays.fill(costs, INFINITY);
-		
-		int[] visited = new int[nodeNum];
-
-		int[] preNodes = allPreNodes[consumerId];
-		
-		int startNode = consumerNodes[consumerId];
-		costs[startNode] = 0;
-	
-		while (true) {
-
-			// 寻找下一个最近点
-			int minCost = INFINITY;
-			int fromNode = -1;
-			for (int node =0;node<nodeNum;++node) {
-				// 1 访问过了 或者 2 还没信息（cost 无穷大）
-				if(visited[node]==1){
-					continue;
-				}
-				if (costs[node] < minCost) {
-					minCost = costs[node];
-					fromNode = node;
-				}
-			}
-
-			// 其余都不可达
-			if (fromNode == -1) {
-				break;
-			}
-
-			// 访问过了
-			visited[fromNode] = 1;
-
-			// 更新
-			for (int toNode : connections[fromNode]) {
-				Edge edge = Global.graph[fromNode][toNode];
-				int newCost = minCost + edge.cost;
-				if (newCost < costs[toNode]) {
-					costs[toNode] = newCost;
-					// 添加路径
-					preNodes[toNode] = fromNode;
-				}
-			}
-			
-		}
-		
-	}
-	
-	
 	/** 打印解决方案细节 */
 	public static void printBestSolution(String[] bsetSoluttion) {
 		System.out.println("---------------");
@@ -361,38 +228,6 @@ public final class Global {
 			System.out.println(line);
 		}
 		System.out.println("---------------");
-	}
-	
-	/** 
-	 * 转移到另一个服务器，并返回价格<br>
-	 * 注意：可能cost会改变(又返回之前的点)
-	 */
-	static void transferTo(Server fromServer,Server toServer,int avaliableBandWidth,int[] viaNodes ) {
-		
-		Iterator<ServerInfo> iterator = fromServer.serverInfos.iterator();
-		while(iterator.hasNext()){
-			ServerInfo fromServerInfo = iterator.next();
-			// 剩余要传的的和本地的最小值
-			int transferBandWidth = Math.min(avaliableBandWidth, fromServerInfo.provideBandWidth);
-			
-			int[] fromNodes = fromServerInfo.viaNodes;
-			
-			// 虽然分配了，但是新的部分目前为0
-			int[] nodes = new int[fromNodes.length+viaNodes.length-1];
-				
-			System.arraycopy(fromNodes, 0, nodes, 0, fromNodes.length);
-			// 去头
-			System.arraycopy(viaNodes, 1, nodes, fromNodes.length, viaNodes.length-1);
-			
-			ServerInfo toServerInfo = new ServerInfo(fromServerInfo.consumerId,transferBandWidth,nodes);
-			toServer.serverInfos.add(toServerInfo);
-			// 更新当前的
-			fromServerInfo.provideBandWidth -= transferBandWidth;
-			if(fromServerInfo.provideBandWidth==0){ // 已经全部转移
-				iterator.remove();
-			}
-		}
-		
 	}
 	
 }

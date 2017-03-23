@@ -91,10 +91,10 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 						
 			// 是服务器
 			if (toServers.containsKey(minCostNode)) {
-				int usedDemand = Global.useBandWidth(fromDemand,allViaNodes[minCostNode]);
+				int usedDemand = useBandWidth(fromDemand,allViaNodes[minCostNode]);
 				// 可以消耗
 				if (usedDemand > 0) {
-					Global.transferTo(fromServer, toServers.get(minCostNode), usedDemand, allViaNodes[minCostNode]);
+					transferTo(fromServer, toServers.get(minCostNode), usedDemand, allViaNodes[minCostNode]);
 					totalCost+= usedDemand * minCost;
 					fromDemand -= usedDemand;
 					fromDemandSmaller = true;
