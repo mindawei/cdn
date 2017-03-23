@@ -17,8 +17,8 @@ public class Deploy{
     	
     	new GreedyOptimizerSimple().optimize();
 		new GreedyOptimizerMiddle().optimize();
-		// new GreedyOptimizerComplex().optimize();
-		Global.optimize(); 
+		new GreedyOptimizerComplex().optimize();
+		new GreedyOptimizerMCMF().optimize();
     		
 //    	if(Global.isNpHardest){
 //    		new GreedyOptimizerMiddle().optimize();
@@ -36,8 +36,7 @@ public class Deploy{
     	if(Global.IS_DEBUG){
     		Global.printBestSolution();
       	}
-    	
-    	String[] solution = Global.bsetSolution;
-    	return solution;    
+    
+    	return Global.getBsetSolution();    
     }
 }

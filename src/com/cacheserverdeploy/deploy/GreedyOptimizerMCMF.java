@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 /** 
  * 复杂移动比较费时间
@@ -15,59 +14,56 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 
 	@Override
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
-//		transfer(consumerServers, newServers);
-//		
-//		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-//		for(Server consumerServer : consumerServers){
-//			if (consumerServer.getDemand() > 0) { // 真正安装
-//				nextGlobalServers.add(consumerServer);
-//			}
-//		}
-//		
-//		for(Server newServer : newServers.values()){
-//			if (newServer.getDemand() > 0) { // 真正安装
-//				nextGlobalServers.add(newServer);
-//			}
-//		}
-		
-		return null;
-	}
-	
-	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
-	static void transfer(Set<Integer> toServerNodes) {
-		
-		if (Global.IS_DEBUG) {
-			
-			System.out.println("optimize toServerNodes.size():"+toServerNodes.size());
-			
-			for (int serverNode : toServerNodes) {
-				System.out.print(serverNode + ", ");
-			}
-			System.out.println();
-		}
-	
+
+
 		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 		// 源头
 		Arrays.fill(Global.graph[Global.sourceNode], null);
-		for(int toServerNode : toServerNodes){
+		for(int toServerNode : newServers.keySet()){
 			Global.graph[Global.sourceNode][toServerNode] = new Edge(Global.INFINITY, 0);
 			Global.graph[toServerNode][Global.sourceNode] = new Edge(0, 0);
 		}
-		int mcmfMinCost = mcmf(serverInfos)+ toServerNodes.size() * Global.depolyCostPerServer;
+		int mcmfMinCost = mcmf(serverInfos);
 
-		if(mcmfMinCost<Global.minCost){
-			if(Global.IS_DEBUG){
-				System.out.println("better mcmfMinCost :"+mcmfMinCost+" minCost:"+Global.minCost);
+		if(mcmfMinCost<Global.INFINITY){
+//			if(Global.IS_DEBUG){
+//			System.out.println("better mcmfMinCost :"+mcmfMinCost+" minCost:"+Global.minCost);
+//		}
+//		String[] mcmfSoluttion = Global.getSolution(serverInfos);
+//		Global.bsetSolution = mcmfSoluttion;
+//		Global.printBestSolution(mcmfSoluttion);
+			
+			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(newServers.size());
+			for(ServerInfo serverInfo : serverInfos){
+				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length-1];
+				Server newServer = newServers.get(serverNode);
+				newServer.serverInfos.add(serverInfo);
 			}
-			String[] mcmfSoluttion = Global.getSolution(serverInfos);
-			Global.bsetSolution = mcmfSoluttion;
-			Global.printBestSolution(mcmfSoluttion);
+			for(Server newServer : newServers.values()){
+				if(newServer.getDemand()>0){
+					nextGlobalServers.add(newServer);
+				}
+			}
+			
+//			if(Global.IS_DEBUG){
+//			System.out.println("better mcmfMinCost :"+(mcmfMinCost+nextGlobalServers.size()*Global.depolyCostPerServer)+" minCost:"+Global.minCost);
+//		}
+			return nextGlobalServers;
+			
 		}else{
-			if(Global.IS_DEBUG){
-				System.out.println("not better mcmfMinCost :"+mcmfMinCost+" minCost:"+Global.minCost);
+//			if(Global.IS_DEBUG){
+//				System.out.println("not better mcmfMinCost :"+mcmfMinCost+" minCost:"+Global.minCost);
+//			}
+			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerServers.length);
+			for(Server consumerServer : consumerServers){
+				nextGlobalServers.add(consumerServer);
 			}
+			return nextGlobalServers;
 		}		
+	
 	}
+	
+
 
 	/**
 	 * @return 返回费用,不存在解决方案则为无穷大

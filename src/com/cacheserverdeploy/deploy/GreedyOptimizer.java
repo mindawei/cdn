@@ -13,9 +13,20 @@ import java.util.Map;
 public abstract class GreedyOptimizer {
 
 	void optimize() {
+		
+		if (Global.IS_DEBUG) {
+			System.out.println("");
+			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		}
 
 		long t = System.currentTimeMillis();
 
+		if (!Global.isTimeOut()) {
+			// 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法  
+			ArrayList<Server> nextGlobalServers = moveLocal(Global.getBestServers());
+			Global.updateSolution(nextGlobalServers);
+		}
+		
 		while (true) {
 
 			if (Global.isTimeOut()) {
@@ -64,7 +75,7 @@ public abstract class GreedyOptimizer {
 		}
 
 		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 耗时: " + (System.currentTimeMillis() - t));
+			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
 		}
 	}
 
@@ -85,7 +96,23 @@ public abstract class GreedyOptimizer {
 		return transferServers(consumerServers, newServers);
 	}
 
+	/** 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法   */
+	private ArrayList<Server> moveLocal(ArrayList<Server> oldGlobalServers) {
+		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+		for (Server server : oldGlobalServers) {
+			newServers.put(server.node, new Server(server.node));
+		}
+		
+		Server[] consumerServers = Global.getConsumerServer();
+
+		Global.resetEdgeBandWidth();
+
+		return transferServers(consumerServers, newServers);
+	}
+	
 	/** 不同的搜索策略需要提供此方法 */
 	protected abstract ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers);
+
+	
 
 }

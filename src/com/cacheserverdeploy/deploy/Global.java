@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * 全局参数，方便访问
@@ -43,10 +41,10 @@ public final class Global {
 	static final int INFINITY = Integer.MAX_VALUE;
 
 	/** 最小费用 */
-	static int minCost = INFINITY;
+	private static int minCost = INFINITY;
 	/** 解决方案 */
-	static String[] bsetSolution;
-	
+	private static String[] bsetSolution;
+
 	/** 每台部署的成本：[0,5000]的整数 */
 	public static int depolyCostPerServer;
 
@@ -67,7 +65,6 @@ public final class Global {
 	/** 网络节点ID - >  消费节点ID */
 	static Map<Integer,Integer> nodeToConsumerId = new HashMap<Integer,Integer>();
 		
-
 	/** 地图 */
 	public static Edge[][] graph;
 	/** 地图上的边 */
@@ -82,8 +79,15 @@ public final class Global {
 	/** 放置的服务器 */
 	private static ArrayList<Server> bestServers;
 	
+	
+	
+	
 	public static ArrayList<Server> getBestServers() {
 		return bestServers;
+	}
+	
+	public static String[] getBsetSolution() {
+		return bsetSolution;
 	}
 	
 	static Server[] getConsumerServer(){
@@ -94,9 +98,8 @@ public final class Global {
 		return servers;
 	}
 	
-	/** 重置 */
+	/** 重置edge的带宽值 */
 	public static void resetEdgeBandWidth() {
-		// 恢复edge的带宽值
 		for (Edge edge : edges) {
 			edge.reset();
 		}
@@ -127,8 +130,6 @@ public final class Global {
 		}
 		updateSolution(nextGlobalServers);	
 		
-		
-
 		// 判断任务难易 
 		int On = nodeNum * nodeNum * consumerNum;
 		
@@ -190,22 +191,6 @@ public final class Global {
 		}
 		return solution;
 	}
-	
-	
-	static String[] getSolution(List<ServerInfo> serverInfos){
-		
-		String[] solution = new String[serverInfos.size() + 2];
-		solution[0] = String.valueOf(serverInfos.size());
-		solution[1] = "";
-		int index = 2;
-		
-		for(ServerInfo serverInfo : serverInfos){
-			solution[index++] = serverInfo.getSolution();
-		}
-		
-		return solution;
-		
-	}
 
 	/** 获得总的费用 */
 	public static int getTotalCost(ArrayList<Server> servers) {
@@ -256,8 +241,7 @@ public final class Global {
 	}
 	
 	/**
-	 * 消耗带宽最大带宽
-	 * 
+	 * 可以消耗带宽最大带宽
 	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
 	 */
 	static int getBandWidthCanUsed(int demand, int[] nodeIds) {
@@ -347,22 +331,6 @@ public final class Global {
 			System.out.println(line);
 		}
 		System.out.println("---------------");
-	}
-	
-	/** 对解进行优化  */
-	public static void optimize() {
-		
-		if(isTimeOut()){
-			return;
-		}
-		Global.resetEdgeBandWidth();
-		
-		Set<Integer> toServerNodes = new TreeSet<Integer>();
-		for (Server server : bestServers) {
-			toServerNodes.add(server.node);
-		}
-	
-		GreedyOptimizerMCMF.transfer(toServerNodes);	
 	}
 	
 	/** 
