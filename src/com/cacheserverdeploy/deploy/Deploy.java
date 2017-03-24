@@ -14,14 +14,15 @@ public class Deploy{
     	Parser.buildNetwork(graphContent);
     
     	Global.init();
-    	
 
-    	// new GreedyOptimizerSimple().optimize();	
+    	//new GreedyOptimizerMiddle().optimize();
+//    	new GreedyOptimizerSimple().optimize();	
+//		if(Global.isDropInInit()){	
     	
-    	new GreedyOptimizerMiddle().optimize();
-		if(Global.isDropInInit()){	
+    	if(Global.isNpHard){
     		new GreedyOptimizerRandom().optimize();
 		}else{
+			new GreedyOptimizerMiddle().optimize();
 			new GreedyOptimizerComplex(GreedyOptimizer.OPTIMIZE_ONCE).optimize();
 			new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 		}
