@@ -162,7 +162,7 @@ public final class Global {
 		if(IS_DEBUG){
 			System.out.println("服务器节点："+Arrays.toString(mustServerNodes));
 		}
-		
+				
 		// 初始解
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerNum);
 		for (int i = 0; i < consumerNum; ++i) {
@@ -180,6 +180,10 @@ public final class Global {
 			System.out.println("initCost:"+initCost);
 			System.out.println("On:"+On+" isNpHard:"+isNpHard);
 		}
+		
+		/** 初始化缓存 */
+		initAllCostAndPreNodes();
+
 	}
 	
 	public static ArrayList<Server> getBestServers() {
@@ -290,4 +294,78 @@ public final class Global {
 		System.out.println("---------------");
 	}
 	
+	
+	///////////////////////////////////
+	// 预先计算
+	//////////////////////////////////
+	
+	/** 消费者到所有节点的费用 */
+	static int[][] allCost;
+	static int[][] allPreNodes;
+	
+	private static void initAllCostAndPreNodes() {
+		// 初始化本地缓存
+		allCost = new int[Global.consumerNum][Global.nodeNum];
+		allPreNodes = new int[Global.consumerNum][Global.nodeNum];
+
+		for (int i = 0; i < Global.consumerNum; ++i) {
+			Arrays.fill(allPreNodes[i], -1);
+			initOneCostAndPreNodes(i);
+		}
+		
+		if(Global.IS_DEBUG){
+			System.out.println("预计算完成：消费者到所有节点的费用 ");
+		}
+	}
+	
+	private static void initOneCostAndPreNodes(int consumerId) {
+
+		int[] costs = allCost[consumerId];
+		Arrays.fill(costs, Global.INFINITY);
+		
+		int[] visited = new int[Global.nodeNum];
+
+		int[] preNodes = allPreNodes[consumerId];
+		
+		int startNode = Global.consumerNodes[consumerId];
+		costs[startNode] = 0;
+	
+		while (true) {
+
+			// 寻找下一个最近点
+			int minCost = Global.INFINITY;
+			int fromNode = -1;
+			for (int node =0;node<Global.nodeNum;++node) {
+				// 1 访问过了 或者 2 还没信息（cost 无穷大）
+				if(visited[node]==1){
+					continue;
+				}
+				if (costs[node] < minCost) {
+					minCost = costs[node];
+					fromNode = node;
+				}
+			}
+
+			// 其余都不可达
+			if (fromNode == -1) {
+				break;
+			}
+
+			// 访问过了
+			visited[fromNode] = 1;
+
+			// 更新
+			for (int toNode : Global.connections[fromNode]) {
+				Edge edge = Global.graph[fromNode][toNode];
+				int newCost = minCost + edge.cost;
+				if (newCost < costs[toNode]) {
+					costs[toNode] = newCost;
+					// 添加路径
+					preNodes[toNode] = fromNode;
+				}
+			}
+			
+		}
+	}
+
 }

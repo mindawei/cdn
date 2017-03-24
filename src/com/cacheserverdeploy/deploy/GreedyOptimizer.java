@@ -145,7 +145,28 @@ public abstract class GreedyOptimizer {
 	 * 转移到另一个服务器，并返回价格<br>
 	 * 注意：可能cost会改变(又返回之前的点)
 	 */
-	protected void transferTo(Server fromServer,Server toServer,int avaliableBandWidth,int[] viaNodes) {
+	protected void transferTo(Server fromServer,Server toServer,int avaliableBandWidth,int serverNode,int[] preNodes) {
+		///////////////////////
+		// 适配： 指针 -> 数组
+		// 计算长度
+		int len = 0;
+		int pre = serverNode;
+		while(pre!=-1){
+			len++;
+			pre = preNodes[pre];
+		}
+
+		// 逐个添加
+		int[] viaNodes = new int[len];
+		pre = serverNode;
+		while(pre!=-1){
+			viaNodes[--len] = pre;	
+			pre = preNodes[pre];
+		}
+		
+		/////////////////////////
+		
+		
 		Iterator<ServerInfo> iterator = fromServer.serverInfos.iterator();
 		while(iterator.hasNext()){
 			ServerInfo fromServerInfo = iterator.next();
@@ -159,8 +180,9 @@ public abstract class GreedyOptimizer {
 				iterator.remove();
 			}
 		}
+		
 	}
-	
+
 	/**
 	 * 供子类调用：
 	 * 消耗带宽最大带宽

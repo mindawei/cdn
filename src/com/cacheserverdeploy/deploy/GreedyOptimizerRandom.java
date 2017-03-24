@@ -2,9 +2,7 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -32,15 +30,15 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		init();
 	}
 	
-	private ArrayList<Integer> randomSelectServers() {
+	private ArrayList<Server> randomSelectServers() {
 		
-		ArrayList<Integer> nextServerNodes = new ArrayList<Integer>(Global.consumerNum);
+		ArrayList<Server> nextServerNodes = new ArrayList<Server>(Global.consumerNum);
 		
 		boolean[] selected = new boolean[nodes.size()];
 		Arrays.fill(selected, false);
 		int leftNum = Global.consumerNum / 4;
 		for(int node : Global.mustServerNodes){
-			nextServerNodes.add(node);
+			nextServerNodes.add(new Server(node));
 		}
 		leftNum -= Global.mustServerNodes.length;
 		
@@ -53,7 +51,7 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 					selected[index] = true;
 				}else{ //  是服务器，服务器上面已经添加过了
 					selected[index] = true;
-					nextServerNodes.add(node);
+					nextServerNodes.add(new Server(node));
 					leftNum--;
 				}
 			}
@@ -78,15 +76,15 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		long t = System.currentTimeMillis();
 
 			
-		ArrayList<Integer> oldGlobalServers = randomSelectServers();
+		ArrayList<Server> oldGlobalServers = randomSelectServers();
 		
 		int lastCsot = Global.INFINITY;
 		
 		while (true) {
 				
 			if (Global.IS_DEBUG) {
-				for(int server : oldGlobalServers){
-					System.out.print(server+" ");
+				for(Server server : oldGlobalServers){
+					System.out.print(server.node+" ");
 				}
 				System.out.println();
 			}
@@ -101,13 +99,19 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			
 			int toNums = 2000 / oldGlobalServers.size();
 			
-			for (int fromNode : oldGlobalServers) {
+			for (Server oldServer : oldGlobalServers) {
+				
+				int fromNode = oldServer.node;
+				
 				// 服务器不移动
 				if(Global.isMustServerNode[fromNode]){
 					continue;
 				}
 				int leftNum = toNums;
-				for (int toNode : oldGlobalServers) {
+				for (Server toServer : oldGlobalServers) {
+					
+					int toNode = toServer.node;
+					
 					// 防止自己到自己
 					if (fromNode == toNode) {
 						continue;
@@ -117,7 +121,7 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 						return;
 					}
 
-					ArrayList<Server> nextGlobalServers = moveInRandom(oldGlobalServers, fromNode, toNode);
+					ArrayList<Server> nextGlobalServers = move(oldGlobalServers, fromNode, toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
 						minCost = cost;
@@ -142,16 +146,13 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			}
 			
 			// 移动
-			ArrayList<Server> nextGlobalServers = moveInRandom(oldGlobalServers, bestFromNode, bestToNode);
+			ArrayList<Server> nextGlobalServers = move(oldGlobalServers, bestFromNode, bestToNode);
 			int cost = Global.getTotalCost(nextGlobalServers);
 			//boolean better = Global.updateSolution(nextGlobalServers);
 
 			if (cost<lastCsot) {
 				Global.updateSolution(nextGlobalServers);
-				oldGlobalServers.clear();
-				for(Server server : nextGlobalServers){
-					oldGlobalServers.add(server.node);
-				}
+				oldGlobalServers = nextGlobalServers;
 				lastCsot = cost;
 			}else{ // not better
 				lastCsot = Global.INFINITY;
@@ -166,31 +167,14 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		
 	}
 	
-	
-	/** 进行一步移动 */
-	private ArrayList<Server> moveInRandom(ArrayList<Integer> oldGlobalServers, int fromServerNode, int toServerNode) {
-		
-		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
-		for (int serverNode : oldGlobalServers) {
-			if (serverNode != fromServerNode) {
-				newServers.put(serverNode, new Server(serverNode));
-			}
-		}
-		newServers.put(toServerNode, new Server(toServerNode));
-
-		Server[] consumerServers = Global.getConsumerServer();
-
-		Global.resetEdgeBandWidth();
-
-		return transferServers(consumerServers, newServers);
-	}
-
 	/////////////////////////////
 
 	//private final int N =1010;
 	private int nearNodeId;
 	private int[] limitBandWidth;
 	
+	
+	// TODO 改善 random的init，可以利用全局的缓存
 	private void init() {
 		limitBandWidth = new int[Global.nodeNum];
 		NodeInfo[] nodeFreq = new NodeInfo[Global.nodeNum];
@@ -215,8 +199,6 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		}
 		
 		//Arrays.sort(nodeFreq);
-		
-		
 		for(NodeInfo node : nodeFreq){
 			if(node.freq>0){
 				nodes.add(node.id);
@@ -225,39 +207,42 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		
 	}
 
-	private  int[] dijkstra(int s,List<Integer> clientList){
-		boolean [] vis = new boolean[Global.nodeNum];
+	private int[] dijkstra(int s, List<Integer> clientList) {
+		boolean[] vis = new boolean[Global.nodeNum];
 		int[] dis = new int[Global.nodeNum];
 		int[] pre = new int[Global.nodeNum];
 		Arrays.fill(pre, -1);
-		for(int i=0;i<Global.nodeNum;i++){
-			dis[i]=Integer.MAX_VALUE;
+		for (int i = 0; i < Global.nodeNum; i++) {
+			dis[i] = Integer.MAX_VALUE;
 		}
-		dis[s]=0;
-		limitBandWidth[s]=Integer.MAX_VALUE;
-		for(int i=0;i<Global.nodeNum;i++){
-			int u=-1,Min=Integer.MAX_VALUE,limit=-1;
-			for(int j=0;j<Global.nodeNum;j++){
-				if(vis[j]==false&&(dis[j]<Min||dis[j]==Min&&limitBandWidth[j]>limit)){
-					u=j;
-					Min=dis[j];
-					limit=limitBandWidth[j];
+		dis[s] = 0;
+		limitBandWidth[s] = Integer.MAX_VALUE;
+		for (int i = 0; i < Global.nodeNum; i++) {
+			int u = -1, Min = Integer.MAX_VALUE, limit = -1;
+			for (int j = 0; j < Global.nodeNum; j++) {
+				if (vis[j] == false
+						&& (dis[j] < Min || dis[j] == Min
+								&& limitBandWidth[j] > limit)) {
+					u = j;
+					Min = dis[j];
+					limit = limitBandWidth[j];
 				}
 			}
-			if(u==-1){
+			if (u == -1) {
 				break;
 			}
-			if(u!=s&&clientList.contains(u)){
-				nearNodeId=u;
+			if (u != s && clientList.contains(u)) {
+				nearNodeId = u;
 				return pre;
 			}
-			vis[u]=true;
-			for(int v=0;v<Global.nodeNum;v++){
-				if(vis[v]==false&&Global.graph[u][v]!=null&&
-						dis[v]>dis[u]+Global.graph[u][v].cost){
-					dis[v]=dis[u]+Global.graph[u][v].cost;
-					pre[v]=u;
-					limitBandWidth[v]=Math.min(limitBandWidth[u], Global.graph[u][v].initBandWidth);
+			vis[u] = true;
+			for (int v = 0; v < Global.nodeNum; v++) {
+				if (vis[v] == false && Global.graph[u][v] != null
+						&& dis[v] > dis[u] + Global.graph[u][v].cost) {
+					dis[v] = dis[u] + Global.graph[u][v].cost;
+					pre[v] = u;
+					limitBandWidth[v] = Math.min(limitBandWidth[u],
+							Global.graph[u][v].initBandWidth);
 				}
 			}
 		}
