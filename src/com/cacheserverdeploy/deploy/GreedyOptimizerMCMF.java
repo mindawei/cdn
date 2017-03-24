@@ -22,8 +22,13 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 	@Override
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
 
+		System.out.println(newServers.keySet());
+		
 		// 源头
 		Arrays.fill(Global.graph[Global.sourceNode], null);
+		for(int fromNode=0;fromNode<Global.mcmfNodeNum;++fromNode){
+			Global.graph[fromNode][Global.sourceNode] = null;
+		}
 		for(int toServerNode : newServers.keySet()){
 			Global.graph[Global.sourceNode][toServerNode] = new Edge(Global.INFINITY, 0);
 			Global.graph[toServerNode][Global.sourceNode] = new Edge(0, 0);
@@ -32,6 +37,7 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 		List<ServerInfo> serverInfos = mcmf();
 
 		if(serverInfos==null){ // 无解
+			
 			
 			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerServers.length);
 			for(Server consumerServer : consumerServers){
@@ -73,7 +79,7 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 		int s = Global.sourceNode;
 		int t = Global.endNode;
 	
-		while(spfa(s,t,mcmfPre)&&!Global.isTimeOut()){
+		while(spfa(s,t,mcmfPre)){
 					
 			minFlow = Integer.MAX_VALUE;
 			for(int i=t;i!=s;i=mcmfPre[i]){

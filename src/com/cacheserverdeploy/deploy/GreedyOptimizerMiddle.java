@@ -16,8 +16,7 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
 		
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
-			Server consumerServer = consumerServers[consumerId];
+		for(Server consumerServer : consumerServers){	
 //			if (Global.isMustServerNode[consumerServer.node]) {
 //				// 肯定是服务器不用转移
 //				nextGlobalServers.add(consumerServer);
@@ -38,22 +37,21 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 		return nextGlobalServers;
 	}
 	
+	private final boolean[] visited = new boolean[Global.nodeNum];
+	private final int[] costs = new int[Global.nodeNum]; 
+	private final int[][] allViaNodes = new int[Global.nodeNum][];
+	
 	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
 	private void transfer(Server fromServer,Map<Integer, Server> toServers,int totalCost) {
 
 		int fromNode = fromServer.node;
 		int fromDemand = fromServer.getDemand();
-		
 		// 使用了多少个服务节点
 		int leftServerNodeNum = toServers.size();
-	
 		int notVisitNodeNum = Global.nodeNum;
 		// 0 未访问  1访问过
-		boolean[] visited = new boolean[Global.nodeNum];
 		Arrays.fill(visited, false);
-		int[] costs = new int[Global.nodeNum]; 
 		Arrays.fill(costs, Global.INFINITY);
-		int[][] allViaNodes = new int[Global.nodeNum][];
 		
 		// 自己到自己的距离为0
 		costs[fromNode] = 0;

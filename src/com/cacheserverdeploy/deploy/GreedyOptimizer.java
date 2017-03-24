@@ -16,10 +16,6 @@ public abstract class GreedyOptimizer {
 	/** 只优化一次 */
 	public static final boolean  OPTIMIZE_ONCE = true;
 	
-	/** 多次优化 */
-	public static final boolean  OPTIMIZE_ALWAYS = true;
-	
-	
 	private boolean isOptimizeOnce = false;
 
 	public GreedyOptimizer(){}
@@ -35,10 +31,6 @@ public abstract class GreedyOptimizer {
 			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
 		}
 
-		if (Global.isTimeOut()) {
-			return;
-		}
-
 		long t = System.currentTimeMillis();
 
 		// 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法  
@@ -52,6 +44,9 @@ public abstract class GreedyOptimizer {
 			}
 			return;
 		}
+		
+		
+		
 		
 		while (true) {
 			

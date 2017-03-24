@@ -1,6 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +18,7 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = false;
+	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;

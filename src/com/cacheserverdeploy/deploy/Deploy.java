@@ -15,37 +15,16 @@ public class Deploy{
     
     	Global.init();
 
-       //new GreedyOptimizerMiddle().optimize();
-//    	new GreedyOptimizerSimple().optimize();	
 //		if(Global.isDropInInit()){	
     	
     	if(Global.isNpHard){
     		new GreedyOptimizerRandom().optimize();
+    		new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 		}else{
 			new GreedyOptimizerMiddle().optimize();
-			new GreedyOptimizerComplex(GreedyOptimizer.OPTIMIZE_ONCE).optimize();
 			new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 		}
-		
-		
-		//System.out.println("Global.isDropInInit():"+Global.isDropInInit());
-    	  	
-    	// 无奈退出
-		// 陷入初始最优了,禁忌搜索
-		// new GreedyOptimizerTabuSearch().optimize();
-//    	if(Global.isNpHardest){
-//    		new GreedyOptimizerMiddle().optimize();
-//    	}else if(Global.isNpHard){
-//    		new GreedyOptimizerSimple().optimize();
-//    		// 当中一个过度解
-//    		new GreedyOptimizerMiddle().optimize();
-//    		Global.optimize();
-//    	}else{
-//    		new GreedyOptimizerMiddle().optimize();
-//    		new GreedyOptimizerComplex().optimize();
-//    		Global.optimize(); 
-//    	}
-    	
+	
     	if(Global.IS_DEBUG){
     		Global.printBestSolution();
       	}

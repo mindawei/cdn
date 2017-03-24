@@ -161,7 +161,7 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		}
 
 		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 禁忌搜索结束，耗时: " + (System.currentTimeMillis() - t));
+			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
 		}
 		
 	}
