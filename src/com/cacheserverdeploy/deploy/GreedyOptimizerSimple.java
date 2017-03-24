@@ -90,7 +90,7 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 			}
 			
 			// 是服务器
-			int usedDemand = useBandWidthByPreNode(fromDemand, consumerId,serverNode);
+			int usedDemand = useBandWidthByPreNode(fromDemand, serverNode,allPreNodes[consumerId]);
 			
 			// 可以消耗
 			if (usedDemand > 0) {
@@ -126,40 +126,7 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 	
 	}
 	
-	/**
-	 * 消耗带宽最大带宽
-	 * @return 消耗掉的带宽
-	 */
-	private int useBandWidthByPreNode(int demand, int consumerId, int serverNode) {
-		int[] preNodes = allPreNodes[consumerId];
-		int node1 = serverNode;
-		int node0 = preNodes[node1];
-		
-		int minBindWidth = Global.INFINITY;
-		while(node0!=-1){
-			Edge edge = Global.graph[node1][node0];
-			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-			
-			node1 = node0;
-			node0 = preNodes[node0];
-		}
-		if (minBindWidth == 0) {
-			return 0;
-		}
-		
-		int usedBindWidth = Math.min(minBindWidth, demand);
-		
-		node1 = serverNode;
-		node0 = preNodes[node1];
-		while(node0!=-1){
-			Edge edge = Global.graph[node1][node0];
-			edge.leftBandWidth -= usedBindWidth;
-			
-			node1 = node0;
-			node0 = preNodes[node0];
-		}
-		return usedBindWidth;
-	}
+	
 	
 	private void initCost(int consumerId) {
 

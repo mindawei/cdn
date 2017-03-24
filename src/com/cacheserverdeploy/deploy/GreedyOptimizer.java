@@ -186,4 +186,37 @@ public abstract class GreedyOptimizer {
 		return usedBindWidth;
 	}
 	
+	/**
+	 * 消耗带宽最大带宽
+	 * @return 消耗掉的带宽
+	 */
+	protected int useBandWidthByPreNode(int demand,int serverNode,int[] preNodes ) {
+		int node1 = serverNode;
+		int node0 = preNodes[node1];
+		
+		int minBindWidth = Global.INFINITY;
+		while(node0!=-1){
+			Edge edge = Global.graph[node1][node0];
+			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
+			
+			node1 = node0;
+			node0 = preNodes[node0];
+		}
+		if (minBindWidth == 0) {
+			return 0;
+		}
+		
+		int usedBindWidth = Math.min(minBindWidth, demand);
+		
+		node1 = serverNode;
+		node0 = preNodes[node1];
+		while(node0!=-1){
+			Edge edge = Global.graph[node1][node0];
+			edge.leftBandWidth -= usedBindWidth;
+			
+			node1 = node0;
+			node0 = preNodes[node0];
+		}
+		return usedBindWidth;
+	}
 }
