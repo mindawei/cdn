@@ -2,14 +2,14 @@ package com.util;
 
 public class FilePath {
 
-	public static final String graphFilePath = "case_example/官网案例.txt";
+//	public static final String graphFilePath = "case_example/官网案例.txt";
 //	public static final String graphFilePath = "case_example/case0.txt";
 //	public static final String graphFilePath = "case_example/case1.txt";
 //	public static final String graphFilePath = "case_example/case2.txt";
 //  public static final String graphFilePath = "case_example/case3.txt";
-//	public static final String graphFilePath = "case_example/case4.txt";
-// public static final String graphFilePath = "case_example/case50.txt";
-//   public static final String graphFilePath = "case_example/case99.txt";
+	public static final String graphFilePath = "case_example/case4.txt";
+//    public static final String graphFilePath = "case_example/case50.txt";
+//  public static final String graphFilePath = "case_example/case99.txt";
 
 	public static final String resultFilePath = "result/0.txt";
 	

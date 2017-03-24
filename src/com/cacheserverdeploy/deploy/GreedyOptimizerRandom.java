@@ -2,9 +2,7 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -15,7 +13,7 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public class GreedyOptimizerRandom extends GreedyOptimizerMiddle{
+public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	
 	private final class NODE implements Comparable<NODE>{
     	int id;
@@ -43,7 +41,7 @@ public class GreedyOptimizerRandom extends GreedyOptimizerMiddle{
 		
 		boolean[] selected = new boolean[nodes.size()];
 		Arrays.fill(selected, false);
-		int leftNum = Global.consumerNum;
+		int leftNum = Global.consumerNum / 4;
 		while(leftNum>0){
 			int index = random.nextInt(nodes.size());
 			if(!selected[index]){
@@ -91,7 +89,12 @@ public class GreedyOptimizerRandom extends GreedyOptimizerMiddle{
 			int bestFromNode = -1;
 			int bestToNode = -1;
 
+			// System.out.println(oldGlobalServers.size()*oldGlobalServers.size());
+			
+			int toNums = 2000 / oldGlobalServers.size();
+			
 			for (int fromNode : oldGlobalServers) {
+				int leftNum = toNums;
 				for (int toNode : oldGlobalServers) {
 					// 防止自己到自己
 					if (fromNode == toNode) {
@@ -108,6 +111,12 @@ public class GreedyOptimizerRandom extends GreedyOptimizerMiddle{
 						minCost = cost;
 						bestFromNode = fromNode;
 						bestToNode = toNode;
+					}
+					
+
+					leftNum--;
+					if(leftNum==0){
+						break;
 					}
 				}
 			}

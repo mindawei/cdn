@@ -15,6 +15,10 @@ import java.util.Queue;
  */
 public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 
+	public GreedyOptimizerMCMF(boolean isOptimizeOnce){
+		super(isOptimizeOnce);
+	}
+	
 	@Override
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
 

@@ -7,7 +7,7 @@ import java.util.Map;
 /** 
  * 简单移动比较快 
  */
-public final class GreedyOptimizerSimple extends GreedyOptimizer{
+public class GreedyOptimizerSimple extends GreedyOptimizer{
 
 	/** 消费者到所有节点的费用 */
 	private int[][] allCost;

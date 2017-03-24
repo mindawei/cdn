@@ -12,6 +12,21 @@ import java.util.Map;
  * @date 2017年3月12日
  */
 public abstract class GreedyOptimizer {
+	
+	/** 只优化一次 */
+	public static final boolean  OPTIMIZE_ONCE = true;
+	
+	/** 多次优化 */
+	public static final boolean  OPTIMIZE_ALWAYS = true;
+	
+	
+	private boolean isOptimizeOnce = false;
+
+	public GreedyOptimizer(){}
+
+	public GreedyOptimizer(boolean isOptimizeOnce){
+		this.isOptimizeOnce = isOptimizeOnce;
+	}
 
 	void optimize() {
 		
@@ -29,6 +44,14 @@ public abstract class GreedyOptimizer {
 		// 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法  
 		ArrayList<Server> nextGlobalServers = moveLocal(Global.getBestServers());
 		Global.updateSolution(nextGlobalServers);
+		
+		// 只优化一次
+		if(isOptimizeOnce){
+			if (Global.IS_DEBUG) {
+				System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
+			}
+			return;
+		}
 		
 		while (true) {
 			

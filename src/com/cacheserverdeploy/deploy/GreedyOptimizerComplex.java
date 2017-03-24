@@ -8,6 +8,10 @@ import java.util.Map;
  * 复杂移动比较费时间
  */
 public final class GreedyOptimizerComplex extends GreedyOptimizer{
+	
+	public GreedyOptimizerComplex(boolean isOptimizeOnce){
+		super(isOptimizeOnce);
+	}
 
 	@Override
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {

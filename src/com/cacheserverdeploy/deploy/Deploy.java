@@ -15,21 +15,23 @@ public class Deploy{
     
     	Global.init();
     	
- 
-		new GreedyOptimizerRandom().optimize();
-		
-    	// new GreedyOptimizerSimple().optimize();
-		//new GreedyOptimizerMiddle().optimize();
-		//System.out.println("Global.isDropInInit():"+Global.isDropInInit());
-    	//if(Global.isDropInInit()){	
-    		// 无奈退出
-    		// 陷入初始最优了,禁忌搜索
-    		// new GreedyOptimizerTabuSearch().optimize();
-		//}else{
-		//	new GreedyOptimizerComplex().optimize();
-		//}
+
+    	// new GreedyOptimizerSimple().optimize();	
     	
-//		new GreedyOptimizerMCMF().optimize();	
+    	new GreedyOptimizerMiddle().optimize();
+		if(Global.isDropInInit()){	
+    		new GreedyOptimizerRandom().optimize();
+		}else{
+			new GreedyOptimizerComplex(GreedyOptimizer.OPTIMIZE_ONCE).optimize();
+			new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
+		}
+		
+		
+		//System.out.println("Global.isDropInInit():"+Global.isDropInInit());
+    	  	
+    	// 无奈退出
+		// 陷入初始最优了,禁忌搜索
+		// new GreedyOptimizerTabuSearch().optimize();
 //    	if(Global.isNpHardest){
 //    		new GreedyOptimizerMiddle().optimize();
 //    	}else if(Global.isNpHard){
