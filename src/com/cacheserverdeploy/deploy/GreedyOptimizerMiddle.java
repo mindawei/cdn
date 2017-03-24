@@ -18,10 +18,15 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
 		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
 			Server consumerServer = consumerServers[consumerId];
-			transfer(consumerServer,newServers,0);
-			if (consumerServer.getDemand()>0) {
-				nextGlobalServers.add(consumerServer);
-			}
+//			if (Global.isMustServerNode[consumerServer.node]) {
+//				// 肯定是服务器不用转移
+//				nextGlobalServers.add(consumerServer);
+//			} else {
+				transfer(consumerServer, newServers, 0);
+				if (consumerServer.getDemand() > 0) {
+					nextGlobalServers.add(consumerServer);
+				}
+	//		}
 		}
 		
 		for(Server newServer : newServers.values()){

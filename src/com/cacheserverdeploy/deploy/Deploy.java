@@ -15,7 +15,7 @@ public class Deploy{
     
     	Global.init();
 
-    	//new GreedyOptimizerMiddle().optimize();
+       //new GreedyOptimizerMiddle().optimize();
 //    	new GreedyOptimizerSimple().optimize();	
 //		if(Global.isDropInInit()){	
     	

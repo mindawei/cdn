@@ -63,16 +63,21 @@ public abstract class GreedyOptimizer {
 			ArrayList<Server> oldGlobalServers = Global.getBestServers();
 			for (Server server : oldGlobalServers) {
 				int fromNode = server.node;
+				// 服务器不移动
+				if(Global.isMustServerNode[fromNode]){
+					continue;
+				}
+				
 				for (int toNode = 0; toNode < Global.nodeNum; ++toNode) {
+					
+					if (Global.isTimeOut()) {
+						return;
+					}
+					
 					// 防止自己到自己
 					if (fromNode == toNode) {
 						continue;
 					}
-
-					if (Global.isTimeOut()) {
-						return;
-					}
-
 					nextGlobalServers = move(oldGlobalServers, fromNode, toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {

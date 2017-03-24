@@ -15,25 +15,22 @@ import java.util.Random;
  */
 public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	
-	private final class NODE implements Comparable<NODE>{
+	private final class NodeInfo implements Comparable<NodeInfo>{
     	int id;
-    	int bandWidth;
-    	int costPath;
     	int freq;
 		@Override
-		public int compareTo(NODE o) {
+		public int compareTo(NodeInfo o) {
 			return o.freq-freq;
 		}
     }
 	
+	private final ArrayList<Integer> nodes = new ArrayList<Integer>();
+	
+	private final Random random = new Random(47);
+	
 	public GreedyOptimizerRandom(){
 		init();
 	}
-	
-
-	private ArrayList<Integer> nodes = new ArrayList<Integer>();
-	
-	private Random random = new Random(47);
 	
 	private ArrayList<Integer> randomSelectServers() {
 		
@@ -42,12 +39,23 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		boolean[] selected = new boolean[nodes.size()];
 		Arrays.fill(selected, false);
 		int leftNum = Global.consumerNum / 4;
+		for(int node : Global.mustServerNodes){
+			nextServerNodes.add(node);
+		}
+		leftNum -= Global.mustServerNodes.length;
+		
 		while(leftNum>0){
 			int index = random.nextInt(nodes.size());
+			// 没有被选过
 			if(!selected[index]){
-				selected[index] = true;
-				nextServerNodes.add(nodes.get(index));
-				leftNum--;
+				Integer node = nodes.get(index);
+				if(Global.isMustServerNode[node]){
+					selected[index] = true;
+				}else{ //  是服务器，服务器上面已经添加过了
+					selected[index] = true;
+					nextServerNodes.add(node);
+					leftNum--;
+				}
 			}
 		}
 
@@ -94,6 +102,10 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			int toNums = 2000 / oldGlobalServers.size();
 			
 			for (int fromNode : oldGlobalServers) {
+				// 服务器不移动
+				if(Global.isMustServerNode[fromNode]){
+					continue;
+				}
 				int leftNum = toNums;
 				for (int toNode : oldGlobalServers) {
 					// 防止自己到自己
@@ -173,10 +185,7 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		return transferServers(consumerServers, newServers);
 	}
 
-	
-	
 	/////////////////////////////
-
 
 	//private final int N =1010;
 	private int nearNodeId;
@@ -184,10 +193,10 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	
 	private void init() {
 		limitBandWidth = new int[Global.nodeNum];
-		NODE[] nodeFreq = new NODE[Global.nodeNum];
+		NodeInfo[] nodeFreq = new NodeInfo[Global.nodeNum];
 
 		for(int i=0;i<Global.nodeNum;i++){
-			nodeFreq[i]= new NODE();
+			nodeFreq[i]= new NodeInfo();
 		}
 		List<Integer> clientList = new ArrayList<Integer>(Global.consumerNodes.length);
 		for(int client: Global.consumerNodes){
@@ -208,7 +217,7 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		//Arrays.sort(nodeFreq);
 		
 		
-		for(NODE node : nodeFreq){
+		for(NodeInfo node : nodeFreq){
 			if(node.freq>0){
 				nodes.add(node.id);
 			}
@@ -254,9 +263,5 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		}
 		return pre;
 	}
-	
-	
-
-
 
 }

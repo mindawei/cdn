@@ -30,9 +30,14 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
 		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
 			Server consumerServer = consumerServers[consumerId];
-			transfer(consumerId,consumerServer,newServers);
-			if (consumerServer.getDemand()>0) {
+			if(Global.isMustServerNode[consumerServer.node]){
+				// 肯定是服务器不用转移
 				nextGlobalServers.add(consumerServer);
+			}else{
+				transfer(consumerId,consumerServer,newServers);
+				if (consumerServer.getDemand()>0) {
+					nextGlobalServers.add(consumerServer);
+				}
 			}
 		}
 		
@@ -47,6 +52,7 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 	
 	/** 将起始点需求分发到目的地点中，会改变边的流量<br> */
 	private void transfer(int consumerId,Server fromServer, Map<Integer, Server> toServers) {
+		
 		// 0 未访问  1访问过
 		int[] visited = new int[Global.nodeNum];
 

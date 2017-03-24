@@ -1,6 +1,10 @@
 package com.cacheserverdeploy.deploy;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +35,7 @@ public final class Global {
 	/** 是否困难 */
 	static boolean isNpHard;
 	
-	private static final int NP_HARD_THRESHOLD    = 1000000;
+	private static final int NP_HARD_THRESHOLD    = 10000000;
 	
 	private static final int NP_HARDEST_THRESHOLD = 10000000;
 
@@ -76,7 +80,12 @@ public final class Global {
 	public static Edge[] edges;
 	/** 连接关系：下游节点 */
 	static int[][] connections; 
-			
+	
+	/** 是否确肯定定是服务节点 */
+	static boolean[] isMustServerNode;
+	/** 一定是服务节点的点 */
+	static int[] mustServerNodes;
+	
 	/** 放置的服务器 */
 	private static ArrayList<Server> bestServers;
 
@@ -96,6 +105,63 @@ public final class Global {
 			for(int i=0;i<toNodeIds.size();++i){
 				connections[fromNode][i] = toNodeIds.get(i);
 			}
+		}
+		
+		// 如果需求大于供应，则这个消费节点必须建立服务器
+		isMustServerNode = new boolean[nodeNum];
+		Arrays.fill(isMustServerNode, false);
+		ArrayList<Integer> lsMustServerNodes = new ArrayList<Integer>();
+		for(int consumerId = 0;consumerId<consumerNum;++consumerId){
+			// 自己的需求
+			int cunsumerDemand = consumerDemands[consumerId];
+			// 消费者节点
+			int consumerNode = consumerNodes[consumerId];
+			// 能够提供的需求
+			int supplyDemand = 0;
+			// 来自的边
+			ArrayList<Edge> fromEdges = new ArrayList<Edge>();
+			for(int fromNode =0;fromNode<nodeNum;++fromNode){
+				Edge edge = graph[fromNode][consumerNode];
+				if(edge!=null){
+					supplyDemand+=edge.initBandWidth;
+					fromEdges.add(edge);
+				}
+			}
+			boolean isServerNode =false;
+			if(supplyDemand<cunsumerDemand){ // 不能满足
+				isServerNode = true;
+			}else{ // supplyDemand>= cunsumerDemand 可以满足
+				// 按费用从小到大
+				Collections.sort(fromEdges,new Comparator<Edge>() {
+					@Override
+					public int compare(Edge o1, Edge o2) {
+						return o1.cost-o2.cost;
+					}
+				});
+				int totalCost = 0;
+				for(Edge fromEdge :fromEdges){
+					int useDemand = Math.min(cunsumerDemand, fromEdge.initBandWidth);
+					totalCost+= useDemand * fromEdge.cost;
+					cunsumerDemand-=useDemand;
+					if(cunsumerDemand==0){
+						break;
+					}
+				}
+				if(totalCost>=depolyCostPerServer){
+					isServerNode = true;
+				}
+			}
+			if(isServerNode){
+				lsMustServerNodes.add(consumerNode);
+				isMustServerNode[consumerNode]= true;
+			}
+		}
+		mustServerNodes = new int[lsMustServerNodes.size()];
+		for(int i=0;i<lsMustServerNodes.size();++i){
+			mustServerNodes[i] = lsMustServerNodes.get(i);
+		}
+		if(IS_DEBUG){
+			System.out.println("服务器节点："+Arrays.toString(mustServerNodes));
 		}
 		
 		// 初始解

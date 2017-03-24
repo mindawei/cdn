@@ -65,10 +65,13 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 		for (int layer = 0; layer < layerNum; ++layer) {
 			Server fromServer = fromServers[layer];	
 			// 需求
-			int fromDemand = fromServer.getDemand();
-			notVisitedServerNum[layer] = serverNum;
-			fromCosts[layer] =0;
-			fromDemands[layer] = fromDemand;
+			int fromDemand = 0;
+			if(!Global.isMustServerNode[fromServer.node]){
+				fromDemand = fromServer.getDemand();
+				notVisitedServerNum[layer] = serverNum;
+				fromCosts[layer] =0;
+				fromDemands[layer] = fromDemand;
+			}
 			totalFromDemand += fromDemand;
 		}
 		
@@ -84,7 +87,6 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 		
 		CostInfo[][] transferInfos = new CostInfo[layerNum][Global.nodeNum];	
 		for (int layer = 0; layer < layerNum; ++layer) {
-
 			// 初始化
 			transferInfos[layer] = new CostInfo[Global.nodeNum];
 			// 自己到自己的距离为0
@@ -105,7 +107,7 @@ public final class GreedyOptimizerComplex extends GreedyOptimizer{
 			for (int layer =0;layer<layerNum;++layer) {
 				for (int node = 0; node < Global.nodeNum; ++node) {
 					// 1 访问过了 或者 2 还没信息（cost 无穷大）
-					if (visited[layer][node] == 1 || notVisitedServerNum[layer]==0|| fromDemands[layer]==0) {
+					if (fromDemands[layer]==0 || visited[layer][node] == 1 || notVisitedServerNum[layer]==0) {
 						continue;
 					}
 					CostInfo transferInfo = transferInfos[layer][node];
