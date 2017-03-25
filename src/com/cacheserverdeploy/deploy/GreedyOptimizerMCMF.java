@@ -22,7 +22,9 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 	@Override
 	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
 
-		System.out.println(newServers.keySet());
+		if(Global.IS_DEBUG){
+			System.out.println(newServers.keySet());
+		}
 		
 		// 源头
 		Arrays.fill(Global.graph[Global.sourceNode], null);

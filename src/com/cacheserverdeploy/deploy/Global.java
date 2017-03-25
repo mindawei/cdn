@@ -21,7 +21,7 @@ public final class Global {
 	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 80 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 60 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -34,10 +34,16 @@ public final class Global {
 	/** 是否困难 */
 	static boolean isNpHard;
 	
+
+	private static final int NP_HARDEST_THRESHOLD = 100000000;
 	private static final int NP_HARD_THRESHOLD    = 10000000;
 	
-	private static final int NP_HARDEST_THRESHOLD = 10000000;
-
+	// 初级                1638400
+	// 中级                10800000
+	// 高级                204800000
+	// case 50 4500000
+	// case 99 500000000
+	
 	/** 无穷大 */
 	static final int INFINITY = Integer.MAX_VALUE;
 
@@ -174,11 +180,11 @@ public final class Global {
 		
 		// 判断任务难易 
 		int On = nodeNum * nodeNum * consumerNum;
-		isNpHardest = On>NP_HARDEST_THRESHOLD;
-		isNpHard = On > NP_HARD_THRESHOLD;
+		isNpHardest = On>=NP_HARDEST_THRESHOLD;
+		isNpHard = On >= NP_HARD_THRESHOLD;
 		if(IS_DEBUG){
 			System.out.println("initCost:"+initCost);
-			System.out.println("On:"+On+" isNpHard:"+isNpHard);
+			System.out.println("On:"+On+" isNpHardest:"+isNpHardest+" isNpHard:"+isNpHard);
 		}
 		
 		/** 初始化缓存 */
@@ -300,17 +306,51 @@ public final class Global {
 	//////////////////////////////////
 	
 	/** 消费者到所有节点的费用 */
+	/** 最小消耗 */
 	static int[][] allCost;
+	/** 最小消耗的前向指针 */
 	static int[][] allPreNodes;
+	/** 按节点的费用进行排序，从低到高，包括自己 */
+	static int[][] allPriorityCost;
 	
 	private static void initAllCostAndPreNodes() {
 		// 初始化本地缓存
 		allCost = new int[Global.consumerNum][Global.nodeNum];
 		allPreNodes = new int[Global.consumerNum][Global.nodeNum];
-
-		for (int i = 0; i < Global.consumerNum; ++i) {
-			Arrays.fill(allPreNodes[i], -1);
-			initOneCostAndPreNodes(i);
+		allPriorityCost = new int[Global.consumerNum][Global.nodeNum];
+		
+		final class Node implements Comparable<Node>{
+			int node;
+			int cost;
+			public Node(int node, int cost) {
+				super();
+				this.node = node;
+				this.cost = cost;
+			}
+			
+			@Override
+			public int compareTo(Node o) {
+				// 费用从小到大排
+				return cost-o.cost;
+			}
+		}
+		
+		for (int consumerId = 0; consumerId < Global.consumerNum; ++consumerId) {
+			Arrays.fill(allPreNodes[consumerId], -1);
+			initOneCostAndPreNodes(consumerId);
+			
+			// 保存费用优先级
+			int[] costs = allCost[consumerId];
+			Node[] nodes = new Node[Global.nodeNum];
+			for(int node =0;node<Global.nodeNum;++node){
+				nodes[node] = new Node(node,costs[node]);
+			}
+			Arrays.sort(nodes);
+			int index = 0;
+			for(Node node : nodes){
+				allPriorityCost[consumerId][index++] = node.node;
+			}
+			
 		}
 		
 		if(Global.IS_DEBUG){

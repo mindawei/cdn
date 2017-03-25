@@ -3,6 +3,7 @@ package com.cacheserverdeploy.deploy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 
@@ -12,7 +13,7 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
+public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	
 	/** 频率大于0的点 */
 	private int[] nodes;
@@ -104,9 +105,9 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 
 			// System.out.println(oldGlobalServers.size()*oldGlobalServers.size());
 			
-			int toNums = 2000 / nextRoundServers.size();
+			 int toNums = 2000 / nextRoundServers.size();
 			
-			boolean findBetter = false;
+			//boolean findBetter = false;
 			for (Server oldServer : nextRoundServers) {
 				
 				int fromNode = oldServer.node;
@@ -115,7 +116,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 				if(Global.isMustServerNode[fromNode]){
 					continue;
 				}
-				int leftNum = toNums;
+				 int leftNum = toNums;
 				// for (Server toServer : nextRoundServers) {
 				// int toNode = toServer.node;
 				for (int toNode : nodes) {
@@ -135,8 +136,8 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 						minCost = cost;
 						bestFromNode = fromNode;
 						bestToNode = toNode;
-						findBetter = true;
-						break;
+//						findBetter = true;
+//						break;
 					}
 					
 					leftNum--;
@@ -145,9 +146,9 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 					}
 				}
 				
-				if(findBetter){
-					break;
-				}
+//				if(findBetter){
+//					break;
+//				}
 			}
 
 			if (minCost == Global.INFINITY) {
@@ -284,4 +285,51 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 //			System.out.println();
 		}
 	}
+	
+	/// 原来Simple部分
+	@Override
+	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
+		
+		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
+			Server consumerServer = consumerServers[consumerId];
+			
+			if(Global.isMustServerNode[consumerServer.node]){
+				// 肯定是服务器不用转移
+				nextGlobalServers.add(consumerServer);
+				continue;
+			}
+			
+			// 将起始点需求分发到目的地点中，会改变边的流量<br>
+			int fromDemand = Global.consumerDemands[consumerId];		
+			for(int node : Global.allPriorityCost[consumerId]){
+				if(!newServers.containsKey(node)){
+					continue;
+				}
+				// 是服务器
+				int usedDemand = useBandWidthByPreNode(fromDemand, node,Global.allPreNodes[consumerId]);
+				// 可以消耗
+				if (usedDemand > 0) {
+					transferTo(consumerServer, newServers.get(node), usedDemand,node, Global.allPreNodes[consumerId]);
+					fromDemand -= usedDemand;
+					if(fromDemand==0){
+						break;
+					}
+				}
+			}
+			if (fromDemand>0) {
+				nextGlobalServers.add(consumerServer);
+			}
+			
+		}
+		
+		for(Server newServer : newServers.values()){
+			if (newServer.getDemand() > 0) { // 真正安装
+				nextGlobalServers.add(newServer);
+			}
+		}
+		
+		return nextGlobalServers;
+	}
+
 }

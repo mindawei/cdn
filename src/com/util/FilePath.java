@@ -2,10 +2,13 @@ package com.util;
 
 public class FilePath {
 
-	private static final String baseFilePath = "case_example/0 初级/";
+//	private static final String baseFilePath = "case_example/0 初级/";
 //	private static final String baseFilePath = "case_example/1 中级/";
-//	private static final String baseFilePath = "case_example/2 高级/";
+	private static final String baseFilePath = "case_example/2 高级/";
 	
+	// 总的费用：59121  1/4
+	
+	// 总的费用：50311  1/7
 //	public static final String graphFilePath = baseFilePath+"0.txt";
 //	public static final String graphFilePath = baseFilePath+"1.txt";
 //	public static final String graphFilePath = baseFilePath+"2.txt";
@@ -22,7 +25,7 @@ public class FilePath {
 //	public static final String graphFilePath = "case_example/case2.txt";
 //  public static final String graphFilePath = "case_example/case3.txt";
 //	public static final String graphFilePath = "case_example/case4.txt";
-//    public static final String graphFilePath = "case_example/case50.txt";
+//   public static final String graphFilePath = "case_example/case50.txt";
   public static final String graphFilePath = "case_example/case99.txt";
 
 	public static final String resultFilePath = "result/0.txt";

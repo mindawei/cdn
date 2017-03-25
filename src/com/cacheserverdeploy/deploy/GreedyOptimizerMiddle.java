@@ -78,11 +78,13 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 		// 是否找的一条减少需求的路
 		boolean fromDemandSmaller = false;
 		
+		int minCost;
+		int minCostNode;
 		while (leftServerNodeNum > 0) {
 
 			// 寻找下一个最近点
-			int minCost = Global.INFINITY;
-			int minCostNode = -1;
+			minCost = Global.INFINITY;
+			minCostNode = -1;
 			for (int node =0;node<Global.nodeNum;++node) {
 				// 1 访问过了 或者 2 还没信息（cost 无穷大）
 				if(visited[node]){

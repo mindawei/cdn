@@ -14,18 +14,20 @@ public class Deploy{
     	Parser.buildNetwork(graphContent);
     
     	Global.init();
-
-//		if(Global.isDropInInit()){	
     	
-    	if(Global.isNpHard){
+    	if(Global.isNpHardest){
+    		int nearestK = 1;
+    		int selectedNum = Global.consumerNum / 5;
+    		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
+    	}else if(Global.isNpHard){
     		int nearestK = 1;
     		int selectedNum = Global.consumerNum / 4;
     		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
-    		new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 		}else{
 			new GreedyOptimizerMiddle().optimize();
-			new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 		}
+    	
+    	new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 	
     	if(Global.IS_DEBUG){
     		Global.printBestSolution();
