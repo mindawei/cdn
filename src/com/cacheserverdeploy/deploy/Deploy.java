@@ -18,8 +18,9 @@ public class Deploy{
 //		if(Global.isDropInInit()){	
     	
     	if(Global.isNpHard){
-    		int topK = 1;
-    		new GreedyOptimizerRandom(topK).optimize();
+    		int nearestK = 1;
+    		int selectedNum = Global.consumerNum / 4;
+    		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
     		new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 		}else{
 			new GreedyOptimizerMiddle().optimize();

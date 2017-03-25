@@ -17,44 +17,58 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	/** 频率大于0的点 */
 	private int[] nodes;
 	
+	/** 候选节点是否被选中 */
+	private final boolean[] selected;
+	
+	/** 每次最多随机选多少个*/
+	private final int selectNum;
+	/** 下一轮的服务器*/
+	private ArrayList<Server> nextRoundServers;
+	
 	private final Random random = new Random(47);
 	
-	public GreedyOptimizerRandom(int topK){
-		initNodes(topK);
+	/**
+	 * 构造函数
+	 * @param nearestK 初始化的时候选每个消费者几个最近领
+	 * @param selectNum 随机生成的时候服务器个数
+	 */
+	public GreedyOptimizerRandom(int nearestK,int selectNum){
+		this.selectNum = selectNum;
+		initNodes(nearestK);
+		selected = new boolean[nodes.length];
+		nextRoundServers = new ArrayList<Server>(Global.consumerNum);
 	}
 	
-	/** 随机选择服务器 */
-	private ArrayList<Server> randomSelectServers() {
+	/** 随机选择服务器 ,改变{@link #nextRoundServers}*/
+	private void randomSelectServers() {
 		
-		ArrayList<Server> nextServerNodes = new ArrayList<Server>(Global.consumerNum);
-		
-		boolean[] selected = new boolean[nodes.length];
 		Arrays.fill(selected, false);
-		int leftNum = Global.consumerNum / 4;
+		nextRoundServers.clear();
+		
+		int leftNum = selectNum;
+		// 肯定是服务器的
 		for(int node : Global.mustServerNodes){
-			nextServerNodes.add(new Server(node));
+			nextRoundServers.add(new Server(node));
 		}
 		leftNum -= Global.mustServerNodes.length;
-		
+		// 随机选择
 		while(leftNum>0){
 			int index = random.nextInt(nodes.length);
 			// 没有被选过
 			if(!selected[index]){
 				int node = nodes[index];
 				if(Global.isMustServerNode[node]){
+					//  是服务器，服务器上面已经添加过了
 					selected[index] = true;
-				}else{ //  是服务器，服务器上面已经添加过了
+				}else{ 
 					selected[index] = true;
-					nextServerNodes.add(new Server(node));
+					nextRoundServers.add(new Server(node));
 					leftNum--;
 				}
 			}
 		}
-
-		return nextServerNodes;
 	}
 
-	
 	@Override
 	void optimize() {
 
@@ -70,14 +84,14 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		long t = System.currentTimeMillis();
 
 			
-		ArrayList<Server> oldGlobalServers = randomSelectServers();
+		randomSelectServers();
 		
 		int lastCsot = Global.INFINITY;
 		
 		while (true) {
 				
 			if (Global.IS_DEBUG) {
-				for(Server server : oldGlobalServers){
+				for(Server server : nextRoundServers){
 					System.out.print(server.node+" ");
 				}
 				System.out.println();
@@ -90,9 +104,10 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 
 			// System.out.println(oldGlobalServers.size()*oldGlobalServers.size());
 			
-			int toNums = 2000 / oldGlobalServers.size();
+			int toNums = 2000 / nextRoundServers.size();
 			
-			for (Server oldServer : oldGlobalServers) {
+			boolean findBetter = false;
+			for (Server oldServer : nextRoundServers) {
 				
 				int fromNode = oldServer.node;
 				
@@ -101,9 +116,9 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 					continue;
 				}
 				int leftNum = toNums;
-				for (Server toServer : oldGlobalServers) {
-					
-					int toNode = toServer.node;
+				// for (Server toServer : nextRoundServers) {
+				// int toNode = toServer.node;
+				for (int toNode : nodes) {
 					
 					// 防止自己到自己
 					if (fromNode == toNode) {
@@ -114,19 +129,24 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 						return;
 					}
 
-					ArrayList<Server> nextGlobalServers = move(oldGlobalServers, fromNode, toNode);
-					int cost = Global.getTotalCost(nextGlobalServers);
+					ArrayList<Server> newServers = move(nextRoundServers, fromNode, toNode);
+					int cost = Global.getTotalCost(newServers);
 					if (cost < minCost) {
 						minCost = cost;
 						bestFromNode = fromNode;
 						bestToNode = toNode;
+						findBetter = true;
+						break;
 					}
 					
-
 					leftNum--;
 					if(leftNum==0){
 						break;
 					}
+				}
+				
+				if(findBetter){
+					break;
 				}
 			}
 
@@ -139,17 +159,15 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			}
 			
 			// 移动
-			ArrayList<Server> nextGlobalServers = move(oldGlobalServers, bestFromNode, bestToNode);
-			int cost = Global.getTotalCost(nextGlobalServers);
-			//boolean better = Global.updateSolution(nextGlobalServers);
-
+			nextRoundServers = move(nextRoundServers, bestFromNode, bestToNode);
+			int cost = Global.getTotalCost(nextRoundServers);
+		
 			if (cost<lastCsot) {
-				Global.updateSolution(nextGlobalServers);
-				oldGlobalServers = nextGlobalServers;
 				lastCsot = cost;
+				Global.updateSolution(nextRoundServers);
 			}else{ // not better
 				lastCsot = Global.INFINITY;
-				oldGlobalServers = randomSelectServers();
+				randomSelectServers();
 			}
 			
 		}
@@ -177,21 +195,35 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			this.toNode = toNode;
 		}	
 	}
-
-	private void initNodes(int topK) {
+	
+	private final class NodeFreq{
+		final int node;
+		int freqs;
+		
+		public NodeFreq(int node, int freqs) {
+			super();
+			this.node = node;
+			this.freqs = freqs;
+		}
+	}
+	
+	private void initNodes(int nearestK) {
 		
 		// 不会超过消费者数
-		topK = Math.min(topK, Global.nodeNum-1);
+		nearestK = Math.min(nearestK, Global.nodeNum-1);
 		
 		// 节点频率
-		int[] nodeFreqs = new int[Global.nodeNum];
-			
+		NodeFreq[] nodeFreqs = new NodeFreq[Global.nodeNum];
+		for(int node=0;node<Global.nodeNum;++node){
+			nodeFreqs[node] = new NodeFreq(node,0);
+		}
+		
 		for(int consumerId =0 ;consumerId<Global.consumerNum;++consumerId){
 			
 			int fromConsumerNode = Global.consumerNodes[consumerId];
 			
 			// 最大堆
-			PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>(topK+1,new Comparator<Info>() {
+			PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>(nearestK+1,new Comparator<Info>() {
 				@Override
 				public int compare(Info o1, Info o2) {
 					return o2.cost-o1.cost;
@@ -207,7 +239,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 				int[] preNodes = Global.allPreNodes[consumerId];
 				Info info = new Info(cost, preNodes, toConsumerNode);
 				priorityQueue.add(info);
-				if(priorityQueue.size()>topK){
+				if(priorityQueue.size()>nearestK){
 					// 去掉最大的，保留 k个最小的
 					priorityQueue.poll();
 				}
@@ -218,16 +250,26 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			while((info=priorityQueue.poll())!=null){
 				int[] preNodes = info.preNodes;
 				for(int node=info.toNode;node!=-1;node=preNodes[node]){
-					nodeFreqs[node]++;
+					nodeFreqs[node].freqs++;
 				}
 			}
 		}
 		
+		// 按频率从大到小排
+		Arrays.sort(nodeFreqs,new Comparator<NodeFreq>() {
+			@Override
+			public int compare(NodeFreq o1, NodeFreq o2) {	
+				return o2.freqs - o1.freqs;
+			}
+		});
+		
 		int[] selectedNodes = new int[Global.nodeNum];
 		int len = 0;
-		for(int node =0;node<Global.nodeNum;++node){
-			if(nodeFreqs[node]>0){
-				selectedNodes[len++] = node;
+		for(NodeFreq nodeFreq : nodeFreqs ){
+			if(nodeFreq.freqs>0){
+				selectedNodes[len++] = nodeFreq.node;
+			}else{
+				break;
 			}
 		}
 		this.nodes = new int[len];
