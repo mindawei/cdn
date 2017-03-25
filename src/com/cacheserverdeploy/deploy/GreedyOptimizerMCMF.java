@@ -1,52 +1,50 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 /**
- * 利用最大最小费用流进行优化
+ * 利用最大最小费用流进行优化s
  *
  * @author mindw
  * @date 2017年3月23日
  */
 public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 
+	public GreedyOptimizerMCMF(){}
+	
 	public GreedyOptimizerMCMF(boolean isOptimizeOnce){
 		super(isOptimizeOnce);
 	}
 	
 	@Override
-	protected ArrayList<Server> transferServers(Server[] newServers) {
-		
-		// 源头
-		Arrays.fill(Global.graph[Global.sourceNode], null);
-		for(int fromNode=0;fromNode<Global.mcmfNodeNum;++fromNode){
-			Global.graph[fromNode][Global.sourceNode] = null;
-		}
+	protected void transferServers(Server[] newServers) {
 		
 		for(int node =0;node<Global.nodeNum;++node){
+			// 没有服务器
 			if(newServers[node]==null){
-				continue;
+				Global.graph[node][Global.sourceNode] = null;
+				Global.graph[Global.sourceNode][node] = null;
+			}else{
+				Global.graph[Global.sourceNode][node] = new Edge(Global.INFINITY, 0);
+				Global.graph[node][Global.sourceNode] = new Edge(0, 0);
 			}
-			Global.graph[Global.sourceNode][node] = new Edge(Global.INFINITY, 0);
-			Global.graph[node][Global.sourceNode] = new Edge(0, 0);
 		}
 		
 		List<ServerInfo> serverInfos = mcmf();
 
 		if(serverInfos==null){ // 无解
-			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(Global.consumerNum);
-			for(Server consumerServer : Global.getConsumerServer()){
-				nextGlobalServers.add(consumerServer);
+			int size = 0;
+			for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){
+				nextGlobalServers[size++] = new Server(consumerId,Global.consumerNodes[consumerId],Global.consumerDemands[consumerId]);
 			}
-			return nextGlobalServers;
-			
+			// 尾部设置null表示结束
+			if(size<nextGlobalServers.length){
+				nextGlobalServers[size] = null;
+			}
 		}else{ // 有解
-			
-			ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+			int size = 0;
 			for(ServerInfo serverInfo : serverInfos){
 				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length-1];
 				Server newServer = newServers[serverNode];
@@ -58,13 +56,14 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 				}
 				Server newServer = newServers[node];
 				if(newServer.getDemand()>0){
-					nextGlobalServers.add(newServer);
+					nextGlobalServers[size++] = newServer;
 				}
 			}
-			return nextGlobalServers;
-
+			// 尾部设置null表示结束
+			if(size<nextGlobalServers.length){
+				nextGlobalServers[size] = null;
+			}
 		}		
-	
 	}
 	
 

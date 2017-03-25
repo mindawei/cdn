@@ -17,7 +17,7 @@ public class Deploy{
     	
     	if(Global.isNpHardest){
     		int nearestK = 1;
-    		int selectedNum = Global.consumerNum / 5;
+    		int selectedNum = Global.consumerNum / 4;
     		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
     	}else if(Global.isNpHard){
     		int nearestK = 1;
@@ -25,6 +25,7 @@ public class Deploy{
     		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
 		}else{
 			new GreedyOptimizerMiddle().optimize();
+			// new GreedyOptimizerMCMF().optimize();	
 		}
     	
     	new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	

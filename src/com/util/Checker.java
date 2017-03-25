@@ -37,6 +37,9 @@ public class Checker {
 	    
 	     Map<Integer,Integer> consumerDemands = new HashMap<Integer,Integer>();
 	     for(Server server : Global.getBestServers()){
+	    	 if(server==null){
+	    		 break;
+	    	 }
 	    	 ServerInfo serverInfo = server.serverInfos.get(0);
 	    	 Integer consumerId = serverInfo.consumerId;
 	    	 int demand = serverInfo.provideBandWidth;

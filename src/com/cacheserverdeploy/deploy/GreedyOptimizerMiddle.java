@@ -1,24 +1,23 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
-
 /**
  * 一个一个转移
  *
  * @author mindw
  * @date 2017年3月23日
  */
-public class GreedyOptimizerMiddle extends GreedyOptimizer{
+public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 	
-	private int[] consumerDemands = new int[Global.consumerNum];
+	private final int[] consumerDemands = new int[Global.consumerNum];
 	
 	@Override
-	protected ArrayList<Server> transferServers(Server[] newServers) {
+	protected void transferServers(Server[] newServers) {
 		
 		// 复制需求
 		System.arraycopy(Global.consumerDemands, 0, consumerDemands, 0, Global.consumerNum);
 		
-		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+		int size = 0;
+		
 		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
 			// 肯定是服务器不用转移  ？？ 加上效果不好 case50
 //			if (Global.isMustServerNode[consumerServer.node]) {
@@ -37,14 +36,14 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 				}
 			}
 			if(minCost*consumerDemands[consumerId]>=Global.depolyCostPerServer){
-				nextGlobalServers.add(new Server(consumerId, Global.consumerNodes[consumerId], consumerDemands[consumerId]));
+				nextGlobalServers[size++] = new Server(consumerId, Global.consumerNodes[consumerId], consumerDemands[consumerId]);
 				continue;
 			}
 			
 			while(transfer(consumerId, newServers));
 			
 			if (consumerDemands[consumerId] > 0) {
-				nextGlobalServers.add(new Server(consumerId, Global.consumerNodes[consumerId], consumerDemands[consumerId]));
+				nextGlobalServers[size++] = new Server(consumerId, Global.consumerNodes[consumerId], consumerDemands[consumerId]);
 			}
 			
 		}
@@ -55,11 +54,14 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 			}
 			Server newServer = newServers[node];
 			if(newServer.getDemand()>0){
-				nextGlobalServers.add(newServer);
+				nextGlobalServers[size++] = newServer;
 			}
 		}
 		
-		return nextGlobalServers;
+		// 尾部设置null表示结束
+		if(size<nextGlobalServers.length){
+			nextGlobalServers[size] = null;
+		}
 	}
 	
 	private final boolean[] visited = new boolean[Global.nodeNum];

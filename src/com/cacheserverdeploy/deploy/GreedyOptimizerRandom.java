@@ -1,6 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -23,32 +22,72 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	/** 每次最多随机选多少个*/
 	private final int selectNum;
 	/** 下一轮的服务器*/
-	private ArrayList<Server> nextRoundServers;
-	
+	private Server[] bestServersInRandom;
+
 	private final Random random = new Random(47);
+	
+	/** 只是作用于第一轮，之后就完全随机了 */
+	private boolean isRandom;
 	
 	/**
 	 * 构造函数
 	 * @param nearestK 初始化的时候选每个消费者几个最近领
 	 * @param selectNum 随机生成的时候服务器个数
+	 * @param isRandom 只是作用于第一轮，之后就完全随机了
 	 */
 	public GreedyOptimizerRandom(int nearestK,int selectNum){
 		this.selectNum = selectNum;
 		initNodes(nearestK);
 		selected = new boolean[nodes.length];
-		nextRoundServers = new ArrayList<Server>(Global.consumerNum);
+		bestServersInRandom = new Server[Global.nodeNum];
+		this.isRandom = false;
 	}
 	
-	/** 随机选择服务器 ,改变{@link #nextRoundServers}*/
-	private void randomSelectServers() {
-		
-		Arrays.fill(selected, false);
-		nextRoundServers.clear();
+	private void selcetServers(){
+		if(isRandom){
+			selectrandomServers();
+		}else{
+			selcetBestServers();
+		}
+	}
+	
+	private void selcetBestServers(){
+		int size = 0;
 		
 		int leftNum = selectNum;
 		// 肯定是服务器的
 		for(int node : Global.mustServerNodes){
-			nextRoundServers.add(new Server(node));
+			bestServersInRandom[size++] = new Server(node);
+		}
+		leftNum -= Global.mustServerNodes.length;
+		int index = 0;
+		// 随机选择
+		while(leftNum>0&&index<nodes.length){
+			// 没有被选过
+			int node = nodes[index++];
+			// 服务器上面已经添加过了
+			if (!Global.isMustServerNode[node]) {
+				bestServersInRandom[size++] = new Server(node);
+				leftNum--;
+			}
+		}
+		// 设置结束标志
+		if(size<bestServersInRandom.length){
+			bestServersInRandom[size] = null;
+		}
+		
+	}
+	
+	/** 随机选择服务器 ,改变{@link #nextRoundServers}*/
+	private void selectrandomServers() {
+		
+		Arrays.fill(selected, false);
+		int size = 0;
+		
+		int leftNum = selectNum;
+		// 肯定是服务器的
+		for(int node : Global.mustServerNodes){
+			bestServersInRandom[size++] = new Server(node);
 		}
 		leftNum -= Global.mustServerNodes.length;
 		// 随机选择
@@ -62,11 +101,27 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 					selected[index] = true;
 				}else{ 
 					selected[index] = true;
-					nextRoundServers.add(new Server(node));
+					bestServersInRandom[size++] = new Server(node);
 					leftNum--;
 				}
 			}
 		}
+		// 设置结束标志
+		if(size<bestServersInRandom.length){
+			bestServersInRandom[size] = null;
+		}
+	}
+	
+	private int size(Server[] servers){
+		int len = 0;
+		for(Server server : servers){
+			if(server==null){
+				return len;
+			}else{
+				len++;
+			}
+		}
+		return len;
 	}
 
 	@Override
@@ -83,14 +138,17 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 
 		long t = System.currentTimeMillis();
 			
-		randomSelectServers();
+		selcetServers();
 		
 		int lastCsot = Global.INFINITY;
 		
 		while (true) {
 				
 			if (Global.IS_DEBUG) {
-				for(Server server : nextRoundServers){
+				for(Server server : bestServersInRandom){
+					if(server==null){
+						break;
+					}
 					System.out.print(server.node+" ");
 				}
 				System.out.println();
@@ -103,10 +161,13 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 
 			// System.out.println(oldGlobalServers.size()*oldGlobalServers.size());
 			
-			 int toNums = 2000 / nextRoundServers.size();
+			 int toNums = 2000 / size(bestServersInRandom);
 			
 			//boolean findBetter = false;
-			for (Server oldServer : nextRoundServers) {
+			for (Server oldServer : bestServersInRandom) {
+				if(oldServer==null){
+					break;
+				}
 				
 				int fromNode = oldServer.node;
 				
@@ -128,8 +189,8 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 						return;
 					}
 
-					ArrayList<Server> newServers = move(nextRoundServers, fromNode, toNode);
-					int cost = Global.getTotalCost(newServers);
+					move(bestServersInRandom, fromNode, toNode);
+					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
 						minCost = cost;
 						bestFromNode = fromNode;
@@ -158,15 +219,28 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			}
 			
 			// 移动
-			nextRoundServers = move(nextRoundServers, bestFromNode, bestToNode);
-			int cost = Global.getTotalCost(nextRoundServers);
+			move(bestServersInRandom, bestFromNode, bestToNode);
+			int cost = Global.getTotalCost(nextGlobalServers);
 		
 			if (cost<lastCsot) {
+				int pos = 0;
+				for(Server server : nextGlobalServers){
+					if(server==null){
+						break;
+					}
+					bestServersInRandom[pos++] = server;
+				}
+				// 设置终止
+				if(pos<bestServersInRandom.length){
+					bestServersInRandom[pos] = null;
+				}
+				
 				lastCsot = cost;
-				Global.updateSolution(nextRoundServers);
+				Global.updateSolution(bestServersInRandom);
 			}else{ // not better
 				lastCsot = Global.INFINITY;
-				randomSelectServers();
+				isRandom = true;
+				selcetServers();
 			}
 			
 		}
@@ -288,9 +362,10 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	
 	
 	@Override
-	protected ArrayList<Server> transferServers(Server[] newServers) {
+	protected void transferServers(Server[] newServers) {
 	
-		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
+		int size = 0;
+		
 		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
 			
 			int consumerNode = Global.consumerNodes[consumerId];
@@ -298,7 +373,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			
 			if(Global.isMustServerNode[consumerNode]){
 				// 肯定是服务器不用转移
-				nextGlobalServers.add(new Server(consumerId,consumerNode,consumerDemand));
+				nextGlobalServers[size++] = new Server(consumerId,consumerNode,consumerDemand);
 				continue;
 			}
 			
@@ -321,7 +396,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			}
 			
 			if (consumerDemand>0) {
-				nextGlobalServers.add(new Server(consumerId,consumerNode,consumerDemand));
+				nextGlobalServers[size++] = new Server(consumerId,consumerNode,consumerDemand);
 			}
 			
 		}
@@ -332,10 +407,14 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			}
 			Server newServer = newServers[node];
 			if(newServer.getDemand()>0){
-				nextGlobalServers.add(newServer);
+				nextGlobalServers[size++] = newServer;
 			}
 		}
-		return nextGlobalServers;
+		
+		// 尾部设置null表示结束
+		if(size<nextGlobalServers.length){
+			nextGlobalServers[size] = null;
+		}
 	}
 
 }

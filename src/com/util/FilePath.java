@@ -23,10 +23,10 @@ public class FilePath {
 //	public static final String graphFilePath = "case_example/case0.txt";
 //	public static final String graphFilePath = "case_example/case1.txt";
 //	public static final String graphFilePath = "case_example/case2.txt";
-//  public static final String graphFilePath = "case_example/case3.txt";
+//    public static final String graphFilePath = "case_example/case3.txt";
 //	public static final String graphFilePath = "case_example/case4.txt";
-   public static final String graphFilePath = "case_example/case50.txt";
-//  public static final String graphFilePath = "case_example/case99.txt";
+//	public static final String graphFilePath = "case_example/case50.txt";
+  public static final String graphFilePath = "case_example/case99.txt";
 
 	public static final String resultFilePath = "result/0.txt";
 	
@@ -56,6 +56,7 @@ public class FilePath {
 	// 3 其他用例测试
 	// 寻路过程中也可以利用缓存提前结束
 	
+	// TODO List 用 数组替代，为空时表示数组结束 
 	
 	// 21920 41574 9万以下
 	

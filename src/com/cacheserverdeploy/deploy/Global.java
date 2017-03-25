@@ -91,11 +91,30 @@ public final class Global {
 	/** 一定是服务节点的点 */
 	static int[] mustServerNodes;
 	
-	/** 放置的服务器 */
-	private static ArrayList<Server> bestServers;
+	/** 放置的服务器 ,List 用 数组替代，为空时表示数组结束  */
+	private static Server[] bestServers;
+	
+	public static Server[] getBestServers() {
+		return bestServers;
+	}
+
+	private static void setBestServers(Server[] nextGlobalServers) {
+		int size = 0;
+		for(Server server : nextGlobalServers){
+			if(server==null){
+				break;
+			}
+			bestServers[size++] = server;
+		}
+		if(size<bestServers.length){
+			bestServers[size] = null;
+		}
+	}
 
 	/** 初始化解：将服务器直接放在消费节点上 */
 	public static void init() {
+		
+		bestServers = new Server[nodeNum]; 
 		
 		// 初始连接关系
 		connections = new int[nodeNum][];
@@ -170,9 +189,9 @@ public final class Global {
 		}
 				
 		// 初始解
-		ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerNum);
+		Server[] nextGlobalServers = new Server[consumerNum];
 		for (int i = 0; i < consumerNum; ++i) {
-			nextGlobalServers.add(new Server(i, consumerNodes[i], consumerDemands[i]));
+			nextGlobalServers[i] = new Server(i, consumerNodes[i], consumerDemands[i]);
 		}
 		updateSolution(nextGlobalServers);	
 		
@@ -192,25 +211,17 @@ public final class Global {
 
 	}
 	
-	public static ArrayList<Server> getBestServers() {
-		return bestServers;
-	}
-	
-	public static void setBestServers(ArrayList<Server> nextGlobalServers) {
-		bestServers = nextGlobalServers;
-	}
-	
 	public static String[] getBsetSolution() {
 		return bsetSolution;
 	}
 	
-	static Server[] getConsumerServer(){
-		Server[] servers = new Server[consumerNum];
-		for(int i=0;i<consumerNum;++i){
-			servers[i] = new Server(i,consumerNodes[i],consumerDemands[i]);
-		}
-		return servers;
-	}
+//	static Server[] getConsumerServer(){
+//		Server[] servers = new Server[consumerNum];
+//		for(int i=0;i<consumerNum;++i){
+//			servers[i] = new Server(i,consumerNodes[i],consumerDemands[i]);
+//		}
+//		return servers;
+//	}
 	
 	/** 重置edge的带宽值 */
 	public static void resetEdgeBandWidth() {
@@ -221,7 +232,7 @@ public final class Global {
 	
 
 	/** 更新值 ，是否更好 */
-	public static boolean updateSolution(ArrayList<Server> nextGlobalServers) {
+	public static boolean updateSolution(Server[] nextGlobalServers) {
 		
 		int newMinCost = getTotalCost(nextGlobalServers);
 		
@@ -231,9 +242,9 @@ public final class Global {
 		}
 		
 		if (newMinCost < Global.minCost) {
-			bestServers = nextGlobalServers;
 			minCost = newMinCost;
-			bsetSolution = getSolution(bestServers);
+			bsetSolution = getSolution(nextGlobalServers);
+			setBestServers(nextGlobalServers);
 			return true;
 		} else {
 			return false;
@@ -251,9 +262,12 @@ public final class Global {
 	 * 每条网络路径由若干网络节点构成，路径的起始节点ID-01表示该节点部署了视频内容服务器，终止节点为某个消费节点<br>
 	 * </blockquote>
 	 */
-	private static String[] getSolution(ArrayList<Server> servers) {
+	private static String[] getSolution(Server[] servers) {
 		List<String> ls = new LinkedList<String>();
 		for (Server server : servers) {
+			if(server==null){
+				break;
+			}
 			ls.addAll(server.getSolution());
 		}
 
@@ -268,9 +282,12 @@ public final class Global {
 	}
 
 	/** 获得总的费用 */
-	public static int getTotalCost(ArrayList<Server> servers) {
+	public static int getTotalCost(Server[] servers) {
 		int toatlCost = 0;
 		for (Server server : servers) {
+			if(server==null){
+				break;
+			}
 			toatlCost += server.getCost();
 		}
 		return toatlCost;
@@ -407,5 +424,4 @@ public final class Global {
 			
 		}
 	}
-
 }

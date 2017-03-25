@@ -1,6 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -22,7 +21,12 @@ public abstract class GreedyOptimizer {
 	public GreedyOptimizer(boolean isOptimizeOnce){
 		this.isOptimizeOnce = isOptimizeOnce;
 	}
-
+	
+	/** 为了复用，为null的地方不放置服务器 */
+	private Server[] newServers = new Server[Global.nodeNum];
+	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束*/
+	protected Server[] nextGlobalServers = new Server[Global.nodeNum];
+	
 	void optimize() {
 		
 		if (Global.IS_DEBUG) {
@@ -33,7 +37,7 @@ public abstract class GreedyOptimizer {
 		long t = System.currentTimeMillis();
 
 		// 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法  
-		ArrayList<Server> nextGlobalServers = moveLocal(Global.getBestServers());
+		moveLocal(Global.getBestServers());
 		Global.updateSolution(nextGlobalServers);
 		
 		// 只优化一次
@@ -51,8 +55,11 @@ public abstract class GreedyOptimizer {
 			int bestFromNode = -1;
 			int bestToNode = -1;
 
-			ArrayList<Server> oldGlobalServers = Global.getBestServers();
-			for (Server server : oldGlobalServers) {
+			for (Server server : Global.getBestServers()) {
+				if(server==null){
+					break;
+				}
+				
 				int fromNode = server.node;
 				// 服务器不移动
 				if(Global.isMustServerNode[fromNode]){
@@ -69,7 +76,8 @@ public abstract class GreedyOptimizer {
 					if (fromNode == toNode) {
 						continue;
 					}
-					nextGlobalServers = move(oldGlobalServers, fromNode, toNode);
+					
+					move(Global.getBestServers(),fromNode, toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
 						minCost = cost;
@@ -88,7 +96,7 @@ public abstract class GreedyOptimizer {
 			}
 			
 			// 移动
-			nextGlobalServers = move(oldGlobalServers, bestFromNode, bestToNode);
+			move(Global.getBestServers(),bestFromNode, bestToNode);
 			boolean better = Global.updateSolution(nextGlobalServers);
 
 			if (!better) { // better
@@ -102,33 +110,37 @@ public abstract class GreedyOptimizer {
 		}
 	}
 
-	/** 进行一步移动 */
-	protected ArrayList<Server> move(ArrayList<Server> oldGlobalServers, int fromServerNode, int toServerNode) {
+	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
+	protected void move(Server[] oldServers,int fromServerNode, int toServerNode) {
 		Arrays.fill(newServers, null);
-		for (Server server : oldGlobalServers) {
+		for (Server server : oldServers) {
+			if(server==null){
+				break;
+			}
 			if (server.node != fromServerNode) {
 				newServers[server.node] = new Server(server.node);
 			}
 		}
 		newServers[toServerNode] = new Server(toServerNode);
 		Global.resetEdgeBandWidth();
-		return transferServers(newServers);
+		transferServers(newServers);
 	}
 	
-	private Server[] newServers = new Server[Global.nodeNum];
-
-	/** 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法   */
-	protected ArrayList<Server> moveLocal(ArrayList<Server> oldGlobalServers) {
+	/** 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法,结果缓存在 nextGlobalServers   */
+	protected void moveLocal(Server[] oldGlobalServers) {
 		Arrays.fill(newServers, null);
 		for (Server server : oldGlobalServers) {
+			if(server==null){
+				break;
+			}
 			newServers[server.node] = new Server(server.node);
 		}
 		Global.resetEdgeBandWidth();
-		return transferServers(newServers);
+		transferServers(newServers);
 	}
 	
-	/** 不同的搜索策略需要提供此方法 :总共 nodeNum个位置*/
-	protected abstract ArrayList<Server> transferServers(Server[] newServers);
+	/** 不同的搜索策略需要提供此方法 :总共 nodeNum个位置，结果缓存在 nextGlobalServers*/
+	protected abstract void transferServers(Server[] newServers);
 
 	/** 
 	 * 供子类调用：
