@@ -2,7 +2,8 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.Random;
 
 /**
@@ -11,30 +12,23 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
+public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	
-	private final class NodeInfo implements Comparable<NodeInfo>{
-    	int id;
-    	int freq;
-		@Override
-		public int compareTo(NodeInfo o) {
-			return o.freq-freq;
-		}
-    }
-	
-	private final ArrayList<Integer> nodes = new ArrayList<Integer>();
+	/** 频率大于0的点 */
+	private int[] nodes;
 	
 	private final Random random = new Random(47);
 	
-	public GreedyOptimizerRandom(){
-		init();
+	public GreedyOptimizerRandom(int topK){
+		initNodes(topK);
 	}
 	
+	/** 随机选择服务器 */
 	private ArrayList<Server> randomSelectServers() {
 		
 		ArrayList<Server> nextServerNodes = new ArrayList<Server>(Global.consumerNum);
 		
-		boolean[] selected = new boolean[nodes.size()];
+		boolean[] selected = new boolean[nodes.length];
 		Arrays.fill(selected, false);
 		int leftNum = Global.consumerNum / 4;
 		for(int node : Global.mustServerNodes){
@@ -43,10 +37,10 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		leftNum -= Global.mustServerNodes.length;
 		
 		while(leftNum>0){
-			int index = random.nextInt(nodes.size());
+			int index = random.nextInt(nodes.length);
 			// 没有被选过
 			if(!selected[index]){
-				Integer node = nodes.get(index);
+				int node = nodes[index];
 				if(Global.isMustServerNode[node]){
 					selected[index] = true;
 				}else{ //  是服务器，服务器上面已经添加过了
@@ -89,7 +83,6 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 				System.out.println();
 			}
 
-			
 			// 可选方案
 			int minCost = Global.INFINITY;
 			int bestFromNode = -1;
@@ -168,85 +161,85 @@ public class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	}
 	
 	/////////////////////////////
-
-	//private final int N =1010;
-	private int nearNodeId;
-	private int[] limitBandWidth;
 	
-	
-	// TODO 改善 random的init，可以利用全局的缓存
-	private void init() {
-		limitBandWidth = new int[Global.nodeNum];
-		NodeInfo[] nodeFreq = new NodeInfo[Global.nodeNum];
-
-		for(int i=0;i<Global.nodeNum;i++){
-			nodeFreq[i]= new NodeInfo();
-		}
-		List<Integer> clientList = new ArrayList<Integer>(Global.consumerNodes.length);
-		for(int client: Global.consumerNodes){
-			clientList.add(client);
-		}
+	private final class Info{
+		/** 花费 */
+		final int cost;
+		/** 前向指针 */
+		final int[] preNodes;
+		/** 目标节点 */
+		final int toNode;
 		
-		for(int client: Global.consumerNodes){
-			nearNodeId=-1;
-			int[] pre = dijkstra(client,clientList);
-			for(int i=nearNodeId;i!=client;i=pre[i]){
-				nodeFreq[i].id=i;
-				nodeFreq[i].freq++;
-			}
-			nodeFreq[client].id=client;
-			nodeFreq[client].freq++;
-		}
-		
-		//Arrays.sort(nodeFreq);
-		for(NodeInfo node : nodeFreq){
-			if(node.freq>0){
-				nodes.add(node.id);
-			}
-		}
-		
+		public Info(int cost, int[] preNodes,int toNode) {
+			super();
+			this.cost = cost;
+			this.preNodes = preNodes;
+			this.toNode = toNode;
+		}	
 	}
 
-	private int[] dijkstra(int s, List<Integer> clientList) {
-		boolean[] vis = new boolean[Global.nodeNum];
-		int[] dis = new int[Global.nodeNum];
-		int[] pre = new int[Global.nodeNum];
-		Arrays.fill(pre, -1);
-		for (int i = 0; i < Global.nodeNum; i++) {
-			dis[i] = Integer.MAX_VALUE;
-		}
-		dis[s] = 0;
-		limitBandWidth[s] = Integer.MAX_VALUE;
-		for (int i = 0; i < Global.nodeNum; i++) {
-			int u = -1, Min = Integer.MAX_VALUE, limit = -1;
-			for (int j = 0; j < Global.nodeNum; j++) {
-				if (vis[j] == false
-						&& (dis[j] < Min || dis[j] == Min
-								&& limitBandWidth[j] > limit)) {
-					u = j;
-					Min = dis[j];
-					limit = limitBandWidth[j];
+	private void initNodes(int topK) {
+		
+		// 不会超过消费者数
+		topK = Math.min(topK, Global.nodeNum-1);
+		
+		// 节点频率
+		int[] nodeFreqs = new int[Global.nodeNum];
+			
+		for(int consumerId =0 ;consumerId<Global.consumerNum;++consumerId){
+			
+			int fromConsumerNode = Global.consumerNodes[consumerId];
+			
+			// 最大堆
+			PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>(topK+1,new Comparator<Info>() {
+				@Override
+				public int compare(Info o1, Info o2) {
+					return o2.cost-o1.cost;
+				}
+			});
+			
+			for(int toConsumerNode : Global.consumerNodes){
+				// 自己不到自己
+				if(toConsumerNode==fromConsumerNode){
+					continue;
+				}
+				int cost = Global.allCost[consumerId][toConsumerNode];
+				int[] preNodes = Global.allPreNodes[consumerId];
+				Info info = new Info(cost, preNodes, toConsumerNode);
+				priorityQueue.add(info);
+				if(priorityQueue.size()>topK){
+					// 去掉最大的，保留 k个最小的
+					priorityQueue.poll();
 				}
 			}
-			if (u == -1) {
-				break;
-			}
-			if (u != s && clientList.contains(u)) {
-				nearNodeId = u;
-				return pre;
-			}
-			vis[u] = true;
-			for (int v = 0; v < Global.nodeNum; v++) {
-				if (vis[v] == false && Global.graph[u][v] != null
-						&& dis[v] > dis[u] + Global.graph[u][v].cost) {
-					dis[v] = dis[u] + Global.graph[u][v].cost;
-					pre[v] = u;
-					limitBandWidth[v] = Math.min(limitBandWidth[u],
-							Global.graph[u][v].initBandWidth);
+			
+			// 统计频率
+			Info info  = null;
+			while((info=priorityQueue.poll())!=null){
+				int[] preNodes = info.preNodes;
+				for(int node=info.toNode;node!=-1;node=preNodes[node]){
+					nodeFreqs[node]++;
 				}
 			}
 		}
-		return pre;
+		
+		int[] selectedNodes = new int[Global.nodeNum];
+		int len = 0;
+		for(int node =0;node<Global.nodeNum;++node){
+			if(nodeFreqs[node]>0){
+				selectedNodes[len++] = node;
+			}
+		}
+		this.nodes = new int[len];
+		System.arraycopy(selectedNodes, 0, this.nodes, 0, len);
+		
+		if (Global.IS_DEBUG) {
+			System.out.println("频率大于0的初始节点有"+nodes.length+"个");
+//			System.out.println("频率大于0的初始节点有"+nodes.length+"个，具体如下：");
+//			for(int node : nodes){
+//				System.out.print(node+" ");
+//			}
+//			System.out.println();
+		}
 	}
-
 }
