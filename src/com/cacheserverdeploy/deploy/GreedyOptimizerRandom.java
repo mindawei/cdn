@@ -300,7 +300,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 				continue;
 			}
 			
-			// 将起始点需求分发到目的地点中，会改变边的流量<br>
+			// 将起始点需求分发到目的地点中，会改变边的流量
 			int fromDemand = Global.consumerDemands[consumerId];		
 			for(int node : Global.allPriorityCost[consumerId]){
 				if(!newServers.containsKey(node)){

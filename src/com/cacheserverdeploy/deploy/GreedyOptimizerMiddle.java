@@ -1,7 +1,6 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -24,7 +23,7 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 //				nextGlobalServers.add(consumerServer);
 //				continue;
 //			} 
-			
+			// 减枝概率不大
 			// 简单减枝计算，转移额最小费用
 			int minCost = Global.INFINITY;
 			for(int serverNode : newServers.keySet()){
@@ -57,16 +56,18 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 	private final boolean[] visited = new boolean[Global.nodeNum];
 	private final int[] costs = new int[Global.nodeNum]; 
 	private final int[] preNodes = new int[Global.nodeNum];
-	
+	// 13436
 	/**  
 	 * 将起始点需求分发到目的地点中，会改变边的流量<br>
 	 * @return 是否需要继续转移 
 	 */
 	private boolean transfer(Server fromServer,Map<Integer, Server> toServers) {
 
-		Arrays.fill(visited, false);
-		Arrays.fill(costs, Global.INFINITY);
-		Arrays.fill(preNodes, -1);
+		for(int node=0;node<Global.nodeNum;++node){
+			visited[node] = false;
+			costs[node] =  Global.INFINITY;
+			preNodes[node] = -1;
+		}
 
 		int fromNode = fromServer.node;
 		int fromDemand = fromServer.getDemand();
@@ -80,11 +81,13 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 		
 		int minCost;
 		int minCostNode;
+		
 		while (leftServerNodeNum > 0) {
-
+		
 			// 寻找下一个最近点
 			minCost = Global.INFINITY;
 			minCostNode = -1;
+				
 			for (int node =0;node<Global.nodeNum;++node) {
 				// 1 访问过了 或者 2 还没信息（cost 无穷大）
 				if(visited[node]){

@@ -45,9 +45,6 @@ public abstract class GreedyOptimizer {
 			return;
 		}
 		
-		
-		
-		
 		while (true) {
 			
 			// 可选方案
@@ -166,7 +163,7 @@ public abstract class GreedyOptimizer {
 		
 		/////////////////////////
 		
-		
+		System.out.println(fromServer.serverInfos.size());
 		Iterator<ServerInfo> iterator = fromServer.serverInfos.iterator();
 		while(iterator.hasNext()){
 			ServerInfo fromServerInfo = iterator.next();
