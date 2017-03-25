@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -20,42 +19,44 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 	}
 	
 	@Override
-	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
-
-		if(Global.IS_DEBUG){
-			System.out.println(newServers.keySet());
-		}
+	protected ArrayList<Server> transferServers(Server[] newServers) {
 		
 		// 源头
 		Arrays.fill(Global.graph[Global.sourceNode], null);
 		for(int fromNode=0;fromNode<Global.mcmfNodeNum;++fromNode){
 			Global.graph[fromNode][Global.sourceNode] = null;
 		}
-		for(int toServerNode : newServers.keySet()){
-			Global.graph[Global.sourceNode][toServerNode] = new Edge(Global.INFINITY, 0);
-			Global.graph[toServerNode][Global.sourceNode] = new Edge(0, 0);
+		
+		for(int node =0;node<Global.nodeNum;++node){
+			if(newServers[node]==null){
+				continue;
+			}
+			Global.graph[Global.sourceNode][node] = new Edge(Global.INFINITY, 0);
+			Global.graph[node][Global.sourceNode] = new Edge(0, 0);
 		}
 		
 		List<ServerInfo> serverInfos = mcmf();
 
 		if(serverInfos==null){ // 无解
-			
-			
-			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(consumerServers.length);
-			for(Server consumerServer : consumerServers){
+			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(Global.consumerNum);
+			for(Server consumerServer : Global.getConsumerServer()){
 				nextGlobalServers.add(consumerServer);
 			}
 			return nextGlobalServers;
 			
 		}else{ // 有解
 			
-			ArrayList<Server> nextGlobalServers = new ArrayList<Server>(newServers.size());
+			ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
 			for(ServerInfo serverInfo : serverInfos){
 				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length-1];
-				Server newServer = newServers.get(serverNode);
+				Server newServer = newServers[serverNode];
 				newServer.serverInfos.add(serverInfo);
 			}
-			for(Server newServer : newServers.values()){
+			for(int node =0;node<Global.nodeNum;++node){
+				if(newServers[node]==null){
+					continue;
+				}
+				Server newServer = newServers[node];
 				if(newServer.getDemand()>0){
 					nextGlobalServers.add(newServer);
 				}

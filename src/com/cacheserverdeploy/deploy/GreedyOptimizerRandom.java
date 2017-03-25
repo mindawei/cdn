@@ -3,7 +3,6 @@ package com.cacheserverdeploy.deploy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 
@@ -83,7 +82,6 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 		}
 
 		long t = System.currentTimeMillis();
-
 			
 		randomSelectServers();
 		
@@ -287,48 +285,56 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	}
 	
 	/// 原来Simple部分
+	
+	
 	@Override
-	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
-		
+	protected ArrayList<Server> transferServers(Server[] newServers) {
+	
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
-			Server consumerServer = consumerServers[consumerId];
+		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
 			
-			if(Global.isMustServerNode[consumerServer.node]){
+			int consumerNode = Global.consumerNodes[consumerId];
+			int consumerDemand = Global.consumerDemands[consumerId];
+			
+			if(Global.isMustServerNode[consumerNode]){
 				// 肯定是服务器不用转移
-				nextGlobalServers.add(consumerServer);
+				nextGlobalServers.add(new Server(consumerId,consumerNode,consumerDemand));
 				continue;
 			}
 			
-			// 将起始点需求分发到目的地点中，会改变边的流量
-			int fromDemand = Global.consumerDemands[consumerId];		
+			// 将起始点需求分发到目的地点中，会改变边的流量	
 			for(int node : Global.allPriorityCost[consumerId]){
-				if(!newServers.containsKey(node)){
+				// 不是服务器
+				if(newServers[node]==null){
 					continue;
 				}
-				// 是服务器
-				int usedDemand = useBandWidthByPreNode(fromDemand, node,Global.allPreNodes[consumerId]);
+				
+				int usedDemand = useBandWidthByPreNode(consumerDemand, node,Global.allPreNodes[consumerId]);
 				// 可以消耗
-				if (usedDemand > 0) {
-					transferTo(consumerServer, newServers.get(node), usedDemand,node, Global.allPreNodes[consumerId]);
-					fromDemand -= usedDemand;
-					if(fromDemand==0){
+				if (usedDemand > 0) {	
+					transferTo(consumerId, newServers[node], usedDemand,node, Global.allPreNodes[consumerId]);
+					consumerDemand -= usedDemand;
+					if(consumerDemand==0){
 						break;
 					}
 				}
 			}
-			if (fromDemand>0) {
-				nextGlobalServers.add(consumerServer);
+			
+			if (consumerDemand>0) {
+				nextGlobalServers.add(new Server(consumerId,consumerNode,consumerDemand));
 			}
 			
 		}
 		
-		for(Server newServer : newServers.values()){
-			if (newServer.getDemand() > 0) { // 真正安装
+		for(int node =0;node<Global.nodeNum;++node){
+			if(newServers[node]==null){
+				continue;
+			}
+			Server newServer = newServers[node];
+			if(newServer.getDemand()>0){
 				nextGlobalServers.add(newServer);
 			}
 		}
-		
 		return nextGlobalServers;
 	}
 

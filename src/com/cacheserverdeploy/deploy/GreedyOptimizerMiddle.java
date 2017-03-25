@@ -1,7 +1,6 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * 一个一个转移
@@ -11,13 +10,16 @@ import java.util.Map;
  */
 public class GreedyOptimizerMiddle extends GreedyOptimizer{
 	
+	private int[] consumerDemands = new int[Global.consumerNum];
+	
 	@Override
-	protected ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers) {
+	protected ArrayList<Server> transferServers(Server[] newServers) {
+		
+		// 复制需求
+		System.arraycopy(Global.consumerDemands, 0, consumerDemands, 0, Global.consumerNum);
 		
 		ArrayList<Server> nextGlobalServers = new ArrayList<Server>();
-		for(int consumerId=0;consumerId<consumerServers.length;++consumerId){	
-			Server consumerServer = consumerServers[consumerId];
-			
+		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
 			// 肯定是服务器不用转移  ？？ 加上效果不好 case50
 //			if (Global.isMustServerNode[consumerServer.node]) {
 //				nextGlobalServers.add(consumerServer);
@@ -26,26 +28,33 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 			// 减枝概率不大
 			// 简单减枝计算，转移额最小费用
 			int minCost = Global.INFINITY;
-			for(int serverNode : newServers.keySet()){
+			for(int serverNode =0;serverNode<Global.nodeNum;++serverNode){
+				if(newServers[serverNode]==null){
+					continue;
+				}
 				if(Global.allCost[consumerId][serverNode]<minCost){
 					minCost = Global.allCost[consumerId][serverNode];
 				}
 			}
-			if(minCost*consumerServer.getDemand()>=Global.depolyCostPerServer){
-				nextGlobalServers.add(consumerServer);
+			if(minCost*consumerDemands[consumerId]>=Global.depolyCostPerServer){
+				nextGlobalServers.add(new Server(consumerId, Global.consumerNodes[consumerId], consumerDemands[consumerId]));
 				continue;
 			}
 			
-			while(transfer(consumerServer, newServers));
+			while(transfer(consumerId, newServers));
 			
-			if (consumerServer.getDemand() > 0) {
-				nextGlobalServers.add(consumerServer);
+			if (consumerDemands[consumerId] > 0) {
+				nextGlobalServers.add(new Server(consumerId, Global.consumerNodes[consumerId], consumerDemands[consumerId]));
 			}
 			
 		}
 		
-		for(Server newServer : newServers.values()){
-			if (newServer.getDemand() > 0) { // 真正安装
+		for(int node =0;node<Global.nodeNum;++node){
+			if(newServers[node]==null){
+				continue;
+			}
+			Server newServer = newServers[node];
+			if(newServer.getDemand()>0){
 				nextGlobalServers.add(newServer);
 			}
 		}
@@ -61,7 +70,7 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 	 * 将起始点需求分发到目的地点中，会改变边的流量<br>
 	 * @return 是否需要继续转移 
 	 */
-	private boolean transfer(Server fromServer,Map<Integer, Server> toServers) {
+	private boolean transfer(int consumerId,Server[] newServers) {
 
 		for(int node=0;node<Global.nodeNum;++node){
 			visited[node] = false;
@@ -69,10 +78,15 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 			preNodes[node] = -1;
 		}
 
-		int fromNode = fromServer.node;
-		int fromDemand = fromServer.getDemand();
+		int fromNode = Global.consumerNodes[consumerId];
+
 		// 使用了多少个服务节点
-		int leftServerNodeNum = toServers.size();
+		int leftServerNodeNum = 0;
+		for(Server server : newServers){
+			if(server!=null){
+				leftServerNodeNum++;
+			}
+		}
 	
 		// 自己到自己的距离为0
 		costs[fromNode] = 0;
@@ -109,12 +123,14 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 			}
 						
 			// 是服务器
-			if (toServers.containsKey(minCostNode)) {
-				int usedDemand =useBandWidthByPreNode(fromDemand, minCostNode, preNodes);
+			if (newServers[minCostNode]!=null) {
+				int usedDemand =useBandWidthByPreNode(consumerDemands[consumerId], minCostNode, preNodes);
+				
 				// 可以消耗
-				if (usedDemand > 0) {			
-					transferTo(fromServer, toServers.get(minCostNode), usedDemand, minCostNode, preNodes);
-					fromDemand -= usedDemand;
+				if (usedDemand > 0) {		
+					consumerDemands[consumerId] -= usedDemand;
+					
+					transferTo(consumerId, newServers[minCostNode], usedDemand, minCostNode, preNodes);
 					fromDemandSmaller = true;
 					leftServerNodeNum--;
 					break;
@@ -141,7 +157,7 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 			}
 		}
 		
-		if(fromDemand>0&&fromDemandSmaller&&leftServerNodeNum>0){
+		if(consumerDemands[consumerId]>0&&fromDemandSmaller&&leftServerNodeNum>0){
 			return true;
 		}else{
 			return false;

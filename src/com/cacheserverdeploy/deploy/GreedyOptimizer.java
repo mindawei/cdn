@@ -1,9 +1,8 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Arrays;
+
 
 /**
  * 贪心搜索，寻找一个最优解，达到具备最优解后就马上退出
@@ -105,44 +104,39 @@ public abstract class GreedyOptimizer {
 
 	/** 进行一步移动 */
 	protected ArrayList<Server> move(ArrayList<Server> oldGlobalServers, int fromServerNode, int toServerNode) {
-		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+		Arrays.fill(newServers, null);
 		for (Server server : oldGlobalServers) {
 			if (server.node != fromServerNode) {
-				newServers.put(server.node, new Server(server.node));
+				newServers[server.node] = new Server(server.node);
 			}
 		}
-		newServers.put(toServerNode, new Server(toServerNode));
-
-		Server[] consumerServers = Global.getConsumerServer();
-
+		newServers[toServerNode] = new Server(toServerNode);
 		Global.resetEdgeBandWidth();
-
-		return transferServers(consumerServers, newServers);
+		return transferServers(newServers);
 	}
+	
+	private Server[] newServers = new Server[Global.nodeNum];
 
 	/** 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法   */
 	protected ArrayList<Server> moveLocal(ArrayList<Server> oldGlobalServers) {
-		Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+		Arrays.fill(newServers, null);
 		for (Server server : oldGlobalServers) {
-			newServers.put(server.node, new Server(server.node));
+			newServers[server.node] = new Server(server.node);
 		}
-		
-		Server[] consumerServers = Global.getConsumerServer();
-
 		Global.resetEdgeBandWidth();
-
-		return transferServers(consumerServers, newServers);
+		return transferServers(newServers);
 	}
 	
-	/** 不同的搜索策略需要提供此方法 */
-	protected abstract ArrayList<Server> transferServers(Server[] consumerServers, Map<Integer, Server> newServers);
+	/** 不同的搜索策略需要提供此方法 :总共 nodeNum个位置*/
+	protected abstract ArrayList<Server> transferServers(Server[] newServers);
 
 	/** 
 	 * 供子类调用：
 	 * 转移到另一个服务器，并返回价格<br>
 	 * 注意：可能cost会改变(又返回之前的点)
 	 */
-	protected void transferTo(Server fromServer,Server toServer,int avaliableBandWidth,int serverNode,int[] preNodes) {
+	protected void transferTo(int consumerId,Server toServer,int transferBandWidth,int serverNode,int[] preNodes) {
+		
 		///////////////////////
 		// 适配： 指针 -> 数组
 		// 计算长度
@@ -163,21 +157,9 @@ public abstract class GreedyOptimizer {
 		
 		/////////////////////////
 		
-		System.out.println(fromServer.serverInfos.size());
-		Iterator<ServerInfo> iterator = fromServer.serverInfos.iterator();
-		while(iterator.hasNext()){
-			ServerInfo fromServerInfo = iterator.next();
-			// 剩余要传的的和本地的最小值
-			int transferBandWidth = Math.min(avaliableBandWidth, fromServerInfo.provideBandWidth);			
-			ServerInfo toServerInfo = new ServerInfo(fromServerInfo.consumerId,transferBandWidth,viaNodes);
-			toServer.serverInfos.add(toServerInfo);
-			// 更新当前的
-			fromServerInfo.provideBandWidth -= transferBandWidth;
-			if(fromServerInfo.provideBandWidth==0){ // 已经全部转移
-				iterator.remove();
-			}
-		}
-		
+		// 剩余要传的的和本地的最小值
+		ServerInfo toServerInfo = new ServerInfo(consumerId,transferBandWidth,viaNodes);
+		toServer.serverInfos.add(toServerInfo);
 	}
 
 	/**
