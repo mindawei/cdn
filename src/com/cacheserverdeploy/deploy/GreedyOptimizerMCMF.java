@@ -12,8 +12,8 @@ import java.util.List;
  */
 public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 
-	public GreedyOptimizerMCMF(int maxUpdateNum){
-		super(maxUpdateNum);
+	public GreedyOptimizerMCMF(int maxUpdateNum,int minUpdateNum){
+		super(maxUpdateNum,minUpdateNum);
 	}
 	
 	public GreedyOptimizerMCMF(boolean isOptimizeOnce){
@@ -91,7 +91,7 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 					
 			for(int i=t;i!=s;i=mcmfPre[i]){
 				Global.graph[mcmfPre[i]][i].leftBandWidth-= mcmfFlow[t];
-				Global.graph[i][mcmfPre[i]].leftBandWidth+= mcmfFlow[t];
+				//Global.graph[i][mcmfPre[i]].leftBandWidth+= mcmfFlow[t];
 			}
 			
 			// 保存服务信息,从消费者开始的 -> 服务器

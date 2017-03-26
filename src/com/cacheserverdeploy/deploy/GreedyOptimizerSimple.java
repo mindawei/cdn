@@ -8,8 +8,8 @@ package com.cacheserverdeploy.deploy;
  */
 public class GreedyOptimizerSimple extends GreedyOptimizer{
 
-	public GreedyOptimizerSimple(int maxUpdateNum) {
-		super(maxUpdateNum);
+	public GreedyOptimizerSimple(int maxUpdateNum,int minUpdateNum){
+		super(maxUpdateNum,minUpdateNum);
 	}
 
 	@Override

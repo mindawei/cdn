@@ -60,6 +60,7 @@ public class Checker {
 	 			
 	    		 edge.leftBandWidth -= bandwidth;
 	    		 if(edge.leftBandWidth<0){
+	    			 System.out.println("edge.initBandWidth"+edge.initBandWidth);
 	    			 System.out.println("edge.bandWidth<0:"+line);
 	    			 System.exit(0);
 	    		 }  

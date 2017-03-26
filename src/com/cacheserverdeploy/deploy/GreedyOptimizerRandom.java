@@ -37,14 +37,16 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	 * @param selectNum 随机生成的时候服务器个数
 	 * @param maxMovePerRound 每轮最多移动多少次
 	 */
-	public GreedyOptimizerRandom(int nearestK,int selectNum,int maxMovePerRound,int maxUpdateNum){
-		super(maxUpdateNum);
+	public GreedyOptimizerRandom(int nearestK,int selectNum,int maxMovePerRound,int maxUpdateNum,int minUpdateNum){
+		super(maxUpdateNum,minUpdateNum);
 		this.selectNum = selectNum;
 		initNodes(nearestK);
 		selected = new boolean[nodes.length];
 		serversInRandom = new Server[Global.nodeNum];
 		this.maxMovePerRound = maxMovePerRound;
 	}
+	
+	
 
 	private void selcetBestServers(){
 		serverSize = 0;
@@ -130,7 +132,8 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 		int maxUpdateNum = Global.INFINITY;
 		
 		while (true) {
-				
+			//break;
+
 //			if (Global.IS_DEBUG) {
 //				for(Server server : bestServersInRandom){
 //					if(server==null){
@@ -208,15 +211,15 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			
 			if(maxUpdateNum==Global.INFINITY){
 				maxUpdateNum = updateNum;
-			}else if(maxUpdateNum==updateNum){
+			}else if(maxUpdateNum<=updateNum){
 				maxUpdateNum++;
 				if(maxUpdateNum>MAX_UPDATE_NUM){
 					maxUpdateNum = MAX_UPDATE_NUM;
 				}
 			}else{ // > updateNum
-				maxUpdateNum = updateNum;
-				if(maxUpdateNum<2){
-					maxUpdateNum = 2;
+				maxUpdateNum--;
+				if(maxUpdateNum<MIN_UPDATE_NUM){
+					maxUpdateNum = MIN_UPDATE_NUM;
 				}
 			}
 		
@@ -229,7 +232,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			}
 			
 			// 移动
-			move(serversInRandom, bestFromNode, bestToNode);
+			moveMcmf(serversInRandom, bestFromNode, bestToNode);
 			int cost = Global.getTotalCost(nextGlobalServers);
 		
 			if (cost<lastCsot) {
@@ -248,10 +251,10 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 				lastCsot = cost;
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
-				lastCsot = Global.INFINITY;
-				selectRandomServers();
-				maxUpdateNum = Global.INFINITY;
-				
+//				lastCsot = Global.INFINITY;
+//				selectRandomServers();
+//				maxUpdateNum = Global.INFINITY;
+				break;
 			}
 			
 		}

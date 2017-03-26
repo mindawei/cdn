@@ -5,7 +5,6 @@ com/cacheserverdeploy/deploy/Deploy.java
 com/cacheserverdeploy/deploy/Edge.java
 com/cacheserverdeploy/deploy/Global.java
 com/cacheserverdeploy/deploy/GreedyOptimizer.java
-com/cacheserverdeploy/deploy/GreedyOptimizerMCMF.java
 com/cacheserverdeploy/deploy/GreedyOptimizerMiddle.java
 com/cacheserverdeploy/deploy/GreedyOptimizerRandom.java
 com/cacheserverdeploy/deploy/GreedyOptimizerSimple.java

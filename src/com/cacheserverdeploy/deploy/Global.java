@@ -46,6 +46,7 @@ public final class Global {
 	
 	/** 无穷大 */
 	static final int INFINITY = Integer.MAX_VALUE;
+	//static final int INFINITY = 1000000000;
 
 	/** 最小费用 */
 	private static int minCost = INFINITY;

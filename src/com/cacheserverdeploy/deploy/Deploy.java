@@ -19,22 +19,27 @@ public class Deploy{
     		int nearestK = 1;
     		int selectedNum = Global.consumerNum / 4;
     		int maxMovePerRound = 2000;
-    		int maxUpdateNum = 9;
-    		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound,maxUpdateNum).optimize();
+    		int maxUpdateNum = 100;
+    		int minUpdateNum = 100;
+    		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     	}else if(Global.isNpHard){
 //    		int nearestK = Global.consumerNum -1;
 //    		int selectedNum = Global.consumerNum / 4;
 //    		int maxMovePerRound = 5000;
 //    		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound).optimize();
-    		int maxUpdateNum = 9;
-    		new GreedyOptimizerSimple(maxUpdateNum).optimize();
-		}else{
-			int maxUpdateNum = 20;
-			new GreedyOptimizerMiddle(maxUpdateNum).optimize();
+    		// 9-2  -> 6-12
+    		int maxUpdateNum = 100;
+    		int minUpdateNum = 100;
+    		new GreedyOptimizerSimple(maxUpdateNum,minUpdateNum).optimize();
+    		// new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
+    	}else{
+			int maxUpdateNum = 100;
+			int minUpdateNum = 100;
+			new GreedyOptimizerMiddle(maxUpdateNum,minUpdateNum).optimize();
+			//	
 		}
-    	
-    	new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
-	
+    	new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();
+    
 //    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();
 //      }
