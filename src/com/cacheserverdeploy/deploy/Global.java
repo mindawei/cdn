@@ -92,6 +92,8 @@ public final class Global {
 	public static Edge[] edges;
 	/** 连接关系：下游节点 */
 	static int[][] connections; 
+	/** 连接关系：下游节点 */
+	static int[][] mfmcConnections; 
 	
 	/** 是否确肯定定是服务节点 */
 	static boolean[] isMustServerNode;
@@ -136,6 +138,20 @@ public final class Global {
 			connections[fromNode] = new int[toNodeIds.size()];
 			for(int i=0;i<toNodeIds.size();++i){
 				connections[fromNode][i] = toNodeIds.get(i);
+			}
+		}
+		
+		mfmcConnections = new int[mcmfNodeNum][];
+		for(int fromNode=0;fromNode<mcmfNodeNum;++fromNode){
+			ArrayList<Integer> toNodeIds = new ArrayList<Integer>();
+			for (int toNodeId = 0; toNodeId < mcmfNodeNum; ++toNodeId) {
+				if (graph[fromNode][toNodeId] != null) {
+					toNodeIds.add(toNodeId);
+				}
+			}
+			mfmcConnections[fromNode] = new int[toNodeIds.size()];
+			for(int i=0;i<toNodeIds.size();++i){
+				mfmcConnections[fromNode][i] = toNodeIds.get(i);
 			}
 		}
 		
@@ -216,7 +232,6 @@ public final class Global {
 		
 		/** 初始化缓存 */
 		initAllCostAndPreNodes();
-
 	}
 	
 

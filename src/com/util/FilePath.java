@@ -9,7 +9,7 @@ public class FilePath {
 	// 总的费用：59121  1/4
 	
 	// 总的费用：50311  1/7
-//	public static final String graphFilePath = baseFilePath+"0.txt";
+	public static final String graphFilePath = baseFilePath+"0.txt";
 //	public static final String graphFilePath = baseFilePath+"1.txt";
 //	public static final String graphFilePath = baseFilePath+"2.txt";
 //	public static final String graphFilePath = baseFilePath+"3.txt";
@@ -26,7 +26,7 @@ public class FilePath {
 //	public static final String graphFilePath = "case_example/case3.txt";
 //	public static final String graphFilePath = "case_example/case4.txt";
 //	public static final String graphFilePath = "case_example/case50.txt";
-  public static final String graphFilePath = "case_example/case99.txt";
+//  public static final String graphFilePath = "case_example/case99.txt";
 
 	public static final String resultFilePath = "result/0.txt";
 	

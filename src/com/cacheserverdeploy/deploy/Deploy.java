@@ -25,14 +25,14 @@ public class Deploy{
     		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
 		}else{
 			new GreedyOptimizerMiddle().optimize();
-			// new GreedyOptimizerMCMF().optimize();	
+			//new GreedyOptimizerMCMF().optimize();	
 		}
     	
     	new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 	
-    	if(Global.IS_DEBUG){
-    		Global.printBestSolution();
-      	}
+//    	if(Global.IS_DEBUG){
+//    		Global.printBestSolution();
+//      	}
     
     	return Global.getBsetSolution();    
     }
