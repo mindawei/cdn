@@ -7,6 +7,7 @@ import java.util.Random;
 
 /**
  * 防止在局部最优中出不来
+ * 第一轮不随机，之后就完全随机了
  * 
  * @author mindw
  * @date 2017年3月23日
@@ -26,9 +27,6 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 
 	private final Random random = new Random(47);
 	
-	/** 只是作用于第一轮，之后就完全随机了 */
-	private boolean isRandom;
-	
 	/**
 	 * 构造函数
 	 * @param nearestK 初始化的时候选每个消费者几个最近领
@@ -40,15 +38,6 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 		initNodes(nearestK);
 		selected = new boolean[nodes.length];
 		bestServersInRandom = new Server[Global.nodeNum];
-		this.isRandom = false;
-	}
-	
-	private void selcetServers(){
-		if(isRandom){
-			selectrandomServers();
-		}else{
-			selcetBestServers();
-		}
 	}
 	
 	private void selcetBestServers(){
@@ -79,7 +68,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	}
 	
 	/** 随机选择服务器 ,改变{@link #nextRoundServers}*/
-	private void selectrandomServers() {
+	private void selectRandomServers() {
 		
 		Arrays.fill(selected, false);
 		int size = 0;
@@ -138,21 +127,22 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 
 		long t = System.currentTimeMillis();
 			
-		selcetServers();
+		selcetBestServers();
+		//selectRandomServers();
 		
 		int lastCsot = Global.INFINITY;
 		
 		while (true) {
 				
-			if (Global.IS_DEBUG) {
-				for(Server server : bestServersInRandom){
-					if(server==null){
-						break;
-					}
-					System.out.print(server.node+" ");
-				}
-				System.out.println();
-			}
+//			if (Global.IS_DEBUG) {
+//				for(Server server : bestServersInRandom){
+//					if(server==null){
+//						break;
+//					}
+//					System.out.print(server.node+" ");
+//				}
+//				System.out.println();
+//			}
 
 			// 可选方案
 			int minCost = Global.INFINITY;
@@ -239,8 +229,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 				Global.updateSolution(bestServersInRandom);
 			}else{ // not better
 				lastCsot = Global.INFINITY;
-				isRandom = true;
-				selcetServers();
+				selectRandomServers();
 			}
 			
 		}

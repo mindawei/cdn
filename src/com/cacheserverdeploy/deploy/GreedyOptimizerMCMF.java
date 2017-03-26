@@ -48,7 +48,7 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 			for(ServerInfo serverInfo : serverInfos){
 				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length-1];
 				Server newServer = newServers[serverNode];
-				newServer.serverInfos.add(serverInfo);
+				newServer.addServerInfo(serverInfo);
 			}
 			for(int node =0;node<Global.nodeNum;++node){
 				if(newServers[node]==null){

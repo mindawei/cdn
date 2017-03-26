@@ -23,7 +23,7 @@ public class FilePath {
 //	public static final String graphFilePath = "case_example/case0.txt";
 //	public static final String graphFilePath = "case_example/case1.txt";
 //	public static final String graphFilePath = "case_example/case2.txt";
-//    public static final String graphFilePath = "case_example/case3.txt";
+//	public static final String graphFilePath = "case_example/case3.txt";
 //	public static final String graphFilePath = "case_example/case4.txt";
 //	public static final String graphFilePath = "case_example/case50.txt";
   public static final String graphFilePath = "case_example/case99.txt";
@@ -51,15 +51,18 @@ public class FilePath {
 	// 总的费用：571604
 	
 	// TODO
-	// 1 middle加速
-	// 2 random加速
-	// 3 其他用例测试
-	// 寻路过程中也可以利用缓存提前结束
-	
-	// TODO List 用 数组替代，为空时表示数组结束 
+	// MCMF优化？
+	// 1 加上Complex?
+	// 2 其他用例测试
+	// 3  寻路过程中也可以利用缓存提前结束
 	
 	// 21920 41574 9万以下
 	
-	
+//	分割子网（不建议，类似误差累积）
+//	实现细节（可以再抠一下）
+//	运筹学（不知道啥东东，说不定可以借鉴一下）
+//	数学归纳（从初始解类推）
+//	动态规划（复用思想）
+//	在一些假设下（利用网络本身信息）
 	
 }

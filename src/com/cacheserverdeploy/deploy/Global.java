@@ -57,7 +57,14 @@ public final class Global {
 	}
 	
 	/** 解决方案 */
-	private static String[] bsetSolution;
+	private static String[] bestSolution;
+	private static int bestSolutionLength;
+	
+	public static String[] getBsetSolution() {
+		String[] solution = new String[bestSolutionLength];
+		System.arraycopy(bestSolution, 0, solution, 0, bestSolutionLength);
+		return solution;
+	}
 
 	/** 每台部署的成本：[0,5000]的整数 */
 	public static int depolyCostPerServer;
@@ -114,6 +121,7 @@ public final class Global {
 	/** 初始化解：将服务器直接放在消费节点上 */
 	public static void init() {
 		
+		bestSolution = new String[50002];// 最多5万条
 		bestServers = new Server[nodeNum]; 
 		
 		// 初始连接关系
@@ -211,9 +219,7 @@ public final class Global {
 
 	}
 	
-	public static String[] getBsetSolution() {
-		return bsetSolution;
-	}
+
 	
 //	static Server[] getConsumerServer(){
 //		Server[] servers = new Server[consumerNum];
@@ -243,7 +249,7 @@ public final class Global {
 		
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
-			bsetSolution = getSolution(nextGlobalServers);
+			updateBestSolution(nextGlobalServers);
 			setBestServers(nextGlobalServers);
 			return true;
 		} else {
@@ -262,23 +268,24 @@ public final class Global {
 	 * 每条网络路径由若干网络节点构成，路径的起始节点ID-01表示该节点部署了视频内容服务器，终止节点为某个消费节点<br>
 	 * </blockquote>
 	 */
-	private static String[] getSolution(Server[] servers) {
-		List<String> ls = new LinkedList<String>();
+	// qua
+	private static StringBuilder stringBuilder = new StringBuilder();
+	private static List<String> lines = new LinkedList<String>();
+	private static void updateBestSolution(Server[] servers) {	
+		lines.clear();
 		for (Server server : servers) {
 			if(server==null){
 				break;
 			}
-			ls.addAll(server.getSolution());
+			server.getSolution(lines,stringBuilder);
 		}
 
-		String[] solution = new String[ls.size() + 2];
-		solution[0] = String.valueOf(ls.size());
-		solution[1] = "";
-		int index = 2;
-		for (String line : ls) {
-			solution[index++] = line;
+		bestSolutionLength = 0;
+		bestSolution[bestSolutionLength++] = String.valueOf(lines.size());
+		bestSolution[bestSolutionLength++] = "";
+		for (String line : lines) {
+			bestSolution[bestSolutionLength++] = line;
 		}
-		return solution;
 	}
 
 	/** 获得总的费用 */
@@ -301,8 +308,8 @@ public final class Global {
 		System.out.println("最优解：");
 		System.out.println("总的费用：" + Global.minCost);
 		System.out.println();
-		for (String line : bsetSolution) {
-			System.out.println(line);
+		for (int i=0;i<bestSolutionLength;++i) {
+			System.out.println(bestSolution[i]);
 		}
 		System.out.println("---------------");
 	}

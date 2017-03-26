@@ -47,16 +47,4 @@ public final class ServerInfo {
 				+ provideBandWidth + "]";
 	}
 	
-	public String getSolution() {
-		StringBuilder builder = new StringBuilder();
-		for(int i=viaNodes.length-1;i>=0;--i){
-			builder.append(viaNodes[i]);
-			builder.append(" ");
-		}
-		builder.append(consumerId);
-		builder.append(" ");
-		builder.append(provideBandWidth);
-		return builder.toString();
-	}
-
 }

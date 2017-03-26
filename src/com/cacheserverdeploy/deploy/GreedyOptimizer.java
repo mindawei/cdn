@@ -171,7 +171,7 @@ public abstract class GreedyOptimizer {
 		
 		// 剩余要传的的和本地的最小值
 		ServerInfo toServerInfo = new ServerInfo(consumerId,transferBandWidth,viaNodes);
-		toServer.serverInfos.add(toServerInfo);
+		toServer.addServerInfo(toServerInfo);
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package com.util;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -40,7 +39,7 @@ public class Checker {
 	    	 if(server==null){
 	    		 break;
 	    	 }
-	    	 ServerInfo serverInfo = server.serverInfos.get(0);
+	    	 ServerInfo serverInfo = server.getServerInfos()[0];
 	    	 Integer consumerId = serverInfo.consumerId;
 	    	 int demand = serverInfo.provideBandWidth;
 	    	 consumerDemands.put(consumerId, demand);
