@@ -11,7 +11,7 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 	private final int[] consumerDemands = new int[Global.consumerNum];
 	
 	@Override
-	protected void transferServers(Server[] newServers) {
+	protected void transferServers(Server[] newServers,Server[] lsServers,int lsSize) {
 		
 		// 复制需求
 		System.arraycopy(Global.consumerDemands, 0, consumerDemands, 0, Global.consumerNum);
@@ -27,12 +27,10 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 			// 减枝概率不大
 			// 简单减枝计算，转移额最小费用
 			int minCost = Global.INFINITY;
-			for(int serverNode =0;serverNode<Global.nodeNum;++serverNode){
-				if(newServers[serverNode]==null){
-					continue;
-				}
-				if(Global.allCost[consumerId][serverNode]<minCost){
-					minCost = Global.allCost[consumerId][serverNode];
+			for(int i=0;i<lsSize;++i){
+				Server newServer = lsServers[i];
+				if(Global.allCost[consumerId][newServer.node]<minCost){
+					minCost = Global.allCost[consumerId][newServer.node];
 				}
 			}
 			if(minCost*consumerDemands[consumerId]>=Global.depolyCostPerServer){
@@ -48,11 +46,8 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 			
 		}
 		
-		for(int node =0;node<Global.nodeNum;++node){
-			if(newServers[node]==null){
-				continue;
-			}
-			Server newServer = newServers[node];
+		for(int i=0;i<lsSize;++i){
+			Server newServer = lsServers[i];
 			if(newServer.getDemand()>0){
 				nextGlobalServers[size++] = newServer;
 			}

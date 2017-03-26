@@ -19,7 +19,7 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 	}
 	
 	@Override
-	protected void transferServers(Server[] newServers) {
+	protected void transferServers(Server[] newServers,Server[] lsServers,int lsSize) {
 		
 		List<Integer> sourceToNodes = new ArrayList<Integer>();
 		for(int node =0;node<Global.nodeNum;++node){
@@ -57,11 +57,8 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 				Server newServer = newServers[serverNode];
 				newServer.addServerInfo(serverInfo);
 			}
-			for(int node =0;node<Global.nodeNum;++node){
-				if(newServers[node]==null){
-					continue;
-				}
-				Server newServer = newServers[node];
+			for(int i=0;i<lsSize;++i){
+				Server newServer = lsServers[i];
 				if(newServer.getDemand()>0){
 					nextGlobalServers[size++] = newServer;
 				}

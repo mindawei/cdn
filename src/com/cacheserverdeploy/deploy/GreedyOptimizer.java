@@ -23,7 +23,10 @@ public abstract class GreedyOptimizer {
 	}
 	
 	/** 为了复用，为null的地方不放置服务器 */
-	private Server[] newServers = new Server[Global.nodeNum];
+	protected Server[] newServers = new Server[Global.nodeNum];
+	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束*/
+	protected Server[] lsNewServers = new Server[Global.nodeNum];
+	
 	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束*/
 	protected Server[] nextGlobalServers = new Server[Global.nodeNum];
 	
@@ -113,34 +116,48 @@ public abstract class GreedyOptimizer {
 	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
 	protected void move(Server[] oldServers,int fromServerNode, int toServerNode) {
 		Arrays.fill(newServers, null);
+		int lsSize = 0;
 		for (Server server : oldServers) {
 			if(server==null){
 				break;
 			}
 			if (server.node != fromServerNode) {
-				newServers[server.node] = new Server(server.node);
+				Server newServer = new Server(server.node);
+				newServers[server.node] = newServer;
+				lsNewServers[lsSize++] = newServer;
 			}
 		}
-		newServers[toServerNode] = new Server(toServerNode);
+		Server newServer = new Server(toServerNode);
+		newServers[toServerNode] = newServer;
+		lsNewServers[lsSize++] = newServer;
+		
 		Global.resetEdgeBandWidth();
-		transferServers(newServers);
+		transferServers(newServers,lsNewServers,lsSize);
 	}
 	
 	/** 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法,结果缓存在 nextGlobalServers   */
 	protected void moveLocal(Server[] oldGlobalServers) {
 		Arrays.fill(newServers, null);
+		int lsSize = 0;
 		for (Server server : oldGlobalServers) {
 			if(server==null){
 				break;
 			}
-			newServers[server.node] = new Server(server.node);
+			Server newServer = new Server(server.node);
+			newServers[server.node] = newServer;
+			lsNewServers[lsSize++] = newServer;
 		}
 		Global.resetEdgeBandWidth();
-		transferServers(newServers);
+		transferServers(newServers,lsNewServers,lsSize);
 	}
 	
-	/** 不同的搜索策略需要提供此方法 :总共 nodeNum个位置，结果缓存在 nextGlobalServers*/
-	protected abstract void transferServers(Server[] newServers);
+	/** 
+	 * 不同的搜索策略需要提供此方法 :总共 nodeNum个位置，结果缓存在 nextGlobalServers
+	 * @param newServers 为null的表示没有服务器
+	 * @param lsServers 全部往前移动，为了减少遍历
+	 * @param lsSize lsServer的长度
+	 */
+	protected abstract void transferServers(Server[] newServers,Server[] lsServers,int lsSize);
 
 	/** 
 	 * 供子类调用：
@@ -173,31 +190,6 @@ public abstract class GreedyOptimizer {
 		ServerInfo toServerInfo = new ServerInfo(consumerId,transferBandWidth,viaNodes);
 		toServer.addServerInfo(toServerInfo);
 	}
-
-	/**
-	 * 供子类调用：
-	 * 消耗带宽最大带宽
-	 * @return 消耗掉的带宽,路由器到服务器，反方向消耗要
-	 */
-	protected int useBandWidth(int demand, int[] nodeIds) {
-		if (demand == 0) {
-			return 0;
-		}
-		int minBindWidth = Global.INFINITY;
-		for (int i = nodeIds.length - 1; i >=1; --i) {
-			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
-			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-		}
-		if (minBindWidth == 0) {
-			return 0;
-		}
-		int usedBindWidth = Math.min(minBindWidth, demand);
-		for (int i = nodeIds.length - 1; i >=1; --i) {
-			Edge edge = Global.graph[nodeIds[i]][nodeIds[i -1]];
-			edge.leftBandWidth -= usedBindWidth;
-		}
-		return usedBindWidth;
-	}
 	
 	/**
 	 * 消耗带宽最大带宽
@@ -210,11 +202,22 @@ public abstract class GreedyOptimizer {
 		int minBindWidth = Global.INFINITY;
 		while(node0!=-1){
 			Edge edge = Global.graph[node1][node0];
-			minBindWidth = Math.min(edge.leftBandWidth, minBindWidth);
-			
+			if(edge.leftBandWidth<minBindWidth){				
+				minBindWidth = edge.leftBandWidth;
+				if(minBindWidth==0){
+					break;
+				}
+			}
 			node1 = node0;
 			node0 = preNodes[node0];
 		}
+		
+//		if(minBindWidth==0){
+//			System.out.println("0");
+//		}else{
+//			System.out.println("not 0");
+//		}
+		
 		if (minBindWidth == 0) {
 			return 0;
 		}

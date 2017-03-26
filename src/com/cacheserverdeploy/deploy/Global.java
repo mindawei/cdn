@@ -21,7 +21,7 @@ public final class Global {
 	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 60 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 2 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {

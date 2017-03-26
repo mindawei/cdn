@@ -348,11 +348,9 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	}
 	
 	/// 原来Simple部分
-	
-	
 	@Override
-	protected void transferServers(Server[] newServers) {
-	
+	protected void transferServers(Server[] newServers,Server[] lsServers,int lsSize) {
+		
 		int size = 0;
 		
 		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
@@ -390,11 +388,8 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			
 		}
 		
-		for(int node =0;node<Global.nodeNum;++node){
-			if(newServers[node]==null){
-				continue;
-			}
-			Server newServer = newServers[node];
+		for(int i=0;i<lsSize;++i){
+			Server newServer = lsServers[i];
 			if(newServer.getDemand()>0){
 				nextGlobalServers[size++] = newServer;
 			}
