@@ -232,7 +232,7 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 			}
 			
 			// 移动
-			moveMcmf(serversInRandom, bestFromNode, bestToNode);
+			move(serversInRandom, bestFromNode, bestToNode);
 			int cost = Global.getTotalCost(nextGlobalServers);
 		
 			if (cost<lastCsot) {
@@ -251,10 +251,9 @@ public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 				lastCsot = cost;
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
-//				lastCsot = Global.INFINITY;
-//				selectRandomServers();
-//				maxUpdateNum = Global.INFINITY;
-				break;
+				lastCsot = Global.INFINITY;
+				selectRandomServers();
+				maxUpdateNum = Global.INFINITY;
 			}
 			
 		}

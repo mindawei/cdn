@@ -39,6 +39,10 @@ public class FilePath {
 //	public static final String graphFilePath = baseFilePath+"5.txt";
 //	public static final String graphFilePath = baseFilePath+"6.txt";
 //	public static final String graphFilePath = baseFilePath+"7.txt";
+	
+	// 高级  37251
+	// 中级  28717
+	// 初级
 	public static final String graphFilePath = baseFilePath+"8.txt";
 
 	//	public static final String graphFilePath = "case_example/官网案例.txt";
@@ -86,5 +90,7 @@ public class FilePath {
 //	数学归纳（从初始解类推）
 //	动态规划（复用思想）
 //	在一些假设下（利用网络本身信息）
+	
+	// TODO 明天跑测试
 	
 }
