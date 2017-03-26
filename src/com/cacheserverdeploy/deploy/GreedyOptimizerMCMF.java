@@ -2,7 +2,6 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * 利用最大最小费用流进行优化s
@@ -66,7 +65,10 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 		}		
 	}
 	
-
+	// 复用
+	private final int[] nodes = new int[Global.nodeNum];
+	private int nodeSize = 0;		
+			
 	/**
 	 * @return 返回路由,不存在解决方案则为无穷大
 	 */
@@ -74,14 +76,13 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 		
 		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 		
-		int[] mcmfPre = new int[Global.mcmfNodeNum];
 		
 		int minFlow;
 		int sumFlow = 0;
 		int s = Global.sourceNode;
 		int t = Global.endNode;
-	
-		while(spfa(s,t,mcmfPre)){
+		
+		while(spfa(s,t)){
 					
 			minFlow = Integer.MAX_VALUE;
 			for(int i=t;i!=s;i=mcmfPre[i]){
@@ -93,25 +94,20 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 			sumFlow+=minFlow;
 			for(int i=t;i!=s;i=mcmfPre[i]){
 				Global.graph[mcmfPre[i]][i].leftBandWidth-=minFlow;
-				if(Global.graph[i][mcmfPre[i]]==null){
-					System.out.println(i+" "+mcmfPre[i]);
-				}
 				Global.graph[i][mcmfPre[i]].leftBandWidth+=minFlow;
 				// minCost += cost[mcmfPre[i]][i]*minFlow;
 			}
 			//minCost += dist[t]*minFlow;
 			
 			// 保存服务信息,从消费者开始的 -> 服务器
-			LinkedList<Integer> nodes = new LinkedList<Integer>();
+			nodeSize = 0;
 			for(int i=mcmfPre[t];i!=s;i=mcmfPre[i]){
-				nodes.add(i);
+				nodes[nodeSize++] = i;
 			}
-			int consumerId = Global.nodeToConsumerId.get(nodes.getFirst());
-			int[] viaNodes = new int[nodes.size()];
-			int index = 0;
-			for(int node : nodes){
-				viaNodes[index++] = node;
-			}
+		
+			int consumerId = Global.nodeToConsumerId.get(nodes[0]);
+			int[] viaNodes = new int[nodeSize];
+			System.arraycopy(nodes, 0, viaNodes, 0, nodeSize);
 			ServerInfo serverInfo = new ServerInfo(consumerId, minFlow, viaNodes);
 			serverInfos.add(serverInfo);
 		}
@@ -123,20 +119,38 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 		}
 	}
 
-	private boolean spfa(int s, int t,int[] mcmfPre) {
+	private final int[] mcmfPre = new int[Global.mcmfNodeNum];
+	private final boolean vis[] = new boolean[Global.mcmfNodeNum];
+	private final int[] dist = new int[Global.mcmfNodeNum];
+	//private final Queue<Integer> que = new LinkedList<Integer>();
+	private final int[] que = new int[Global.mcmfNodeNum];
+	// 左边指针 == 右边指针 时候队列为空
+	// 左边指针，指向队首
+	private int queL;
+	// 右边指针，指向下一个插入的地方
+	private int queR;
+	
+	private boolean spfa(int s, int t) {
 		
-		int[] dist = new int[Global.mcmfNodeNum];
-		boolean vis[] = new boolean[Global.mcmfNodeNum];
-		Queue<Integer> q = new LinkedList<Integer>();
 		for (int i = 0; i <= t; i++) {
 			vis[i] = false;
 			dist[i] = Global.INFINITY;
 		}
+		
+		// que.clear();
+		queL = 0;
+		queR = 0;
+		
 		vis[s] = true;
 		dist[s] = 0;
-		q.offer(s);
-		while (!q.isEmpty()) {
-			int u = q.poll();
+		//que.offer(s);
+		que[queR++] = s;
+		//while (!que.isEmpty()) {
+		while (queL!=queR) {
+			// int u = que.poll();
+			int u = que[queL++];
+			queL = queL % Global.mcmfNodeNum;
+			
 			vis[u] = false;
 			for (int v = 0; v <= t; v++) {
 				if (Global.graph[u][v]!=null&&
@@ -145,7 +159,8 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 					dist[v] = dist[u] + Global.graph[u][v].cost;
 					mcmfPre[v] = u;
 					if (!vis[v]) {
-						q.offer(v);
+						que[queR++] = v;
+						queR = queR % Global.mcmfNodeNum;
 						vis[v] = true;
 					}
 				}
