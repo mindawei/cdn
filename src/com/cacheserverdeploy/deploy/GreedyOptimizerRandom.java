@@ -12,7 +12,7 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerRandom extends GreedyOptimizer{
+public final class GreedyOptimizerRandom extends GreedyOptimizerSimple{
 	
 	/** 频率大于0的点 */
 	private int[] nodes;
@@ -23,30 +23,36 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	/** 每次最多随机选多少个*/
 	private final int selectNum;
 	/** 下一轮的服务器*/
-	private Server[] bestServersInRandom;
+	private Server[] serversInRandom;
+	private int serverSize;
 
 	private final Random random = new Random(47);
+	
+	/** 每轮最多移动多少次 */
+	private final int maxMovePerRound;
 	
 	/**
 	 * 构造函数
 	 * @param nearestK 初始化的时候选每个消费者几个最近领
 	 * @param selectNum 随机生成的时候服务器个数
-	 * @param isRandom 只是作用于第一轮，之后就完全随机了
+	 * @param maxMovePerRound 每轮最多移动多少次
 	 */
-	public GreedyOptimizerRandom(int nearestK,int selectNum){
+	public GreedyOptimizerRandom(int nearestK,int selectNum,int maxMovePerRound,int maxUpdateNum){
+		super(maxUpdateNum);
 		this.selectNum = selectNum;
 		initNodes(nearestK);
 		selected = new boolean[nodes.length];
-		bestServersInRandom = new Server[Global.nodeNum];
+		serversInRandom = new Server[Global.nodeNum];
+		this.maxMovePerRound = maxMovePerRound;
 	}
-	
+
 	private void selcetBestServers(){
-		int size = 0;
+		serverSize = 0;
 		
 		int leftNum = selectNum;
 		// 肯定是服务器的
 		for(int node : Global.mustServerNodes){
-			bestServersInRandom[size++] = new Server(node);
+			serversInRandom[serverSize++] = new Server(node);
 		}
 		leftNum -= Global.mustServerNodes.length;
 		int index = 0;
@@ -56,13 +62,13 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			int node = nodes[index++];
 			// 服务器上面已经添加过了
 			if (!Global.isMustServerNode[node]) {
-				bestServersInRandom[size++] = new Server(node);
+				serversInRandom[serverSize++] = new Server(node);
 				leftNum--;
 			}
 		}
 		// 设置结束标志
-		if(size<bestServersInRandom.length){
-			bestServersInRandom[size] = null;
+		if(serverSize<serversInRandom.length){
+			serversInRandom[serverSize] = null;
 		}
 		
 	}
@@ -71,12 +77,12 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 	private void selectRandomServers() {
 		
 		Arrays.fill(selected, false);
-		int size = 0;
+		serverSize = 0;
 		
 		int leftNum = selectNum;
 		// 肯定是服务器的
 		for(int node : Global.mustServerNodes){
-			bestServersInRandom[size++] = new Server(node);
+			serversInRandom[serverSize++] = new Server(node);
 		}
 		leftNum -= Global.mustServerNodes.length;
 		// 随机选择
@@ -90,29 +96,18 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 					selected[index] = true;
 				}else{ 
 					selected[index] = true;
-					bestServersInRandom[size++] = new Server(node);
+					serversInRandom[serverSize++] = new Server(node);
 					leftNum--;
 				}
 			}
 		}
 		// 设置结束标志
-		if(size<bestServersInRandom.length){
-			bestServersInRandom[size] = null;
+		if(serverSize<serversInRandom.length){
+			serversInRandom[serverSize] = null;
 		}
 	}
 	
-	private int size(Server[] servers){
-		int len = 0;
-		for(Server server : servers){
-			if(server==null){
-				return len;
-			}else{
-				len++;
-			}
-		}
-		return len;
-	}
-
+	
 	@Override
 	void optimize() {
 
@@ -132,6 +127,8 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 		
 		int lastCsot = Global.INFINITY;
 		
+		int maxUpdateNum = Global.INFINITY;
+		
 		while (true) {
 				
 //			if (Global.IS_DEBUG) {
@@ -149,27 +146,30 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			int bestFromNode = -1;
 			int bestToNode = -1;
 
-			// System.out.println(oldGlobalServers.size()*oldGlobalServers.size());
+		
+			if(serverSize==0){
+				break;
+			}
 			
-			 int toNums = 2000 / size(bestServersInRandom);
-			
-			//boolean findBetter = false;
-			for (Server oldServer : bestServersInRandom) {
-				if(oldServer==null){
-					break;
-				}
-				
+			 final int leftMoveRound = maxMovePerRound / serverSize;
+		
+			 int updateNum =0;	
+			 boolean found = false;
+			 if(Global.IS_DEBUG){
+				 System.out.println("maxUpdateNum:"+maxUpdateNum);
+			 }
+			 
+			 for (int i=0;i<serverSize;++i) {
+				Server oldServer = serversInRandom[i];
 				int fromNode = oldServer.node;
 				
 				// 服务器不移动
 				if(Global.isMustServerNode[fromNode]){
 					continue;
 				}
-				 int leftNum = toNums;
-				// for (Server toServer : nextRoundServers) {
-				// int toNode = toServer.node;
-				for (int toNode : nodes) {
-					
+				
+				int leftNum = leftMoveRound;
+				for (int toNode : nodes) {		
 					// 防止自己到自己
 					if (fromNode == toNode) {
 						continue;
@@ -178,28 +178,48 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 					if (Global.isTimeOut()) {
 						return;
 					}
-
-					move(bestServersInRandom, fromNode, toNode);
+					
+					
+					move(serversInRandom, fromNode, toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
 					if (cost < minCost) {
 						minCost = cost;
 						bestFromNode = fromNode;
 						bestToNode = toNode;
-//						findBetter = true;
-//						break;
+						updateNum++;
+						if(updateNum == maxUpdateNum){
+							found = true;
+							break;
+						}
 					}
 					
 					leftNum--;
 					if(leftNum==0){
 						break;
 					}
+					
 				}
 				
-//				if(findBetter){
-//					break;
-//				}
+				if(found){
+					break;
+				}
+				
 			}
-
+			
+			if(maxUpdateNum==Global.INFINITY){
+				maxUpdateNum = updateNum;
+			}else if(maxUpdateNum==updateNum){
+				maxUpdateNum++;
+				if(maxUpdateNum>MAX_UPDATE_NUM){
+					maxUpdateNum = MAX_UPDATE_NUM;
+				}
+			}else{ // > updateNum
+				maxUpdateNum = updateNum;
+				if(maxUpdateNum<2){
+					maxUpdateNum = 2;
+				}
+			}
+		
 			if (minCost == Global.INFINITY) {
 				break;
 			}
@@ -209,27 +229,29 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 			}
 			
 			// 移动
-			move(bestServersInRandom, bestFromNode, bestToNode);
+			move(serversInRandom, bestFromNode, bestToNode);
 			int cost = Global.getTotalCost(nextGlobalServers);
 		
 			if (cost<lastCsot) {
-				int pos = 0;
+				serverSize = 0;
 				for(Server server : nextGlobalServers){
 					if(server==null){
 						break;
 					}
-					bestServersInRandom[pos++] = server;
+					serversInRandom[serverSize++] = server;
 				}
 				// 设置终止
-				if(pos<bestServersInRandom.length){
-					bestServersInRandom[pos] = null;
+				if(serverSize<serversInRandom.length){
+					serversInRandom[serverSize] = null;
 				}
 				
 				lastCsot = cost;
-				Global.updateSolution(bestServersInRandom);
+				Global.updateSolution(serversInRandom);
 			}else{ // not better
 				lastCsot = Global.INFINITY;
 				selectRandomServers();
+				maxUpdateNum = Global.INFINITY;
+				
 			}
 			
 		}
@@ -347,58 +369,4 @@ public final class GreedyOptimizerRandom extends GreedyOptimizer{
 		}
 	}
 	
-	/// 原来Simple部分
-	@Override
-	protected void transferServers(Server[] newServers,Server[] lsServers,int lsSize) {
-		
-		int size = 0;
-		
-		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
-			
-			int consumerNode = Global.consumerNodes[consumerId];
-			int consumerDemand = Global.consumerDemands[consumerId];
-			
-			if(Global.isMustServerNode[consumerNode]){
-				// 肯定是服务器不用转移
-				nextGlobalServers[size++] = new Server(consumerId,consumerNode,consumerDemand);
-				continue;
-			}
-			
-			// 将起始点需求分发到目的地点中，会改变边的流量	
-			for(int node : Global.allPriorityCost[consumerId]){
-				// 不是服务器
-				if(newServers[node]==null){
-					continue;
-				}
-				
-				int usedDemand = useBandWidthByPreNode(consumerDemand, node,Global.allPreNodes[consumerId]);
-				// 可以消耗
-				if (usedDemand > 0) {	
-					transferTo(consumerId, newServers[node], usedDemand,node, Global.allPreNodes[consumerId]);
-					consumerDemand -= usedDemand;
-					if(consumerDemand==0){
-						break;
-					}
-				}
-			}
-			
-			if (consumerDemand>0) {
-				nextGlobalServers[size++] = new Server(consumerId,consumerNode,consumerDemand);
-			}
-			
-		}
-		
-		for(int i=0;i<lsSize;++i){
-			Server newServer = lsServers[i];
-			if(newServer.getDemand()>0){
-				nextGlobalServers[size++] = newServer;
-			}
-		}
-		
-		// 尾部设置null表示结束
-		if(size<nextGlobalServers.length){
-			nextGlobalServers[size] = null;
-		}
-	}
-
 }

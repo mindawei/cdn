@@ -16,10 +16,13 @@ public abstract class GreedyOptimizer {
 	
 	private boolean isOptimizeOnce = false;
 
-	public GreedyOptimizer(){}
-
 	public GreedyOptimizer(boolean isOptimizeOnce){
 		this.isOptimizeOnce = isOptimizeOnce;
+	}
+	
+	protected int MAX_UPDATE_NUM;
+	public GreedyOptimizer(int maxUpdateNum){
+		this.MAX_UPDATE_NUM = maxUpdateNum;
 	}
 	
 	/** 为了复用，为null的地方不放置服务器 */
@@ -51,6 +54,8 @@ public abstract class GreedyOptimizer {
 			return;
 		}
 		
+		int maxUpdateNum = Global.INFINITY;
+		
 		while (true) {
 			
 			// 可选方案
@@ -58,6 +63,12 @@ public abstract class GreedyOptimizer {
 			int bestFromNode = -1;
 			int bestToNode = -1;
 
+			if(Global.IS_DEBUG){
+				System.out.println("maxUpdateNum:"+maxUpdateNum);
+			}
+			
+			int updateNum =0;	
+			boolean found = false;
 			for (Server server : Global.getBestServers()) {
 				if(server==null){
 					break;
@@ -86,10 +97,33 @@ public abstract class GreedyOptimizer {
 						minCost = cost;
 						bestFromNode = fromNode;
 						bestToNode = toNode;
+						updateNum++;
+						if(updateNum == maxUpdateNum){
+							found = true;
+							break;
+						}
 					}
+				}
+				
+				if(found){
+					break;
 				}
 			}
 
+			if(maxUpdateNum==Global.INFINITY){
+				maxUpdateNum = updateNum;
+			}else if(maxUpdateNum==updateNum){
+				maxUpdateNum++;
+				if(maxUpdateNum>MAX_UPDATE_NUM){
+					maxUpdateNum = MAX_UPDATE_NUM;
+				}
+			}else{ // > updateNum
+				maxUpdateNum = updateNum;
+				if(maxUpdateNum<2){
+					maxUpdateNum = 2;
+				}
+			}
+			
 			if (minCost == Global.INFINITY) {
 				break;
 			}

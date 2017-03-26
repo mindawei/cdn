@@ -12,7 +12,9 @@ import java.util.List;
  */
 public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 
-	public GreedyOptimizerMCMF(){}
+	public GreedyOptimizerMCMF(int maxUpdateNum){
+		super(maxUpdateNum);
+	}
 	
 	public GreedyOptimizerMCMF(boolean isOptimizeOnce){
 		super(isOptimizeOnce);

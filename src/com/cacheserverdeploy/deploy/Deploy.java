@@ -17,22 +17,27 @@ public class Deploy{
     	
     	if(Global.isNpHardest){
     		int nearestK = 1;
-    		int selectedNum = Global.consumerNum / 7;
-    		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
-    	}else if(Global.isNpHard){
-    		int nearestK = 1;
     		int selectedNum = Global.consumerNum / 4;
-    		new GreedyOptimizerRandom(nearestK,selectedNum).optimize();
+    		int maxMovePerRound = 2000;
+    		int maxUpdateNum = 9;
+    		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound,maxUpdateNum).optimize();
+    	}else if(Global.isNpHard){
+//    		int nearestK = Global.consumerNum -1;
+//    		int selectedNum = Global.consumerNum / 4;
+//    		int maxMovePerRound = 5000;
+//    		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound).optimize();
+    		int maxUpdateNum = 9;
+    		new GreedyOptimizerSimple(maxUpdateNum).optimize();
 		}else{
-			//new GreedyOptimizerMiddle().optimize();
-			//new GreedyOptimizerMCMF().optimize();	
+			int maxUpdateNum = 20;
+			new GreedyOptimizerMiddle(maxUpdateNum).optimize();
 		}
     	
     	new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
 	
-    	if(Global.IS_DEBUG){
-    		Global.printBestSolution();
-      	}
+//    	if(Global.IS_DEBUG){
+//    		Global.printBestSolution();
+//      }
     
     	return Global.getBsetSolution();    
     }
