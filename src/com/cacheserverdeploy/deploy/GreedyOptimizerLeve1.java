@@ -10,7 +10,7 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerLeve1 extends GreedyOptimizerSimple{
+public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 	
 	/** 频率大于0的点 */
 	private int[] nodes;
@@ -43,6 +43,9 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerSimple{
 		this.MIN_UPDATE_NUM = minUpdateNum;
 		this.selectNum = selectNum;
 		nodes = Global.initNodes(nearestK);
+		if(Global.IS_DEBUG){
+			System.out.println("选出数目："+nodes.length+" 总共数目："+Global.nodeNum);
+		}
 		selected = new boolean[nodes.length];
 		serversInRandom = new Server[Global.nodeNum];
 		this.maxMovePerRound = maxMovePerRound;
@@ -131,7 +134,7 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerSimple{
 		
 		int lastCsot = Global.INFINITY;
 		
-		int maxUpdateNum = Global.INFINITY;
+		int maxUpdateNum = MAX_UPDATE_NUM;
 		
 		while (true) {
 
@@ -200,9 +203,7 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerSimple{
 				
 			}
 			
-			if(maxUpdateNum==Global.INFINITY){
-				maxUpdateNum = updateNum;
-			}else if(maxUpdateNum<=updateNum){
+			if(maxUpdateNum<=updateNum){
 				maxUpdateNum++;
 				if(maxUpdateNum>MAX_UPDATE_NUM){
 					maxUpdateNum = MAX_UPDATE_NUM;
@@ -245,9 +246,8 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerSimple{
 				MCMF.optimize(serversInRandom);
 				lastCsot = Global.INFINITY;
 				selectRandomServers();
-				maxUpdateNum = Global.INFINITY;
-				
-				
+				maxUpdateNum = MAX_UPDATE_NUM;
+			
 			}
 			
 		}

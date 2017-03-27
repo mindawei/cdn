@@ -30,6 +30,8 @@ public abstract class GreedyOptimizer {
 		// 本地移动一步,各个结果之间过渡的时候回漏掉一步，故添加该方法  
 		moveLocal(Global.getBestServers());
 		
+		// int[] nodes = Global.initNodes(Global.consumerNum);
+		
 		while (true) {
 			
 			// 可选方案
@@ -50,7 +52,7 @@ public abstract class GreedyOptimizer {
 				}
 				
 				for (int toNode = 0; toNode < Global.nodeNum; ++toNode) {
-					
+
 					if (Global.isTimeOut()) {
 						return;
 					}

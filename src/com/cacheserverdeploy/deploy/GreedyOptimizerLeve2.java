@@ -130,7 +130,7 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 		//selectRandomServers();
 		
 		int lastCsot = Global.INFINITY;
-		int maxUpdateNum = Global.INFINITY;
+		int maxUpdateNum = MAX_UPDATE_NUM;
 		
 		while (true) {
 
@@ -199,9 +199,7 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 				
 			}
 			
-			if(maxUpdateNum==Global.INFINITY){
-				maxUpdateNum = updateNum;
-			}else if(maxUpdateNum<=updateNum){
+			if(maxUpdateNum<=updateNum){
 				maxUpdateNum++;
 				if(maxUpdateNum>MAX_UPDATE_NUM){
 					maxUpdateNum = MAX_UPDATE_NUM;
@@ -243,7 +241,7 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 			}else{ // not better
 				lastCsot = Global.INFINITY;
 				selectRandomServers();
-				maxUpdateNum = Global.INFINITY;
+				maxUpdateNum = MAX_UPDATE_NUM;
 			}
 			
 		}
