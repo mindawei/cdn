@@ -243,7 +243,6 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 				lastCsot = cost;
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
-				MCMF.optimize(serversInRandom);
 				lastCsot = Global.INFINITY;
 				selectRandomServers();
 				maxUpdateNum = MAX_UPDATE_NUM;
