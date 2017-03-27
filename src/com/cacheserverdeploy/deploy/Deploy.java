@@ -28,6 +28,8 @@ public class Deploy{
     		int maxMovePerRound = 2000;
     		int maxUpdateNum = 6;
     		int minUpdateNum = 3;
+//			int maxUpdateNum = 100;
+//			int minUpdateNum = 100;
     		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		// 9-2  -> 6-12
 //    		int maxUpdateNum = 100;

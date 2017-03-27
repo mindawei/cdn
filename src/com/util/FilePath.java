@@ -1,61 +1,115 @@
 package com.util;
 
 public class FilePath {
+	static String resultFilePath = "result/0.txt";
+	
 
 //	private static final String baseFilePath = "case_example/0 初级/";
-	// 2 12595
-	//
-	
 //	private static final String baseFilePath = "case_example/1 中级/";
 	
-	// 2 27385
-	// 27464
 	
 	private static final String baseFilePath = "case_example/2 高级/";
-	// 0 40214
-	// 1 36623
-	// 2 43389
-	// 
-	
-	
-	// 总的费用：59121  1/4
-//	预计算完成：消费者到所有节点的费用 
-//	edge.bandWidth<0:671 781 552 564 272 6
-	
-	// 总的费用：50311  1/7
-	// 43008
-//	public static final String graphFilePath = baseFilePath+"0.txt";
-	// k=1 n=1/4 r=2000  36337
-	// k=2 n=1/4 r=2000  36337
-	// k=counsumer-1 n=1/4 r=2000  36337
-	// 37617
-//	public static final String graphFilePath = baseFilePath+"1.txt";
-//	public static final String graphFilePath = baseFilePath+"2.txt";
-	// 40645
-//	public static final String graphFilePath = baseFilePath+"3.txt";
-	// 36965
-//	public static final String graphFilePath = baseFilePath+"4.txt";
-	// 37267
-//	public static final String graphFilePath = baseFilePath+"5.txt";
-//	public static final String graphFilePath = baseFilePath+"6.txt";
-//	public static final String graphFilePath = baseFilePath+"7.txt";
-	
-	// 高级  37251
-	// 中级  28717
-	// 初级
-	public static final String graphFilePath = baseFilePath+"8.txt";
 
-	//	public static final String graphFilePath = "case_example/官网案例.txt";
-//	public static final String graphFilePath = "case_example/case0.txt";
-//	public static final String graphFilePath = "case_example/case1.txt";
-//	public static final String graphFilePath = "case_example/case2.txt";
-//	public static final String graphFilePath = "case_example/case3.txt";
-//	public static final String graphFilePath = "case_example/case4.txt";
-//	public static final String graphFilePath = "case_example/case50.txt";
-//  public static final String graphFilePath = "case_example/case99.txt";
-
-	public static final String resultFilePath = "result/0.txt";
 	
+	// middle 一般跑20s左右
+	// 12151 
+	// static String graphFilePath = "case_example/0 初级/0.txt";
+	// 11472 
+	// static String graphFilePath = "case_example/0 初级/1.txt";
+	// 12595
+	// static String graphFilePath = "case_example/0 初级/2.txt";
+	// 11222 
+	// static String graphFilePath = "case_example/0 初级/3.txt";
+	// 11936
+	// static String graphFilePath = "case_example/0 初级/4.txt";
+	// 11976
+	// static String graphFilePath = "case_example/0 初级/5.txt";
+	// 11765
+	// static String graphFilePath = "case_example/0 初级/6.txt";
+	// 12186
+	// static String graphFilePath = "case_example/0 初级/7.txt";
+	// 14334
+	// static String graphFilePath = "case_example/0 初级/8.txt";
+	
+	// random 跑 85s k=1 updateNum = [3,6]
+	// 28825
+	// static String graphFilePath = "case_example/1 中级/0.txt";
+	// 27282
+	// static String graphFilePath = "case_example/1 中级/1.txt";
+	// 27476
+	// static String graphFilePath = "case_example/1 中级/2.txt";
+	// 28428
+	// static String graphFilePath = "case_example/1 中级/3.txt";
+	// 29926
+	// static String graphFilePath = "case_example/1 中级/4.txt";
+	// 28638
+	// static String graphFilePath = "case_example/1 中级/5.txt";
+	// 29020
+	// static String graphFilePath = "case_example/1 中级/6.txt";
+	// 28852
+	// static String graphFilePath = "case_example/1 中级/7.txt";
+	// 28597
+	// static String graphFilePath = "case_example/1 中级/8.txt";
+	
+	
+	// random 跑 85s k=2 updateNum = [3,6]
+	// 28275
+	// static String graphFilePath = "case_example/1 中级/0.txt";
+	// 27241
+	// static String graphFilePath = "case_example/1 中级/1.txt";
+	// 27495
+	// static String graphFilePath = "case_example/1 中级/2.txt";
+	// 28088
+    // static String graphFilePath = "case_example/1 中级/3.txt";
+	// 30655
+	// static String graphFilePath = "case_example/1 中级/4.txt";
+	// 28727
+	// static String graphFilePath = "case_example/1 中级/5.txt";
+	// 29478
+	// static String graphFilePath = "case_example/1 中级/6.txt";
+	// 28730
+	// static String graphFilePath = "case_example/1 中级/7.txt";
+	// 29190
+	// static String graphFilePath = "case_example/1 中级/8.txt";
+	
+	// random 跑 85s k=1 updateNum = [3,6]
+	// 38452
+	// static String graphFilePath = "case_example/2 高级/0.txt";
+	// 36233
+	// static String graphFilePath = "case_example/2 高级/1.txt";
+	// 38418
+	// static String graphFilePath = "case_example/2 高级/2.txt";
+	// 41737
+	// static String graphFilePath = "case_example/2 高级/3.txt";
+	// 37834
+	// static String graphFilePath = "case_example/2 高级/4.txt";
+	// 37861
+	// static String graphFilePath = "case_example/2 高级/5.txt";
+	// 35188
+	// static String graphFilePath = "case_example/2 高级/6.txt";
+	// 40032
+	// static String graphFilePath = "case_example/2 高级/7.txt";
+	// 37251
+	// static String graphFilePath = "case_example/2 高级/8.txt";
+
+//	static String graphFilePath = baseFilePath+"1.txt";
+//	static String graphFilePath = baseFilePath+"2.txt";
+//	static String graphFilePath = baseFilePath+"3.txt";
+//	static String graphFilePath = baseFilePath+"4.txt";
+//	static String graphFilePath = baseFilePath+"5.txt";
+//	static String graphFilePath = baseFilePath+"6.txt";
+//	static String graphFilePath = baseFilePath+"7.txt";
+//	static String graphFilePath = baseFilePath+"8.txt";
+
+//	static String graphFilePath = "case_example/官网案例.txt";
+//	static String graphFilePath = "case_example/case0.txt";
+//	static String graphFilePath = "case_example/case1.txt";
+//	static String graphFilePath = "case_example/case2.txt";
+//	static String graphFilePath = "case_example/case3.txt";
+//	static String graphFilePath = "case_example/case4.txt";
+//	static String graphFilePath = "case_example/case50.txt";
+  static String graphFilePath = "case_example/case99.txt";
+
 	// 官网案例     :  783
 	// case 0 : 2042
 	// case 1 : 2136
