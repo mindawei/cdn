@@ -1,19 +1,10 @@
 package com.cacheserverdeploy.deploy;
 
-/**
- * 简单移动
- * 
- * @author mindw
- * @date 2017年3月26日
- */
+// simple部分
 public class GreedyOptimizerSimple extends GreedyOptimizer{
 
-	public GreedyOptimizerSimple(int maxUpdateNum,int minUpdateNum){
-		super(maxUpdateNum,minUpdateNum);
-	}
-
 	@Override
-	protected void transferServers(Server[] newServers,Server[] lsServers,int lsSize) {
+	protected void transferServers(Server[] nextGlobalServers,Server[] newServers,Server[] lsServers,int lsSize) {
 		
 		int size = 0;
 		
@@ -35,10 +26,10 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 					continue;
 				}
 				
-				int usedDemand = useBandWidthByPreNode(consumerDemand, node,Global.allPreNodes[consumerId]);
+				int usedDemand = Global.useBandWidthByPreNode(consumerDemand, node,Global.allPreNodes[consumerId]);
 				// 可以消耗
 				if (usedDemand > 0) {	
-					transferTo(consumerId, newServers[node], usedDemand,node, Global.allPreNodes[consumerId]);
+					Global.transferTo(consumerId, newServers[node], usedDemand,node, Global.allPreNodes[consumerId]);
 					consumerDemand -= usedDemand;
 					if(consumerDemand==0){
 						break;
@@ -64,6 +55,4 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 			nextGlobalServers[size] = null;
 		}
 	}
-	
-	
 }

@@ -21,27 +21,19 @@ public class Deploy{
     		int maxMovePerRound = 2000;
     		int maxUpdateNum = 6;
     		int minUpdateNum = 3;
-    		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    		new GreedyOptimizerLeve2(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     	}else if(Global.isNpHard){
-    		int nearestK = 1;
+    		int nearestK = Global.consumerNum;
     		int selectedNum = Global.consumerNum / 4;
-    		int maxMovePerRound = 2000;
-    		int maxUpdateNum = 6;
-    		int minUpdateNum = 3;
-//			int maxUpdateNum = 100;
-//			int minUpdateNum = 100;
-    		new GreedyOptimizerRandom(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
-    		// 9-2  -> 6-12
-//    		int maxUpdateNum = 100;
-//    		int minUpdateNum = 100;
-//    		new GreedyOptimizerSimple(maxUpdateNum,minUpdateNum).optimize();
-    		//new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();	
+    		int maxMovePerRound = 100000000;
+    		int maxUpdateNum = 100;
+    		int minUpdateNum = 100;
+    		new GreedyOptimizerLeve1(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();	
     	}else{
-			int maxUpdateNum = 100;
-			int minUpdateNum = 100;
-			new GreedyOptimizerMiddle(maxUpdateNum,minUpdateNum).optimize();
+			new GreedyOptimizerLeve0().optimize();
 		}
-    	new GreedyOptimizerMCMF(GreedyOptimizer.OPTIMIZE_ONCE).optimize();
+    	
+    	MCMF.optimizeBestServers();
     
 //    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();

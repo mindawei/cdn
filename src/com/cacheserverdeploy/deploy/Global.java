@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+
 
 /**
  * 全局参数，方便访问
@@ -18,7 +20,7 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = false;
+	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 85 * 1000L;
@@ -447,4 +449,183 @@ public final class Global {
 			
 		}
 	}
+	
+	
+	// >> 通用方法
+	/** 
+	 * 供子类调用：
+	 * 转移到另一个服务器，并返回价格<br>
+	 * 注意：可能cost会改变(又返回之前的点)
+	 */
+	static void transferTo(int consumerId,Server toServer,int transferBandWidth,int serverNode,int[] preNodes) {
+		
+		///////////////////////
+		// 适配： 指针 -> 数组
+		// 计算长度
+		int len = 0;
+		int pre = serverNode;
+		while(pre!=-1){
+			len++;
+			pre = preNodes[pre];
+		}
+
+		// 逐个添加
+		int[] viaNodes = new int[len];
+		pre = serverNode;
+		while(pre!=-1){
+			viaNodes[--len] = pre;	
+			pre = preNodes[pre];
+		}
+		
+		/////////////////////////
+		
+		// 剩余要传的的和本地的最小值
+		ServerInfo toServerInfo = new ServerInfo(consumerId,transferBandWidth,viaNodes);
+		toServer.addServerInfo(toServerInfo);
+	}
+	
+	/**
+	 * 消耗带宽最大带宽
+	 * @return 消耗掉的带宽
+	 */
+	static int useBandWidthByPreNode(int demand,int serverNode,int[] preNodes ) {
+		int node1 = serverNode;
+		int node0 = preNodes[node1];
+		
+		int minBindWidth = INFINITY;
+		while(node0!=-1){
+			Edge edge = graph[node1][node0];
+			if(edge.leftBandWidth<minBindWidth){				
+				minBindWidth = edge.leftBandWidth;
+				if(minBindWidth==0){
+					break;
+				}
+			}
+			node1 = node0;
+			node0 = preNodes[node0];
+		}
+		
+		if (minBindWidth == 0) {
+			return 0;
+		}
+		
+		int usedBindWidth = Math.min(minBindWidth, demand);
+		
+		node1 = serverNode;
+		node0 = preNodes[node1];
+		while(node0!=-1){
+			Edge edge = graph[node1][node0];
+			edge.leftBandWidth -= usedBindWidth;
+			
+			node1 = node0;
+			node0 = preNodes[node0];
+		}
+		return usedBindWidth;
+	}
+	
+	
+	/// >> 获得按平率从高到低排的点
+	
+	private static final class Info{
+		/** 花费 */
+		final int cost;
+		/** 前向指针 */
+		final int[] preNodes;
+		/** 目标节点 */
+		final int toNode;
+		
+		public Info(int cost, int[] preNodes,int toNode) {
+			super();
+			this.cost = cost;
+			this.preNodes = preNodes;
+			this.toNode = toNode;
+		}	
+	}
+	
+	private static final class NodeFreq{
+		final int node;
+		int freqs;
+		
+		public NodeFreq(int node, int freqs) {
+			super();
+			this.node = node;
+			this.freqs = freqs;
+		}
+	}
+	
+	static int[] initNodes(int nearestK) {
+		
+		// 不会超过消费者数
+		nearestK = Math.min(nearestK, Global.nodeNum-1);
+		
+		// 节点频率
+		NodeFreq[] nodeFreqs = new NodeFreq[Global.nodeNum];
+		for(int node=0;node<Global.nodeNum;++node){
+			nodeFreqs[node] = new NodeFreq(node,0);
+		}
+		
+		for(int consumerId =0 ;consumerId<Global.consumerNum;++consumerId){
+			
+			int fromConsumerNode = Global.consumerNodes[consumerId];
+			
+			// 最大堆
+			PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>(nearestK+1,new Comparator<Info>() {
+				@Override
+				public int compare(Info o1, Info o2) {
+					return o2.cost-o1.cost;
+				}
+			});
+			
+			for(int toConsumerNode : Global.consumerNodes){
+				// 自己不到自己
+				if(toConsumerNode==fromConsumerNode){
+					continue;
+				}
+				int cost = Global.allCost[consumerId][toConsumerNode];
+				int[] preNodes = Global.allPreNodes[consumerId];
+				Info info = new Info(cost, preNodes, toConsumerNode);
+				priorityQueue.add(info);
+				if(priorityQueue.size()>nearestK){
+					// 去掉最大的，保留 k个最小的
+					priorityQueue.poll();
+				}
+			}
+			
+			// 统计频率
+			Info info  = null;
+			while((info=priorityQueue.poll())!=null){
+				int[] preNodes = info.preNodes;
+				for(int node=info.toNode;node!=-1;node=preNodes[node]){
+					nodeFreqs[node].freqs++;
+				}
+			}
+		}
+		
+		// 按频率从大到小排
+		Arrays.sort(nodeFreqs,new Comparator<NodeFreq>() {
+			@Override
+			public int compare(NodeFreq o1, NodeFreq o2) {	
+				return o2.freqs - o1.freqs;
+			}
+		});
+		
+		int[] selectedNodes = new int[Global.nodeNum];
+		int len = 0;
+		for(NodeFreq nodeFreq : nodeFreqs ){
+			if(nodeFreq.freqs>0){
+				selectedNodes[len++] = nodeFreq.node;
+			}else{
+				break;
+			}
+		}
+		int[] nodes = new int[len];
+		System.arraycopy(selectedNodes, 0, nodes, 0, len);
+		
+		if (Global.IS_DEBUG) {
+			System.out.println("频率大于0的初始节点有"+nodes.length+"个");
+		}
+		return nodes;
+	}
+
+	
 }

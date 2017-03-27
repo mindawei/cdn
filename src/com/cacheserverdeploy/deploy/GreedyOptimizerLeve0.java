@@ -6,16 +6,12 @@ package com.cacheserverdeploy.deploy;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerMiddle extends GreedyOptimizer{
-	
-	public GreedyOptimizerMiddle(int maxUpdateNum,int minUpdateNum){
-		super(maxUpdateNum,minUpdateNum);
-	}
+public final class GreedyOptimizerLeve0 extends GreedyOptimizer{
 
 	private final int[] consumerDemands = new int[Global.consumerNum];
 	
 	@Override
-	protected void transferServers(Server[] newServers,Server[] lsServers,int lsSize) {
+	protected void transferServers(Server[] nextGlobalServers,Server[] newServers,Server[] lsServers,int lsSize) {
 		
 		// 复制需求
 		System.arraycopy(Global.consumerDemands, 0, consumerDemands, 0, Global.consumerNum);
@@ -125,13 +121,13 @@ public final class GreedyOptimizerMiddle extends GreedyOptimizer{
 						
 			// 是服务器
 			if (newServers[minCostNode]!=null) {
-				int usedDemand =useBandWidthByPreNode(consumerDemands[consumerId], minCostNode, preNodes);
+				int usedDemand = Global.useBandWidthByPreNode(consumerDemands[consumerId], minCostNode, preNodes);
 				
 				// 可以消耗
 				if (usedDemand > 0) {		
 					consumerDemands[consumerId] -= usedDemand;
 					
-					transferTo(consumerId, newServers[minCostNode], usedDemand, minCostNode, preNodes);
+					Global.transferTo(consumerId, newServers[minCostNode], usedDemand, minCostNode, preNodes);
 					fromDemandSmaller = true;
 					leftServerNodeNum--;
 					break;

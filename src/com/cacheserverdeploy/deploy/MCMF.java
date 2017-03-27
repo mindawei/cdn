@@ -1,6 +1,7 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,18 +11,48 @@ import java.util.List;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerMCMF extends GreedyOptimizer{
+public final class MCMF{
 
-	public GreedyOptimizerMCMF(int maxUpdateNum,int minUpdateNum){
-		super(maxUpdateNum,minUpdateNum);
+	/** 为了复用，为null的地方不放置服务器 */
+	private static Server[] newServers = new Server[Global.nodeNum];
+	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束*/
+	private static Server[] lsNewServers = new Server[Global.nodeNum];
+	
+	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束*/
+	private static Server[] nextGlobalServers = new Server[Global.nodeNum];
+
+	/** 优化全局最优解 */
+	static void optimizeBestServers() {
+		optimize(Global.getBestServers());
+	}
+
+	static void optimize(Server[] oldServers) {
+		if (Global.IS_DEBUG) {
+			System.out.println("");
+			System.out.println( "MCMF 开始接管 ");
+		}
+		long t = System.currentTimeMillis();
+
+		Arrays.fill(newServers, null);
+		int lsSize = 0;
+		for (Server server : oldServers) {
+			if(server==null){
+				break;
+			}
+			Server newServer = new Server(server.node);
+			newServers[server.node] = newServer;
+			lsNewServers[lsSize++] = newServer;
+		}
+		Global.resetEdgeBandWidth();
+		transferServers(nextGlobalServers,newServers,lsNewServers,lsSize);
+		Global.updateSolution(nextGlobalServers);
+		
+		if (Global.IS_DEBUG) {
+			System.out.println("MCMF 结束，耗时: " + (System.currentTimeMillis() - t));
+		}
 	}
 	
-	public GreedyOptimizerMCMF(boolean isOptimizeOnce){
-		super(isOptimizeOnce);
-	}
-	
-	@Override
-	protected void transferServers(Server[] newServers,Server[] lsServers,int lsSize) {
+	static void transferServers(Server[] nextGlobalServers,Server[] newServers,Server[] lsServers,int lsSize) {
 		
 		List<Integer> sourceToNodes = new ArrayList<Integer>();
 		for(int node =0;node<Global.nodeNum;++node){
@@ -73,13 +104,13 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 	}
 	
 	// 复用
-	private final int[] nodes = new int[Global.nodeNum];
-	private int nodeSize = 0;		
+	private static final int[] nodes = new int[Global.nodeNum];
+	private static int nodeSize = 0;		
 			
 	/**
 	 * @return 返回路由,不存在解决方案则为无穷大
 	 */
-	private List<ServerInfo> mcmf(){
+	private static List<ServerInfo> mcmf(){
 		
 		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 		
@@ -116,18 +147,14 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 		}
 	}
 
-	private final int[] mcmfFlow = new int[Global.mcmfNodeNum];
-	private final int[] mcmfPre = new int[Global.mcmfNodeNum];
-	private final boolean vis[] = new boolean[Global.mcmfNodeNum];
-	private final int[] dist = new int[Global.mcmfNodeNum];
-	private final int[] que = new int[Global.mcmfNodeNum];
-	// 左边指针 == 右边指针 时候队列为空
-	// 左边指针，指向队首
-	private int queL;
-	// 右边指针，指向下一个插入的地方
-	private int queR;
+	private final static int[] mcmfFlow = new int[Global.mcmfNodeNum];
+	private final static int[] mcmfPre = new int[Global.mcmfNodeNum];
+	private final static boolean vis[] = new boolean[Global.mcmfNodeNum];
+	private final static int[] dist = new int[Global.mcmfNodeNum];
+	private final static int[] que = new int[Global.mcmfNodeNum];
 	
-	private boolean spfa(int s, int t) {
+	
+	private static boolean spfa(int s, int t) {
 		
 		for (int i = 0; i <= t; i++) {
 			vis[i] = false;
@@ -135,8 +162,11 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 			dist[i] = Global.INFINITY;
 		}
 		
-		queL = 0;
-		queR = 0;
+		// 左边指针 == 右边指针 时候队列为空
+		// 左边指针，指向队首
+		int queL = 0;
+		// 右边指针，指向下一个插入的地方
+		int queR = 0;
 		vis[s] = true;
 		dist[s] = 0;
 		que[queR++] = s;
@@ -170,5 +200,7 @@ public final class GreedyOptimizerMCMF extends GreedyOptimizer{
 			return true;
 		}
 	}
+
+
 	
 }
