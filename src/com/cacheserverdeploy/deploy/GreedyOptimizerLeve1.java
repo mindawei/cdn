@@ -51,6 +51,22 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 		this.maxMovePerRound = maxMovePerRound;
 	}
 	
+	private void selcetServers(){
+		serverSize = 0;
+		
+		for (Server server : Global.getBestServers()) {
+			if(server==null){
+				break;
+			}
+			serversInRandom[serverSize++] = new Server(server.node);
+		
+		}
+		// 设置结束标志
+		if(serverSize<serversInRandom.length){
+			serversInRandom[serverSize] = null;
+		}
+		
+	}
 	
 
 	private void selcetBestServers(){
@@ -129,8 +145,9 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 
 		long t = System.currentTimeMillis();
 			
-		selcetBestServers();
+		//selcetBestServers();
 		//selectRandomServers();
+		selcetServers();
 		
 		int lastCsot = Global.INFINITY;
 		
@@ -243,9 +260,10 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 				lastCsot = cost;
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
-				lastCsot = Global.INFINITY;
-				selectRandomServers();
-				maxUpdateNum = MAX_UPDATE_NUM;
+				return;
+				//lastCsot = Global.INFINITY;
+				//selectRandomServers();
+				//maxUpdateNum = MAX_UPDATE_NUM;
 			
 			}
 			

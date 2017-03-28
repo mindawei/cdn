@@ -23,11 +23,11 @@ public class Deploy{
     		int minUpdateNum = 3;
     		new GreedyOptimizerLeve2(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     	}else if(Global.isNpHard){
-    		int nearestK = Global.consumerNum;
-    		int selectedNum = Global.consumerNum / 4;
+    		int nearestK = 2;
+    		int selectedNum = Global.consumerNum +1;
     		int maxMovePerRound = 2000;
-    		int maxUpdateNum = 9;
-    		int minUpdateNum = 6;
+    		int maxUpdateNum = 1000;
+    		int minUpdateNum = 1000;
     		new GreedyOptimizerLeve1(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();	
     	}else{
 			new GreedyOptimizerLeve0().optimize();
