@@ -51,7 +51,7 @@ public final class Global {
 	//static final int INFINITY = 1000000000;
 
 	/** 最小费用 */
-	private static int minCost = INFINITY;
+	static int minCost = INFINITY;
 	private static int initCost;
 	
 	/** 初始解是否陷入局部最优了 */

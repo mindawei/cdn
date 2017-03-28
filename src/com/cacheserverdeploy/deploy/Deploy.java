@@ -33,9 +33,8 @@ public class Deploy{
 			new GreedyOptimizerLeve0().optimize();
 		}
     	
-    	MCMF.optimizeBestServers();
-   
-    	new MCMF2(graphContent).optimize();
+    	new OptimizerMCMF(graphContent).optimize();
+    	
 //    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();
 //      }

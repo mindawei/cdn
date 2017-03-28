@@ -12,10 +12,11 @@ public class FilePath {
 
 	
 	// middle 一般跑20s左右
-	// 12151 
+	// 12141
 	// static String graphFilePath = "case_example/0 初级/0.txt";
+	
 	// 11472 
-	// static String graphFilePath = "case_example/0 初级/1.txt";
+	//static String graphFilePath = "case_example/0 初级/1.txt";
 	// 12595
 	// static String graphFilePath = "case_example/0 初级/2.txt";
 	// 11222 
@@ -49,7 +50,7 @@ public class FilePath {
 	// 28394
 	// static String graphFilePath = "case_example/1 中级/7.txt";
 	// 27539
-	static String graphFilePath = "case_example/1 中级/8.txt";
+	// static String graphFilePath = "case_example/1 中级/8.txt";
 
 	
 	// random 跑 85s k=1 updateNum = [3,6]
@@ -59,7 +60,7 @@ public class FilePath {
 	// static String graphFilePath = "case_example/2 高级/1.txt";
 	// 38418
 	// static String graphFilePath = "case_example/2 高级/2.txt";
-	// 41737
+	// 41737 42430
 	// static String graphFilePath = "case_example/2 高级/3.txt";
 	// 37834
 	// static String graphFilePath = "case_example/2 高级/4.txt";
@@ -88,7 +89,8 @@ public class FilePath {
 //	static String graphFilePath = "case_example/case3.txt";
 //	static String graphFilePath = "case_example/case4.txt";
 //	static String graphFilePath = "case_example/case50.txt";
-//  static String graphFilePath = "case_example/case99.txt";
+
+	static String graphFilePath = "case_example/case99.txt";
 
 	// 官网案例     :  783
 	// case 0 : 2042
@@ -101,7 +103,7 @@ public class FilePath {
 	// 最小费用：12884 
 	// 服务器结点: 5, 11, 23, 45, 52, 56, 58, 61, 62, 65, 75, 89, 98, 113, 118, 136, 180, 192, 288, 
 	//          5, 11, 23, 45, 52, 56, 58, 61, 62, 65, 75, 89, 98, 113, 118, 136, 180, 192, 288, 
-	
+	         // 5, 11, 23, 45, 52, 56, 58, 61, 62, 65, 75, 89, 98, 113, 118, 136, 138, 180, 192, 288, 
 	// use:16319
 	
 	// case 99
@@ -125,6 +127,10 @@ public class FilePath {
 //	动态规划（复用思想）
 //	在一些假设下（利用网络本身信息）
 	
-	// TODO 明天跑测试
+	// TODO 
+	// 1   考虑如何选择节点的度等因素，给选择的节点排一个序?
+	// 2 mcmf等算法优化
+	// 3   服务器费用调高后的效果
+	
 	
 }
