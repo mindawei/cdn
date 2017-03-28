@@ -34,7 +34,8 @@ public class Deploy{
 		}
     	
     	MCMF.optimizeBestServers();
-    
+   
+    	new MCMF2(graphContent).optimize();
 //    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();
 //      }
