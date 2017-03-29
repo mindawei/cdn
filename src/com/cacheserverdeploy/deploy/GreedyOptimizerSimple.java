@@ -55,4 +55,6 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 			nextGlobalServers[size] = null;
 		}
 	}
+	
+	
 }

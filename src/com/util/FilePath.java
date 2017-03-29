@@ -13,7 +13,7 @@ public class FilePath {
 	
 	// middle 一般跑20s左右
 	// 12141
-	// static String graphFilePath = "case_example/0 初级/0.txt";
+	static String graphFilePath = "case_example/0 初级/0.txt";
 	
 	// 11472 
 	//static String graphFilePath = "case_example/0 初级/1.txt";
@@ -54,17 +54,17 @@ public class FilePath {
 
 	
 	// random 跑 85s k=1 updateNum = [3,6]
-	// 38452
+	// 38452 38767
 	// static String graphFilePath = "case_example/2 高级/0.txt";
-	// 36233
+	// 36233 35987
 	// static String graphFilePath = "case_example/2 高级/1.txt";
-	// 38418
+	// 38418 37372
 	// static String graphFilePath = "case_example/2 高级/2.txt";
-	// 41737 42430
+	// 41737 40282
 	// static String graphFilePath = "case_example/2 高级/3.txt";
-	// 37834
+	// 37834 37667
 	// static String graphFilePath = "case_example/2 高级/4.txt";
-	// 37861
+	// 37861 36891
 	// static String graphFilePath = "case_example/2 高级/5.txt";
 	// 35188
 	// static String graphFilePath = "case_example/2 高级/6.txt";
@@ -76,24 +76,24 @@ public class FilePath {
 	
 	
 	// random 跑一次 k=1 updateNum = [3,6]
-	// 
+	// 40214 40214 40151
 	// static String graphFilePath = "case_example/2 高级/0.txt";
-	// 
-	//static String graphFilePath = "case_example/2 高级/1.txt";
-	// 
-	// static String graphFilePath = "case_example/2 高级/2.txt";
-	// 
+	// 36730 36324 36180
+	// static String graphFilePath = "case_example/2 高级/1.txt";
+	// 43389 42530 38464
+    // static String graphFilePath = "case_example/2 高级/2.txt";
+	// 42058 43536 41280
 	// static String graphFilePath = "case_example/2 高级/3.txt";
-	// 
-	// static String graphFilePath = "case_example/2 高级/4.txt";
-	//
+	// 38373 38074 37829
+	//static String graphFilePath = "case_example/2 高级/4.txt";
+	// 42004 37732 38663
 	// static String graphFilePath = "case_example/2 高级/5.txt";
-	// 
+	// 36292 36292 35286
 	// static String graphFilePath = "case_example/2 高级/6.txt";
-	// 
+	// 41830 41106 40920
 	// static String graphFilePath = "case_example/2 高级/7.txt";
-	// 
-//	static String graphFilePath = "case_example/2 高级/8.txt";
+	// 37536 37822 37574
+	// static String graphFilePath = "case_example/2 高级/8.txt";
 
 //	static String graphFilePath = baseFilePath+"1.txt";
 //	static String graphFilePath = baseFilePath+"2.txt";
@@ -105,14 +105,16 @@ public class FilePath {
 //	static String graphFilePath = baseFilePath+"8.txt";
 
 //	static String graphFilePath = "case_example/官网案例.txt";
-	static String graphFilePath = "case_example/case0.txt";
+//	static String graphFilePath = "case_example/case0.txt";
 //	static String graphFilePath = "case_example/case1.txt";
 //	static String graphFilePath = "case_example/case2.txt";
 //	static String graphFilePath = "case_example/case3.txt";
 //	static String graphFilePath = "case_example/case4.txt";
 //	static String graphFilePath = "case_example/case50.txt";
 
-//	static String graphFilePath = "case_example/case99.txt";
+	// 155017
+	// 166579
+	// static String graphFilePath = "case_example/case99.txt";
 
 	// 官网案例     :  783
 	// case 0 : 2042
@@ -154,5 +156,8 @@ public class FilePath {
 	// 2 mcmf等算法优化
 	// 3   服务器费用调高后的效果
 	
+	 
+	 // 40214
+	 // 13 s 520 ms.
 	
 }

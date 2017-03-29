@@ -16,12 +16,12 @@ public class Deploy{
     	Global.init();
     	
     	if(Global.isNpHardest){
-    		int nearestK = 1;
+    		int nearestK = Global.consumerNum;
     		int selectedNum = Global.consumerNum / 4;
-    		int maxMovePerRound = 2000;
-    		int maxUpdateNum = 6;
-    		int minUpdateNum = 3;
-    		new GreedyOptimizerLeve2(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    		int maxMovePerRound = 8000;
+    		int maxUpdateNum = 1000;
+    		int minUpdateNum = 1000;
+    		new GreedyOptimizerLeve3(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     	}else if(Global.isNpHard){
     		int nearestK = 2;
     		int selectedNum = Global.consumerNum +1;

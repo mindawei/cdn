@@ -126,7 +126,9 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 
 		long t = System.currentTimeMillis();
 			
+		
 		selcetBestServers();
+		
 		//selectRandomServers();
 		
 		int lastCsot = Global.INFINITY;
