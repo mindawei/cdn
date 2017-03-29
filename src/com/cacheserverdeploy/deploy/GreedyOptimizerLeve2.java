@@ -239,9 +239,10 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 				lastCsot = cost;
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
-				lastCsot = Global.INFINITY;
-				selectRandomServers();
-				maxUpdateNum = MAX_UPDATE_NUM;
+				break;
+//				lastCsot = Global.INFINITY;
+//				selectRandomServers();
+//				maxUpdateNum = MAX_UPDATE_NUM;
 			}
 			
 		}

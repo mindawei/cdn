@@ -3,7 +3,7 @@ package com.cacheserverdeploy.deploy;
 import java.util.List;
 
 /** 服务器 */
-public final class Server {
+public final class Server{
 
 	/** 放置的位置 */
 	public final int node;
@@ -83,6 +83,12 @@ public final class Server {
 		}
 		return toatlCost;
 	}
+
+//	@Override
+//	public int compareTo(Server o) {
+//		// 费用从大到小排
+//		return o.getCost() - getCost();
+//	}
 
 
 	

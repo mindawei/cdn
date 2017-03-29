@@ -72,6 +72,28 @@ public class FilePath {
 	// static String graphFilePath = "case_example/2 高级/7.txt";
 	// 37251
 	// static String graphFilePath = "case_example/2 高级/8.txt";
+	
+	
+	
+	// random 跑一次 k=1 updateNum = [3,6]
+	// 
+	// static String graphFilePath = "case_example/2 高级/0.txt";
+	// 
+	//static String graphFilePath = "case_example/2 高级/1.txt";
+	// 
+	// static String graphFilePath = "case_example/2 高级/2.txt";
+	// 
+	// static String graphFilePath = "case_example/2 高级/3.txt";
+	// 
+	// static String graphFilePath = "case_example/2 高级/4.txt";
+	//
+	// static String graphFilePath = "case_example/2 高级/5.txt";
+	// 
+	// static String graphFilePath = "case_example/2 高级/6.txt";
+	// 
+	// static String graphFilePath = "case_example/2 高级/7.txt";
+	// 
+	static String graphFilePath = "case_example/2 高级/8.txt";
 
 //	static String graphFilePath = baseFilePath+"1.txt";
 //	static String graphFilePath = baseFilePath+"2.txt";
@@ -90,7 +112,7 @@ public class FilePath {
 //	static String graphFilePath = "case_example/case4.txt";
 //	static String graphFilePath = "case_example/case50.txt";
 
-	static String graphFilePath = "case_example/case99.txt";
+//	static String graphFilePath = "case_example/case99.txt";
 
 	// 官网案例     :  783
 	// case 0 : 2042

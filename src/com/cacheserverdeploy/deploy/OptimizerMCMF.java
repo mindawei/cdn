@@ -2,8 +2,10 @@ package com.cacheserverdeploy.deploy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -142,29 +144,34 @@ public final class OptimizerMCMF {
 //		addEdge(sourceNode, 192, inf, 0);
 //		addEdge(sourceNode, 288, inf, 0);
 	
-		//int cost = 
+		int cost = 
 		MCMF(sourceNode, endNode,maxn);
 		
 		// System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
 		
 		if(sumFlow>=Global.consumerTotalDemnad){
 			
-//			Map<Integer,Server> newServers = new HashMap<Integer,Server>();
-//			for(ServerInfo serverInfo : serverInfos){
-//				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length-1];
-//				if(!newServers.containsKey(serverNode)){
-//					newServers.put(serverNode, new Server(serverNode));
-//				}
-//				newServers.get(serverNode).addServerInfo(serverInfo);
-//			}
-//			cost = cost + newServers.size() * Global.depolyCostPerServer;
-//			System.out.println("cost:"+cost);
-//			Server[] nextGlobalServers = new Server[newServers.size()];
-//			int size = 0;
-//			for(Server newServer : newServers.values()){
-//				nextGlobalServers[size++] = newServer;
-//			}
-			// Global.updateSolution(nextGlobalServers);
+			Map<Integer,Server> newServers = new HashMap<Integer,Server>();
+			for(ServerInfo serverInfo : serverInfos){
+				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length-1];
+				if(!newServers.containsKey(serverNode)){
+					newServers.put(serverNode, new Server(serverNode));
+				}
+				newServers.get(serverNode).addServerInfo(serverInfo);
+			}
+			cost = cost + newServers.size() * Global.depolyCostPerServer;
+			System.out.println("cost:"+cost);
+			Server[] nextGlobalServers = new Server[newServers.size()];
+			int size = 0;
+			for(Server newServer : newServers.values()){
+				nextGlobalServers[size++] = newServer;
+			}
+			Global.updateSolution(nextGlobalServers);
+//			Arrays.sort(nextGlobalServers, 0, size);
+			
+			Global.resetEdgeBandWidth();
+			optimize(nextGlobalServers);
+			
 			
 			Global.resetEdgeBandWidth();
 			for(int fromNode =0;fromNode<nodeNum;++fromNode){
@@ -182,7 +189,10 @@ public final class OptimizerMCMF {
 			}
 			
 			// 重新更新流量后利用 complex进行寻路
-			optimize(Global.getBestServers());
+			optimize(nextGlobalServers);
+			// optimize(Global.getBestServers());
+			
+			
 			
 		}else{
 			
@@ -309,10 +319,8 @@ public final class OptimizerMCMF {
 	static void optimize(Server[] oldServers) {
 		if (Global.IS_DEBUG) {
 			System.out.println("");
-			System.out.println( "MCMF 开始接管 ");
+			System.out.println( "做一次Complex");
 		}
-		long t = System.currentTimeMillis();
-
 		Arrays.fill(newServers, null);
 		int lsSize = 0;
 		for (Server server : oldServers) {
@@ -325,10 +333,7 @@ public final class OptimizerMCMF {
 		}
 		transferServers(nextGlobalServers,newServers,lsNewServers,lsSize);
 		Global.updateSolution(nextGlobalServers);
-		
-		if (Global.IS_DEBUG) {
-			System.out.println("MCMF 结束，耗时: " + (System.currentTimeMillis() - t));
-		}
+
 	}
 	
 	static void transferServers(Server[] nextGlobalServers,Server[] newServers,Server[] lsServers,int lsSize) {
