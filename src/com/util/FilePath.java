@@ -4,96 +4,101 @@ public class FilePath {
 	static String resultFilePath = "result/0.txt";
 	
 
-//	private static final String baseFilePath = "case_example/0 初级/";
-//	private static final String baseFilePath = "case_example/1 中级/";
+//	private static final String baseFilePath = "case_example/0 初级/case";
+//	private static final String baseFilePath = "case_example/1 中级/case";
 	
 	
-	private static final String baseFilePath = "case_example/2 高级/";
+	private static final String baseFilePath = "case_example/2 高级/case";
 
 	
 	// middle 一般跑20s左右
 	// 12141
-	static String graphFilePath = "case_example/0 初级/0.txt";
+	//static String graphFilePath = "case_example/0 初级/case0.txt";
 	
 	// 11472 
-	//static String graphFilePath = "case_example/0 初级/1.txt";
+	//static String graphFilePath = "case_example/0 初级/case1.txt";
 	// 12595
-	// static String graphFilePath = "case_example/0 初级/2.txt";
+	// static String graphFilePath = "case_example/0 初级/case2.txt";
 	// 11222 
-	// static String graphFilePath = "case_example/0 初级/3.txt";
+	// static String graphFilePath = "case_example/0 初级/case3.txt";
 	// 11936
-	// static String graphFilePath = "case_example/0 初级/4.txt";
+	// static String graphFilePath = "case_example/0 初级/case4.txt";
 	// 11976
-	// static String graphFilePath = "case_example/0 初级/5.txt";
+	// static String graphFilePath = "case_example/0 初级/case5.txt";
 	// 11765
-	// static String graphFilePath = "case_example/0 初级/6.txt";
+	// static String graphFilePath = "case_example/0 初级/case6.txt";
 	// 12186
-	// static String graphFilePath = "case_example/0 初级/7.txt";
+	// static String graphFilePath = "case_example/0 初级/case7.txt";
 	// 14334
-	// static String graphFilePath = "case_example/0 初级/8.txt";
+	// static String graphFilePath = "case_example/0 初级/case8.txt";
 	
 	// random+middle 跑 85s k=consumerNum updateNum = [6,9] maxMovePerRound = 2000
 	// 27297
-	// static String graphFilePath = "case_example/1 中级/0.txt";
+	// static String graphFilePath = "case_example/1 中级/case0.txt";
 	// 26314
-	// static String graphFilePath = "case_example/1 中级/1.txt";
+	// static String graphFilePath = "case_example/1 中级/case1.txt";
 	// 26626
-	// static String graphFilePath = "case_example/1 中级/2.txt";
+	// static String graphFilePath = "case_example/1 中级/case2.txt";
 	// 27200
-	// static String graphFilePath = "case_example/1 中级/3.txt";
+	// static String graphFilePath = "case_example/1 中级/case3.txt";
 	// 28359
-	// static String graphFilePath = "case_example/1 中级/4.txt";
+	// static String graphFilePath = "case_example/1 中级/case4.txt";
 	// 27121
-	// static String graphFilePath = "case_example/1 中级/5.txt";
+	// static String graphFilePath = "case_example/1 中级/case5.txt";
 	// 28589 (原来 28484)
-	// static String graphFilePath = "case_example/1 中级/6.txt";
+	// static String graphFilePath = "case_example/1 中级/case6.txt";
 	// 28394
-	// static String graphFilePath = "case_example/1 中级/7.txt";
+	// static String graphFilePath = "case_example/1 中级/case7.txt";
 	// 27539
-	// static String graphFilePath = "case_example/1 中级/8.txt";
+	// static String graphFilePath = "case_example/1 中级/case8.txt";
 
 	
 	// random 跑 85s k=1 updateNum = [3,6]
 	// 38452 38767
-	// static String graphFilePath = "case_example/2 高级/0.txt";
+	// static String graphFilePath = "case_example/2 高级/case0.txt";
 	// 36233 35987
-	// static String graphFilePath = "case_example/2 高级/1.txt";
+	// static String graphFilePath = "case_example/2 高级/case1.txt";
 	// 38418 37372
-	// static String graphFilePath = "case_example/2 高级/2.txt";
+	// static String graphFilePath = "case_example/2 高级/case2.txt";
 	// 41737 40282
-	// static String graphFilePath = "case_example/2 高级/3.txt";
+	// static String graphFilePath = "case_example/2 高级/case3.txt";
 	// 37834 37667
-	// static String graphFilePath = "case_example/2 高级/4.txt";
+	// static String graphFilePath = "case_example/2 高级/case4.txt";
 	// 37861 36891
-	// static String graphFilePath = "case_example/2 高级/5.txt";
+	// static String graphFilePath = "case_example/2 高级/case5.txt";
 	// 35188
-	// static String graphFilePath = "case_example/2 高级/6.txt";
+	// static String graphFilePath = "case_example/2 高级/case6.txt";
 	// 40032
-	// static String graphFilePath = "case_example/2 高级/7.txt";
+	// static String graphFilePath = "case_example/2 高级/case7.txt";
 	// 37251
-	// static String graphFilePath = "case_example/2 高级/8.txt";
+	// static String graphFilePath = "case_example/2 高级/case8.txt";
 	
 	
 	
 	// random 跑一次 k=1 updateNum = [3,6]
-	// 40214 40214 40151
-	// static String graphFilePath = "case_example/2 高级/0.txt";
-	// 36730 36324 36180
-	// static String graphFilePath = "case_example/2 高级/1.txt";
-	// 43389 42530 38464
-    // static String graphFilePath = "case_example/2 高级/2.txt";
-	// 42058 43536 41280
-	// static String graphFilePath = "case_example/2 高级/3.txt";
+	// 112745
+	// static String graphFilePath = "case_example/2 高级/case0.txt";
+	// 118123
+	// static String graphFilePath = "case_example/2 高级/case1.txt";
+	
+	
+	// 116324 
+    //static String graphFilePath = "case_example/2 高级/case2.txt";
+	//  106129
+	// 112101 
+	static String graphFilePath = "case_example/2 高级/case3.txt";
+	
+	
 	// 38373 38074 37829
-	//static String graphFilePath = "case_example/2 高级/4.txt";
+	//static String graphFilePath = "case_example/2 高级/case4.txt";
 	// 42004 37732 38663
-	// static String graphFilePath = "case_example/2 高级/5.txt";
+	// static String graphFilePath = "case_example/2 高级/case5.txt";
 	// 36292 36292 35286
-	// static String graphFilePath = "case_example/2 高级/6.txt";
+	// static String graphFilePath = "case_example/2 高级/case6.txt";
 	// 41830 41106 40920
-	// static String graphFilePath = "case_example/2 高级/7.txt";
+	// static String graphFilePath = "case_example/2 高级/case7.txt";
 	// 37536 37822 37574
-	// static String graphFilePath = "case_example/2 高级/8.txt";
+	// static String graphFilePath = "case_example/2 高级/case8.txt";
 
 //	static String graphFilePath = baseFilePath+"1.txt";
 //	static String graphFilePath = baseFilePath+"2.txt";
@@ -108,7 +113,7 @@ public class FilePath {
 //	static String graphFilePath = "case_example/case0.txt";
 //	static String graphFilePath = "case_example/case1.txt";
 //	static String graphFilePath = "case_example/case2.txt";
-//	static String graphFilePath = "case_example/case3.txt";
+// static String graphFilePath = "case_example/case3.txt";
 //	static String graphFilePath = "case_example/case4.txt";
 //	static String graphFilePath = "case_example/case50.txt";
 

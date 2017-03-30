@@ -17,14 +17,15 @@ import java.util.Queue;
 public final class OptimizerMCMF {
 	
 	class McmfEdge {
-		int v, 
+		int u, v, 
 		cap,
 		cost,
+		flow,
 		next;
-
+		
 		@Override
 		public String toString() {
-			return "Edge [v=" + v + ", cap=" + cap + ", cost=" + cost
+			return "Edge [u="+u+",v=" + v + ", cap=" + cap + ", cost=" + cost+",flow="+flow
 					+ ", next=" + next + "]";
 		}
 		
@@ -75,9 +76,15 @@ public final class OptimizerMCMF {
 		dis = new int[maxn];
 		pre = new int[maxn];
 		vis = new boolean[maxn];
-		head = new int[maxn];
+		head = new int[maxn<<1];
 		Arrays.fill(head, -1);
 
+		
+		/* dfs*/
+		visDFS = new boolean[maxm << 1];
+		visEdge = new int[maxm << 1];
+		
+		
 		int lineIndex  = 4;
 		String line = null;
 		// 每行：链路起始节点ID 链路终止节点ID 总带宽大小 单位网络租用费
@@ -124,6 +131,9 @@ public final class OptimizerMCMF {
 			addEdge(sourceNode, server.node, inf, 0);
 		}
 			
+//		addEdge(sourceNode, 3, inf, 0);
+//		addEdge(sourceNode, 0, inf, 0);
+//		addEdge(sourceNode, 22, inf, 0);
 //		addEdge(sourceNode, 5, inf, 0);
 //		addEdge(sourceNode, 11, inf, 0);
 //		addEdge(sourceNode, 23, inf, 0);
@@ -144,10 +154,26 @@ public final class OptimizerMCMF {
 //		addEdge(sourceNode, 192, inf, 0);
 //		addEdge(sourceNode, 288, inf, 0);
 	
+//		for(int i=0;i<p.length;i++){
+//			if(p[i]!=null){
+//				System.out.println(p[i].toString());
+//			}
+//			
+//		}
 		int cost = 
 		MCMF(sourceNode, endNode,maxn);
 		
-		System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		//System.out.println("cost:"+cost);
+		//System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		Arrays.fill(visEdge, -3);
+		serverInfos.clear();
+		DFS(sourceNode,endNode,maxn);
+//		for(int i=0;i<p.length;i++){
+//			if(p[i]!=null){
+//				System.out.println(p[i].toString());
+//			}
+//			
+//		}
 		
 		if(sumFlow>=Global.consumerTotalDemnad){
 			
@@ -167,8 +193,8 @@ public final class OptimizerMCMF {
 				nextGlobalServers[size++] = newServer;
 			}
 			Global.updateSolution(nextGlobalServers);
-//			Arrays.sort(nextGlobalServers, 0, size);
 			
+		/*	
 			Global.resetEdgeBandWidth();
 			optimize(nextGlobalServers);
 			
@@ -180,30 +206,22 @@ public final class OptimizerMCMF {
 					if(toNode>=nodeNum){
 						continue;
 					}
-//					if(p[i].cost<0){ // 只考虑一条边
-//						priority[toNode][fromNode] = -p[i].cap;
-//						continue;
-//					}
-//					// 反向边的流量
-//					Global.graph[fromNode][toNode].leftBandWidth = p[i^1].cap;	
+					// 反向边的流量
 					if(p[i].cost<0){ // 只考虑一条边
-						// priority[toNode][fromNode] = -p[i].cap;
 						continue;
 					}
 					// 反向边的流量
-					if(p[i^1].cap==0){
-						Global.graph[fromNode][toNode].leftBandWidth = p[i^1].cap;	
-					}
+					//if(p[i^1].cap==0){
+					Global.graph[fromNode][toNode].leftBandWidth = p[i^1].cap;
+					//}
 				}
 			}
 			
 			// 重新更新流量后利用 complex进行寻路
 			optimize(nextGlobalServers);
 			// optimize(Global.getBestServers());
-			
-			
-			
-			
+			*/
+
 			
 		}else{
 			
@@ -226,38 +244,122 @@ public final class OptimizerMCMF {
 
 	void addEdge(int u, int v, int cap, int cost) {
 		p[edgeIndex] = new McmfEdge();
+		p[edgeIndex].u = u;
 		p[edgeIndex].v = v;
 		p[edgeIndex].cap = cap;
 		p[edgeIndex].cost = cost;
+		p[edgeIndex].flow = 0;
 		p[edgeIndex].next = head[u];
 		head[u] = edgeIndex++;
 		p[edgeIndex] = new McmfEdge();
+		p[edgeIndex].u = v;
 		p[edgeIndex].v = u;
 		p[edgeIndex].cap = 0;
+		p[edgeIndex].flow = 0;
 		p[edgeIndex].cost = -cost;
 		p[edgeIndex].next = head[v];
 		head[v] = edgeIndex++;
 	}
+	
 
+
+	boolean []visDFS ;
+	int []visEdge ;
+	int visCount =0;
+	int MINFLOW =inf;
+	void DFS(int s,int t,int n){
+
+		if(s==t){
+			MINFLOW =inf;
+			for(int visedge:visEdge){
+				if(visedge<0){
+					break;
+				}
+				MINFLOW = Math.min(MINFLOW, p[visedge].flow);
+			}
+			if(MINFLOW<=0){
+				return;
+			}
+			int nodeSize = 0;
+			for(int visedge:visEdge){
+				if(visedge<0){
+					break;
+				}
+				p[visedge].flow-=MINFLOW;
+				p[visedge ^ 1].flow +=MINFLOW;
+				nodes[nodeSize++]=p[visedge].v;
+				//System.out.print(p[visedge].v+" ");
+			}
+			//System.out.println(MINFLOW);
+			
+			// 保存服务信息,从消费者开始的 -> 服务器
+			
+			
+			// 去头  end,node0,node1,....
+			nodeSize--; 
+			int k =0;
+			int[] viaNodes = new int[nodeSize];
+			//nodeSize--;
+			for(int j=nodeSize-1;j>=0;j--){
+				viaNodes[k++]=nodes[j];
+			}
+			
+			
+		//	System.arraycopy(nodes, 1, viaNodes, 0, nodeSize);
+			
+			int consumerId = Global.nodeToConsumerId.get(viaNodes[0]);
+			ServerInfo serverInfo = new ServerInfo(consumerId, MINFLOW, viaNodes);
+			serverInfos.add(serverInfo);
+			
+			return;
+		}
+		for(int i=head[s];i!=-1;i =p[i].next){
+			if(p[i].v!=sourceNode&&p[i].flow>0&&!visDFS[i]){
+				visDFS[i]=true;
+				visEdge[visCount++]=i;
+				DFS(p[i].v,t,n);
+				visEdge[--visCount]=-3;
+				visDFS[i]=false;
+			}
+		}
+		
+	}
+	
 	boolean spfa(int s, int t, int n) {
 		int u, v;
 		Queue<Integer> q = new LinkedList<Integer>();
 		Arrays.fill(vis, false);
 		Arrays.fill(pre, -1);
-		for (int i = 0; i < n; ++i)
+		for (int i = 0; i < n; ++i){
 			dis[i] = inf;
+			len[i] = 0;
+		}
 		vis[s] = true;
 		dis[s] = 0;
+		
 		q.offer(s);
 		while (!q.isEmpty()) {
 			u = q.peek();
 			q.poll();
 			vis[u] = false;
 			for (int i = head[u]; i != -1; i = p[i].next) {
+				if(p[i].cap<=p[i].flow){
+					continue;
+				}
 				v = p[i].v;
-				if (p[i].cap>0 && dis[v] > dis[u] + p[i].cost) {
+				if (dis[v] > dis[u] + p[i].cost) {
 					dis[v] = dis[u] + p[i].cost;
 					pre[v] = i;
+					len[v] = len[u]+1;
+					if (!vis[v]) {
+						q.offer(v);
+						vis[v] = true;
+					}
+				}else if(dis[v] == dis[u] + p[i].cost
+						&& len[v] > len[u]+1){
+					dis[v] = dis[u] + p[i].cost;
+					pre[v] = i;
+					len[v] = len[u]+1;
 					if (!vis[v]) {
 						q.offer(v);
 						vis[v] = true;
@@ -275,7 +377,7 @@ public final class OptimizerMCMF {
 	
 	int MCMF(int s, int t, int n) {
 		
-		serverInfos.clear();
+		//serverInfos.clear();
 		
 		int flow = 0; // 总流量
 		int minflow, mincost;
@@ -283,31 +385,31 @@ public final class OptimizerMCMF {
 		while (spfa(s, t, n)) {
 			minflow = inf + 1;
 			for (int i = pre[t]; i != -1; i = pre[p[i ^ 1].v])
-				if (p[i].cap < minflow)
-					minflow = p[i].cap;
+				if ((p[i].cap-p[i].flow) < minflow)
+					minflow = (p[i].cap-p[i].flow);
 			flow += minflow;
 			for (int i = pre[t]; i != -1; i = pre[p[i ^ 1].v]) {
-				p[i].cap -= minflow;
-				p[i ^ 1].cap += minflow;
+				p[i].flow += minflow;
+				p[i ^ 1].flow -= minflow;
 			}
 			mincost += dis[t] * minflow;
 			
-			// 保存服务信息,从消费者开始的 -> 服务器
-			int nodeSize = 0;
-			for (int i = pre[t]; i != -1; i = pre[p[i ^ 1].v]) {
-				nodes[nodeSize++] = p[i].v;
-			}
-			
-			// 去头  end,node0,node1,....
-			nodeSize--; 
-			
-			
-			int[] viaNodes = new int[nodeSize];
-			System.arraycopy(nodes, 1, viaNodes, 0, nodeSize);
-			
-			int consumerId = Global.nodeToConsumerId.get(viaNodes[0]);
-			ServerInfo serverInfo = new ServerInfo(consumerId, minflow, viaNodes);
-			serverInfos.add(serverInfo);
+//			// 保存服务信息,从消费者开始的 -> 服务器
+//			int nodeSize = 0;
+//			for (int i = pre[t]; i != -1; i = pre[p[i ^ 1].v]) {
+//				nodes[nodeSize++] = p[i].v;
+//			}
+//			
+//			// 去头  end,node0,node1,....
+//			nodeSize--; 
+//			
+//			
+//			int[] viaNodes = new int[nodeSize];
+//			System.arraycopy(nodes, 1, viaNodes, 0, nodeSize);
+//			
+//			int consumerId = Global.nodeToConsumerId.get(viaNodes[0]);
+//			ServerInfo serverInfo = new ServerInfo(consumerId, minflow, viaNodes);
+//			serverInfos.add(serverInfo);
 			
 		}
 		sumFlow = flow; // 最大流
@@ -369,7 +471,7 @@ public final class OptimizerMCMF {
 			Global.mfmcConnections[Global.sourceNode][i] = sourceToNodes.get(i);
 		}
 		
-		List<ServerInfo> serverInfos = mcmf();
+		List<ServerInfo> serverInfos = complex();
 
 		if(serverInfos==null){ // 无解
 			int size = 0;
@@ -407,7 +509,7 @@ public final class OptimizerMCMF {
 	/**
 	 * @return 返回路由,不存在解决方案则为无穷大
 	 */
-	private static List<ServerInfo> mcmf(){
+	private static List<ServerInfo> complex(){
 		
 		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 		
@@ -446,7 +548,7 @@ public final class OptimizerMCMF {
 
 	private final static int[] mcmfFlow = new int[Global.mcmfNodeNum];
 	private final static int[] mcmfPre = new int[Global.mcmfNodeNum];
-	private final static int[] mcmfPriority = new int[Global.mcmfNodeNum];
+	private final static int[] len = new int[Global.mcmfNodeNum];
 	private final static boolean visist[] = new boolean[Global.mcmfNodeNum];
 	private final static int[] dist = new int[Global.mcmfNodeNum];
 	private final static int[] que = new int[Global.mcmfNodeNum];
@@ -458,6 +560,7 @@ public final class OptimizerMCMF {
 			visist[i] = false;
 			mcmfFlow[i] = Global.INFINITY;
 			dist[i] = Global.INFINITY;
+			len[i] = 0;
 		}
 		
 		// 左边指针 == 右边指针 时候队列为空
@@ -487,7 +590,7 @@ public final class OptimizerMCMF {
 					dist[v] = dist[u] + Global.graph[u][v].cost;
 					mcmfFlow[v] = Math.min(mcmfFlow[u], Global.graph[u][v].leftBandWidth);
 					mcmfPre[v] = u;
-					mcmfPriority[v] = mcmfPriority[u]+priority[u][v];
+					len[v] = len[u]+1;
 					if (!visist[v]) {
 						que[queR++] = v;
 						if(queR>= Global.mcmfNodeNum){
@@ -495,23 +598,20 @@ public final class OptimizerMCMF {
 						}
 						visist[v] = true;
 					}
-				}else if(dist[v]== dist[u] + Global.graph[u][v].cost){
-					// 
-//					if(mcmfPriority[v] < mcmfPriority[u]+priority[u][v]){
-//						
-//						System.out.println(mcmfPriority[v]+" "+(mcmfPriority[u]+priority[u][v]));
-//						
-//						mcmfFlow[v] = Math.min(mcmfFlow[u], Global.graph[u][v].leftBandWidth);
-//						mcmfPre[v] = u;
-//						mcmfPriority[v] = mcmfPriority[u]+priority[u][v];
-//						if (!visist[v]) {
-//							que[queR++] = v;
-//							if(queR>= Global.mcmfNodeNum){
-//								queR = queR % Global.mcmfNodeNum;
-//							}
-//							visist[v] = true;
-//						}
-//					}
+				}else if(dist[v] == dist[u] + Global.graph[u][v].cost
+						&& len[v] > len[u]+1){
+					
+					mcmfFlow[v] = Math.min(mcmfFlow[u], Global.graph[u][v].leftBandWidth);
+					mcmfPre[v] = u;
+					len[v] = len[u]+1;
+					if (!visist[v]) {
+						que[queR++] = v;
+						if(queR>= Global.mcmfNodeNum){
+							queR = queR % Global.mcmfNodeNum;
+						}
+						visist[v] = true;
+					}
+					
 				}
 				
 			}
