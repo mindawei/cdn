@@ -23,7 +23,7 @@ public final class Global {
 	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 85 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 170 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -265,6 +265,21 @@ public final class Global {
 			System.out.println(newMinCost < Global.minCost ? "better" : "worse");
 		}
 		
+		if (newMinCost < Global.minCost) {
+			minCost = newMinCost;
+			updateBestSolution(nextGlobalServers);
+			setBestServers(nextGlobalServers);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	/** 更新值 ，是否更好 */
+	public static boolean updateSolutionWithOutDebugInfo(Server[] nextGlobalServers) {
+		
+		int newMinCost = getTotalCost(nextGlobalServers);
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
 			updateBestSolution(nextGlobalServers);

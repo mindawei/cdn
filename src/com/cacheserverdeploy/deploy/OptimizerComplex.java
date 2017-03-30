@@ -15,13 +15,39 @@ public class OptimizerComplex {
 	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束 */
 	private static Server[] nextGlobalServers = new Server[Global.nodeNum];
 
-	static void optimize(Server[] oldServers) {
+	static void optimize(Server[] oldServers,int fromServerNode, int toServerNode) {
+		Arrays.fill(newServers, null);
+		int lsSize = 0;
+		for (Server server : oldServers) {
+			if(server==null){
+				break;
+			}
+			if (server.node != fromServerNode) {
+				Server newServer = new Server(server.node);
+				newServers[server.node] = newServer;
+				lsNewServers[lsSize++] = newServer;
+			}
+		}
+		Server newServer = new Server(toServerNode);
+		newServers[toServerNode] = newServer;
+		lsNewServers[lsSize++] = newServer;
+		
+		Global.resetEdgeBandWidth();
+		transferServers(nextGlobalServers,newServers,lsNewServers,lsSize);
+		Global.updateSolutionWithOutDebugInfo(nextGlobalServers);
+		
+//		Server[] returnServers = new Server[nextGlobalServers.length];
+//		System.arraycopy(nextGlobalServers,0,returnServers,0,nextGlobalServers.length);
+//		return returnServers;
+	}
+	
+	static void optimize(Server[] servers) {
 		if (Global.IS_DEBUG) {
 			System.out.println("做一次Complex");
 		}
 		Arrays.fill(newServers, null);
 		int lsSize = 0;
-		for (Server server : oldServers) {
+		for (Server server : servers) {
 			if (server == null) {
 				break;
 			}
@@ -29,13 +55,13 @@ public class OptimizerComplex {
 			newServers[server.node] = newServer;
 			lsNewServers[lsSize++] = newServer;
 		}
+		Global.resetEdgeBandWidth();
 		transferServers(nextGlobalServers, newServers, lsNewServers, lsSize);
 		Global.updateSolution(nextGlobalServers);
 
 	}
 
-	static void transferServers(Server[] nextGlobalServers, Server[] newServers,
-			Server[] lsServers, int lsSize) {
+	static void transferServers(Server[] nextGlobalServers, Server[] newServers,Server[] lsServers, int lsSize) {
 
 		List<Integer> sourceToNodes = new ArrayList<Integer>();
 		for (int node = 0; node < Global.nodeNum; ++node) {
@@ -58,22 +84,14 @@ public class OptimizerComplex {
 		}
 
 		List<ServerInfo> serverInfos = complex();
-
-		if (serverInfos == null) { // 无解
-			int size = 0;
-			for (int consumerId = 0; consumerId < Global.consumerNum; ++consumerId) {
-				nextGlobalServers[size++] = new Server(consumerId,
-						Global.consumerNodes[consumerId],
-						Global.consumerDemands[consumerId]);
-			}
-			// 尾部设置null表示结束
-			if (size < nextGlobalServers.length) {
-				nextGlobalServers[size] = null;
-			}
-		} else { // 有解
+			
+			int[] consumerDemnds = new int[Global.consumerNum];
+			System.arraycopy(Global.consumerDemands, 0, consumerDemnds, 0, Global.consumerNum);
+	
 			int size = 0;
 			for (ServerInfo serverInfo : serverInfos) {
 				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
+				consumerDemnds[serverInfo.consumerId]-=serverInfo.provideBandWidth;
 				Server newServer = newServers[serverNode];
 				newServer.addServerInfo(serverInfo);
 			}
@@ -83,11 +101,18 @@ public class OptimizerComplex {
 					nextGlobalServers[size++] = newServer;
 				}
 			}
+			
+			for(int i=0;i<Global.consumerNum;++i){
+				if(consumerDemnds[i]>0){
+					nextGlobalServers[size++] = new Server(i, consumerDemnds[i], Global.consumerNodes[i]);
+				}
+			}
+			
 			// 尾部设置null表示结束
 			if (size < nextGlobalServers.length) {
 				nextGlobalServers[size] = null;
 			}
-		}
+		
 	}
 
 	// 复用
@@ -105,8 +130,6 @@ public class OptimizerComplex {
 	private static List<ServerInfo> complex() {
 
 		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
-
-		int sumFlow = 0;
 		int s = Global.sourceNode;
 		int t = Global.endNode;
 
@@ -127,13 +150,9 @@ public class OptimizerComplex {
 					viaNodes);
 			serverInfos.add(serverInfo);
 
-			sumFlow += mcmfFlow[t];
 		}
-		if (sumFlow >= Global.consumerTotalDemnad) {
-			return serverInfos;
-		} else {
-			return null;
-		}
+		
+		return serverInfos;
 	}
 
 

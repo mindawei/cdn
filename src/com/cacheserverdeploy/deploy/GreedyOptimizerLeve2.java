@@ -147,8 +147,8 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 
 		long t = System.currentTimeMillis();
 			
-		//selcetServers();
-		selcetBestServers();
+		selcetServers();
+		//selcetBestServers();
 		//selectRandomServers();
 		
 		int lastCsot = Global.INFINITY;
@@ -198,16 +198,22 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 					
 					move(serversInRandom, fromNode, toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
-					if (cost < minCost) {
-						minCost = cost;
-						bestFromNode = fromNode;
-						bestToNode = toNode;
-						updateNum++;
-						if(updateNum == maxUpdateNum){
-							found = true;
-							break;
+						if (cost < minCost) {	
+							
+							minCost = cost;
+							bestFromNode = fromNode;
+							bestToNode = toNode;
+							updateNum++;
+
+							OptimizerComplex.optimize(serversInRandom, fromNode, toNode);
+							
+							
+							if(updateNum == maxUpdateNum){
+								found = true;
+								break;
+							}
 						}
-					}
+					
 					
 					leftNum--;
 					if(leftNum==0){
@@ -245,6 +251,8 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 			// 移动
 			move(serversInRandom, bestFromNode, bestToNode);
 			
+			
+			
 			int cost = Global.getTotalCost(nextGlobalServers);
 		
 			if (cost<lastCsot) {
@@ -263,10 +271,10 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 				lastCsot = cost;
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
-				//break;
-				lastCsot = Global.INFINITY;
-				selectRandomServers();
-				maxUpdateNum = MAX_UPDATE_NUM;
+				break;
+//				lastCsot = Global.INFINITY;
+//				selectRandomServers();
+//				maxUpdateNum = MAX_UPDATE_NUM;
 			}
 			
 		}

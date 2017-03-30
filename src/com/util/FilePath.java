@@ -57,7 +57,7 @@ public class FilePath {
 	// 38452 38767
 	// static String graphFilePath = "case_example/2 高级/case0.txt";
 	// 36233 35987
-	// static String graphFilePath = "case_example/2 高级/case1.txt";
+	//static String graphFilePath = "case_example/2 高级/case1.txt";
 	// 38418 37372
 	// static String graphFilePath = "case_example/2 高级/case2.txt";
 	// 41737 40282
@@ -86,7 +86,7 @@ public class FilePath {
     //static String graphFilePath = "case_example/2 高级/case2.txt";
 	//  106129
 	// 112101 
-	static String graphFilePath = "case_example/2 高级/case3.txt";
+static String graphFilePath = "case_example/2 高级/case3.txt";
 	
 	
 	// 38373 38074 37829

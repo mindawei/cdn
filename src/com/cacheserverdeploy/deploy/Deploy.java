@@ -22,9 +22,9 @@ public class Deploy{
 //    		int maxUpdateNum = 1000;
 //    		int minUpdateNum = 1000;
     		
-    		int nearestK = 1;//Global.consumerNum;
+    		int nearestK = 1;
     		int selectedNum = Global.consumerNum / 4;
-    		int maxMovePerRound = 10000;//8000;
+    		int maxMovePerRound = 4000;
     		int maxUpdateNum = 1000;
     		int minUpdateNum = 1000;
     		new GreedyOptimizerLeve2(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
@@ -41,7 +41,7 @@ public class Deploy{
     	
     	new OptimizerMCMF(graphContent).optimize();
     	
-//    	if(Global.IS_DEBUG){
+   //    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();
 //      }
     
