@@ -155,26 +155,6 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 		int maxUpdateNum = MAX_UPDATE_NUM;
 		
 		
-		class RankNode implements Comparable<RankNode>{
-			int rank;
-			int node;
-			int freq;
-			@Override
-			public int compareTo(RankNode o) {
-				// 先按排名从大到小排
-				int off = o.rank-rank;
-				if(off!=0){
-					return off; 
-				}
-				// 再按频率从大到小排
-				return o.freq - freq;
-			}
-		}
-		RankNode[] rankNodes = new RankNode[Global.nodeNum];
-		for(int node =0;node<rankNodes.length;++node){
-			rankNodes[node] = new RankNode();
-		}
-		
 		while (true) {
 
 			// 可选方案
@@ -195,14 +175,6 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 				 System.out.println("maxUpdateNum:"+maxUpdateNum);
 			 }
 			
-			
-			for (int node = 0; node < rankNodes.length; ++node) {
-				rankNodes[node] = new RankNode();
-				rankNodes[node].node = node;
-				rankNodes[node].freq = freqOfNodes[node];
-				rankNodes[node].rank = 0;
-			}
-			 
 			 for (int i=0;i<serverSize;++i) {
 				Server oldServer = serversInRandom[i];
 				int fromNode = oldServer.node;
@@ -226,13 +198,6 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 					
 					move(serversInRandom, fromNode, toNode);
 					int cost = Global.getTotalCost(nextGlobalServers);
-					if(cost<lastCsot){
-						rankNodes[toNode].rank++;
-						rankNodes[fromNode].rank--;
-					}else if(cost>lastCsot){
-						rankNodes[fromNode].rank++;
-						rankNodes[toNode].rank--;
-					}
 					if (cost < minCost) {
 						minCost = cost;
 						bestFromNode = fromNode;
@@ -280,28 +245,6 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 			// 移动
 			move(serversInRandom, bestFromNode, bestToNode);
 			
-			
-			Arrays.sort(rankNodes);
-			for(int node=0;node<nodes.length;++node){
-				nodes[node]=rankNodes[node].node;
-			}
-			
-			
-//			tmpNodes[0] = bestToNode;
-//			tmpNodes[nodes.length-1] = bestFromNode;
-//			int index =1;
-//			for(int node : nodes){
-//				if(node==bestFromNode||node==bestToNode){
-//					continue;
-//				}
-//				tmpNodes[index++] = node;
-//			}
-//			// 交换
-//			int[] arr = nodes;
-//			nodes = tmpNodes;
-//			tmpNodes = arr;
-		
-			
 			int cost = Global.getTotalCost(nextGlobalServers);
 		
 			if (cost<lastCsot) {
@@ -320,10 +263,10 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 				lastCsot = cost;
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
-				break;
-//				lastCsot = Global.INFINITY;
-//				selectRandomServers();
-//				maxUpdateNum = MAX_UPDATE_NUM;
+				//break;
+				lastCsot = Global.INFINITY;
+				selectRandomServers();
+				maxUpdateNum = MAX_UPDATE_NUM;
 			}
 			
 		}
