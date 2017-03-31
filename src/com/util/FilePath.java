@@ -76,19 +76,19 @@ public class FilePath {
 	
 	
 	// random 跑一次 k=1 updateNum = [3,6]
-	// 112745
+	// 
 	// static String graphFilePath = "case_example/2 高级/case0.txt";
-	// 118123
+	// 
 	// static String graphFilePath = "case_example/2 高级/case1.txt";
 	
 	
-	// 109760 
-    static String graphFilePath = "case_example/2 高级/case2.txt";
+	// 108607
+    // static String graphFilePath = "case_example/2 高级/case2.txt";
 	//  106129
-	// 109931
+	// 108555
 	// 112101 
 	// 166252 700
-	//static String graphFilePath = "case_example/2 高级/case3.txt";
+	static String graphFilePath = "case_example/2 高级/case3.txt";
 	
 	
 	// 38373 38074 37829

@@ -21,6 +21,9 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 			
 			// 将起始点需求分发到目的地点中，会改变边的流量	
 			for(int node : Global.allPriorityCost[consumerId]){
+				if(node==-1){
+					break;
+				}
 				// 不是服务器
 				if(newServers[node]==null){
 					continue;
