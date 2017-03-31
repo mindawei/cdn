@@ -1,7 +1,10 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.Random;
+
 
 /**
  * 防止在局部最优中出不来
@@ -10,10 +13,11 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
+public final class GreedyOptimizerLeve2_1 extends GreedyOptimizerSimple{
 	
 	/** 频率大于0的点 */
 	private int[] nodes;
+	private int[] tmpNodes;
 	
 	/** 候选节点是否被选中 */
 	private final boolean[] selected;
@@ -38,14 +42,12 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 	 * @param selectNum 随机生成的时候服务器个数
 	 * @param maxMovePerRound 每轮最多移动多少次
 	 */
-	public GreedyOptimizerLeve1(int nearestK,int selectNum,int maxMovePerRound,int maxUpdateNum,int minUpdateNum){
+	public GreedyOptimizerLeve2_1(int nearestK,int selectNum,int maxMovePerRound,int maxUpdateNum,int minUpdateNum){
 		this.MAX_UPDATE_NUM = maxUpdateNum;
 		this.MIN_UPDATE_NUM = minUpdateNum;
 		this.selectNum = selectNum;
-		nodes = Global.initNodes(nearestK);
-		if(Global.IS_DEBUG){
-			System.out.println("选出数目："+nodes.length+" 总共数目："+Global.nodeNum);
-		}
+		nodes = initNodes(nearestK);
+		tmpNodes = new int[nodes.length];
 		selected = new boolean[nodes.length];
 		serversInRandom = new Server[Global.nodeNum];
 		this.maxMovePerRound = maxMovePerRound;
@@ -145,13 +147,13 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 
 		long t = System.currentTimeMillis();
 			
-		//selcetBestServers();
+		//selcetServers();
+		selcetBestServers();
 		//selectRandomServers();
-		selcetServers();
 		
 		int lastCsot = Global.INFINITY;
-		
 		int maxUpdateNum = MAX_UPDATE_NUM;
+		
 		
 		while (true) {
 
@@ -172,7 +174,7 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 			 if(Global.IS_DEBUG){
 				 System.out.println("maxUpdateNum:"+maxUpdateNum);
 			 }
-			 
+			
 			 for (int i=0;i<serverSize;++i) {
 				Server oldServer = serversInRandom[i];
 				int fromNode = oldServer.node;
@@ -194,18 +196,26 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 					}
 					
 					
-					move(serversInRandom, fromNode, toNode);
-					int cost = Global.getTotalCost(nextGlobalServers);
-					if (cost < minCost) {
-						minCost = cost;
-						bestFromNode = fromNode;
-						bestToNode = toNode;
-						updateNum++;
-						if(updateNum == maxUpdateNum){
-							found = true;
-							break;
+					//move(serversInRandom, fromNode, toNode);
+					//int cost = Global.getTotalCost(nextGlobalServers);
+					int cost = getCostAfterMove(serversInRandom, fromNode, toNode);
+					//System.out.println(cost+" ==？ "+getCostAfterMove(serversInRandom, fromNode, toNode));
+					if (cost < minCost) {	
+							
+							minCost = cost;
+							bestFromNode = fromNode;
+							bestToNode = toNode;
+							updateNum++;
+
+							//OptimizerComplex.optimize(serversInRandom, fromNode, toNode);
+							
+							
+							if(updateNum == maxUpdateNum){
+								found = true;
+								break;
+							}
 						}
-					}
+					
 					
 					leftNum--;
 					if(leftNum==0){
@@ -242,6 +252,9 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 			
 			// 移动
 			move(serversInRandom, bestFromNode, bestToNode);
+			
+			
+			
 			int cost = Global.getTotalCost(nextGlobalServers);
 		
 			if (cost<lastCsot) {
@@ -261,10 +274,9 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 				Global.updateSolution(serversInRandom);
 			}else{ // not better
 				break;
-				//lastCsot = Global.INFINITY;
-				//selectRandomServers();
-				//maxUpdateNum = MAX_UPDATE_NUM;
-			
+//				lastCsot = Global.INFINITY;
+//				selectRandomServers();
+//				maxUpdateNum = MAX_UPDATE_NUM;
 			}
 			
 		}
@@ -274,5 +286,108 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 		}
 		
 	}
+	
+	private  final class Info{
+		/** 花费 */
+		final int cost;
+		/** 前向指针 */
+		final int[] preNodes;
+		/** 目标节点 */
+		final int toNode;
+		
+		public Info(int cost, int[] preNodes,int toNode) {
+			super();
+			this.cost = cost;
+			this.preNodes = preNodes;
+			this.toNode = toNode;
+		}	
+	}
+	
+	private  final class NodeFreq{
+		final int node;
+		int freqs;
+		
+		public NodeFreq(int node, int freqs) {
+			super();
+			this.node = node;
+			this.freqs = freqs;
+		}
+	}
+	
+	int[] initNodes(int nearestK) {
+		
+		// 不会超过消费者数
+		nearestK = Math.min(nearestK, Global.nodeNum-1);
+		
+		// 节点频率
+		NodeFreq[] nodeFreqs = new NodeFreq[Global.nodeNum];
+		for(int node=0;node<Global.nodeNum;++node){
+			nodeFreqs[node] = new NodeFreq(node,0);
+		}
+		
+		for(int consumerId =0 ;consumerId<Global.consumerNum;++consumerId){
+			
+			int fromConsumerNode = Global.consumerNodes[consumerId];
+			
+			// 最大堆
+			PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>(nearestK+1,new Comparator<Info>() {
+				@Override
+				public int compare(Info o1, Info o2) {
+					return o2.cost-o1.cost;
+				}
+			});
+			
+			for(int toConsumerNode : Global.consumerNodes){
+				// 自己不到自己
+				if(toConsumerNode==fromConsumerNode){
+					continue;
+				}
+				int cost = Global.allCost[consumerId][toConsumerNode];
+				int[] preNodes = Global.allPreNodes[consumerId];
+				Info info = new Info(cost, preNodes, toConsumerNode);
+				priorityQueue.add(info);
+				if(priorityQueue.size()>nearestK){
+					// 去掉最大的，保留 k个最小的
+					priorityQueue.poll();
+				}
+			}
+			
+			// 统计频率
+			Info info  = null;
+			while((info=priorityQueue.poll())!=null){
+				int[] preNodes = info.preNodes;
+				for(int node=info.toNode;node!=-1;node=preNodes[node]){
+					nodeFreqs[node].freqs++;
+				}
+			}
+		}
+		
+		// 按频率从大到小排
+		Arrays.sort(nodeFreqs,new Comparator<NodeFreq>() {
+			@Override
+			public int compare(NodeFreq o1, NodeFreq o2) {	
+				return o2.freqs - o1.freqs;
+			}
+		});
+		
+		int[] selectedNodes = new int[Global.nodeNum];
+		int len = 0;
+		int size = 0;
+		for(NodeFreq nodeFreq : nodeFreqs ){
+			if(nodeFreq.freqs>0){
+				selectedNodes[len++] = nodeFreq.node;
+			}
+			freqOfNodes[size++] = nodeFreq.freqs;
+		}
+		int[] nodes = new int[len];
+		System.arraycopy(selectedNodes, 0, nodes, 0, len);
+		
+		if (Global.IS_DEBUG) {
+			System.out.println("频率大于0的初始节点有"+nodes.length+"个");
+		}
+		return nodes;
+	}
+
+	int[] freqOfNodes = new int[Global.nodeNum];
 	
 }

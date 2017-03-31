@@ -8,6 +8,10 @@ package com.cacheserverdeploy.deploy;
  */
 public class GreedyOptimizerMiddle extends GreedyOptimizer{
 
+	
+	
+	
+	
 	private final int[] consumerDemands = new int[Global.consumerNum];
 	
 	@Override

@@ -99,6 +99,7 @@ public abstract class GreedyOptimizer {
 		}
 	}
 
+	
 	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
 	protected void move(Server[] oldServers,int fromServerNode, int toServerNode) {
 		Arrays.fill(newServers, null);
