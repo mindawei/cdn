@@ -186,7 +186,7 @@ public final class OptimizerMCMF {
 				newServers.get(serverNode).addServerInfo(serverInfo);
 			}
 			cost = cost + newServers.size() * Global.depolyCostPerServer;
-			System.out.println("cost:"+cost);
+			// System.out.println("cost:"+cost);
 			Server[] nextGlobalServers = new Server[newServers.size()];
 			int size = 0;
 			for(Server newServer : newServers.values()){

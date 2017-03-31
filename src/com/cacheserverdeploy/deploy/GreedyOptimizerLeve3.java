@@ -13,23 +13,14 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
+public final class GreedyOptimizerLeve3 extends GreedyOptimizerMiddle{
 	
 	/** 频率大于0的点 */
 	private int[] nodes;
-	private int[] tmpNodes;
-	
-	/** 候选节点是否被选中 */
-	private final boolean[] selected;
-	
-	/** 每次最多随机选多少个*/
-	private final int selectNum;
+
 	/** 下一轮的服务器*/
 	private Server[] serversInRandom;
-	private int serverSize;
-
-	private final Random random = new Random(47);
-	
+	private int serverSize;	
 	/** 每轮最多移动多少次 */
 	private final int maxMovePerRound;
 	
@@ -42,13 +33,10 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 	 * @param selectNum 随机生成的时候服务器个数
 	 * @param maxMovePerRound 每轮最多移动多少次
 	 */
-	public GreedyOptimizerLeve2(int nearestK,int selectNum,int maxMovePerRound,int maxUpdateNum,int minUpdateNum){
+	public GreedyOptimizerLeve3(int nearestK,int maxMovePerRound,int maxUpdateNum,int minUpdateNum){
 		this.MAX_UPDATE_NUM = maxUpdateNum;
 		this.MIN_UPDATE_NUM = minUpdateNum;
-		this.selectNum = selectNum;
 		nodes = initNodes(nearestK);
-		tmpNodes = new int[nodes.length];
-		selected = new boolean[nodes.length];
 		serversInRandom = new Server[Global.nodeNum];
 		this.maxMovePerRound = maxMovePerRound;
 	}
@@ -71,67 +59,6 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 	}
 	
 
-	private void selcetBestServers(){
-		serverSize = 0;
-		
-		int leftNum = selectNum;
-		// 肯定是服务器的
-		for(int node : Global.mustServerNodes){
-			serversInRandom[serverSize++] = new Server(node);
-		}
-		leftNum -= Global.mustServerNodes.length;
-		int index = 0;
-		// 随机选择
-		while(leftNum>0&&index<nodes.length){
-			// 没有被选过
-			int node = nodes[index++];
-			// 服务器上面已经添加过了
-			if (!Global.isMustServerNode[node]) {
-				serversInRandom[serverSize++] = new Server(node);
-				leftNum--;
-			}
-		}
-		// 设置结束标志
-		if(serverSize<serversInRandom.length){
-			serversInRandom[serverSize] = null;
-		}
-		
-	}
-	
-	/** 随机选择服务器 ,改变{@link #nextRoundServers}*/
-	private void selectRandomServers() {
-		
-		Arrays.fill(selected, false);
-		serverSize = 0;
-		
-		int leftNum = selectNum;
-		// 肯定是服务器的
-		for(int node : Global.mustServerNodes){
-			serversInRandom[serverSize++] = new Server(node);
-		}
-		leftNum -= Global.mustServerNodes.length;
-		// 随机选择
-		while(leftNum>0){
-			int index = random.nextInt(nodes.length);
-			// 没有被选过
-			if(!selected[index]){
-				int node = nodes[index];
-				if(Global.isMustServerNode[node]){
-					//  是服务器，服务器上面已经添加过了
-					selected[index] = true;
-				}else{ 
-					selected[index] = true;
-					serversInRandom[serverSize++] = new Server(node);
-					leftNum--;
-				}
-			}
-		}
-		// 设置结束标志
-		if(serverSize<serversInRandom.length){
-			serversInRandom[serverSize] = null;
-		}
-	}
-	
 	
 	@Override
 	void optimize() {
@@ -147,12 +74,10 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 
 		long t = System.currentTimeMillis();
 			
-		//selcetServers();
-		selcetBestServers();
-		//selectRandomServers();
+		selcetServers();
 		
 		int lastCsot = Global.INFINITY;
-		int maxUpdateNum = MAX_UPDATE_NUM;
+		int maxUpdateNum = MIN_UPDATE_NUM;
 		
 		
 		while (true) {
@@ -205,7 +130,7 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple{
 							bestToNode = toNode;
 							updateNum++;
 
-							//OptimizerComplex.optimize(serversInRandom, fromNode, toNode);
+							// OptimizerComplex.optimize(serversInRandom, fromNode, toNode);
 							
 							
 							if(updateNum == maxUpdateNum){

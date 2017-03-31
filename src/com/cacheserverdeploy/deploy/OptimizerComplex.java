@@ -34,7 +34,7 @@ public class OptimizerComplex {
 		
 		Global.resetEdgeBandWidth();
 		transferServers(nextGlobalServers,newServers,lsNewServers,lsSize);
-		Global.updateSolutionWithOutDebugInfo(nextGlobalServers);
+		Global.updateSolution(nextGlobalServers);
 		
 //		Server[] returnServers = new Server[nextGlobalServers.length];
 //		System.arraycopy(nextGlobalServers,0,returnServers,0,nextGlobalServers.length);
