@@ -404,8 +404,19 @@ public final class Global {
 			}
 			Arrays.sort(nodes);
 			int index = 0;
+			int maxCost = depolyCostPerServer / (consumerDemands[consumerId]+1);
+			
 			for(Node node : nodes){
+				if(node.cost>maxCost){
+					break;
+				}
 				allPriorityCost[consumerId][index++] = node.node;
+			}
+			if(index<nodeNum){
+				int[] priorityCost = new int[index];
+				// System.out.println(index+" "+nodeNum);
+				System.arraycopy(allPriorityCost[consumerId],0,priorityCost,0,index);
+				allPriorityCost[consumerId] = priorityCost;
 			}
 			
 		}
