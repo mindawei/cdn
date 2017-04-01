@@ -3,7 +3,7 @@ package com.cacheserverdeploy.deploy;
 import java.util.Arrays;
 
 /**
- * simple 改进
+ * 改进版 simple
  * @author mindw
  * @date 2017年4月1日
  */
@@ -192,7 +192,7 @@ public final class GreedyOptimizerLeve2{
 	/** 是否是新服务器 */
 	private final boolean[] isNewServer = new boolean[Global.nodeNum];
 	
-	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
+	/** 进行一步移动 */
 	private final int getCostAfterMove(int fromServerNode, int toServerNode) {
 		
 		Global.resetEdgeBandWidth();
@@ -256,7 +256,7 @@ public final class GreedyOptimizerLeve2{
 		return cost;
 	}
 	
-	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
+	/** 进行一步真正的移动  */
 	private final void moveBest(int fromServerNode, int toServerNode) {
 		
 		Global.resetEdgeBandWidth();

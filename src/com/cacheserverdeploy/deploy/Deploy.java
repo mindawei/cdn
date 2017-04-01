@@ -29,13 +29,13 @@ public class Deploy{
     		int maxMovePerRound = 2000;
     		int maxUpdateNum = 9;
     		int minUpdateNum = 6;
-    	
-    		new GreedyOptimizerLeve2(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+//    	
+//    		new GreedyOptimizerLeve2(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 
-//    		maxMovePerRound = 1000;
-//    		maxUpdateNum = 6;
-//     		minUpdateNum = 3;
-//    		new GreedyOptimizerLeve3(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    		maxMovePerRound = 1000;
+    		maxUpdateNum = 6;
+     		minUpdateNum = 3;
+    		new GreedyOptimizerLeve3(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
     	}else if(Global.isNpHard){
     		
