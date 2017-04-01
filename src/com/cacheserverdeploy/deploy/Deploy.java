@@ -14,48 +14,58 @@ public class Deploy{
     	Parser.buildNetwork(graphContent);
     
     	Global.init();
-    	
+    	OptimizerMCMF optimizerMCMF = new OptimizerMCMF(graphContent);
     	if(Global.isNpHardest){
-    		int nearestK = 1;//Global.consumerNum;
-    		int selectedNum = Global.consumerNum / 4;
-    		int maxMovePerRound = 2000;//8000;
-    		int maxUpdateNum = 1000;
-    		int minUpdateNum = 1000;
-    		new GreedyOptimizerLeve2_1(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
-
-    		
-//     		int nearestK = Global.consumerNum ;
+//    		int nearestK = 1;//Global.consumerNum;
 //    		int selectedNum = Global.consumerNum / 4;
-//    		int maxMovePerRound = 2000;
+//    		int maxMovePerRound = 2000;//8000;
 //    		int maxUpdateNum = 1000;
 //    		int minUpdateNum = 1000;
-//    		new GreedyOptimizerLeve2_1(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    		
+    		int nearestK = Global.consumerNum ;
+    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+        
+    		int selectedNum = Global.consumerNum / 4;
+    		int maxMovePerRound = 2000;
+    		int maxUpdateNum = 1000;
+    		int minUpdateNum = 1000;
+    	
+    		new GreedyOptimizerLeve2(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 
-    		 maxMovePerRound = 1000;
-    		 maxUpdateNum = 6;
-     		 minUpdateNum = 3;
-    		new GreedyOptimizerLeve3(nearestK,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
-//    	
+    		maxMovePerRound = 1000;
+    		maxUpdateNum = 6;
+     		minUpdateNum = 3;
+    		new GreedyOptimizerLeve3(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    	
     	}else if(Global.isNpHard){
-    		int nearestK = 2;
+    		
+    		int nearestK = 2 ;
+    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+        	
     		int selectedNum = Global.consumerNum +1;
     		int maxMovePerRound = 2000;
     		int maxUpdateNum = 1000;
     		int minUpdateNum = 1000;
-    		new GreedyOptimizerLeve1(nearestK,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();	
-    	
-//    		maxMovePerRound = 1000;
-//    		maxUpdateNum = 6;
-//     		minUpdateNum = 3;
-//    		new GreedyOptimizerLeve3(nearestK,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
-   
+    		new GreedyOptimizerLeve1(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    		optimizerMCMF.optimize();
+			new GreedyOptimizerLeve4(optimizerMCMF,nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimizeMCMF();
     	}else{
+    		int nearestK = 2;
+    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+    		
+    		int selectedNum = Global.consumerNum +1;
+    		int maxMovePerRound = 2000;
+    		int maxUpdateNum = 1000;
+    		int minUpdateNum = 1000;
 			new GreedyOptimizerLeve0().optimize();
+			optimizerMCMF.optimize();
+			new GreedyOptimizerLeve4(optimizerMCMF,nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimizeMCMF();
 		}
     	
-    	new OptimizerMCMF(graphContent).optimize();
     	
-   //    	if(Global.IS_DEBUG){
+    	optimizerMCMF.optimize();
+    	
+//    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();
 //      }
     

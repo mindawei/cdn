@@ -10,8 +10,9 @@ import java.util.Random;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
+public final class GreedyOptimizerLeve4 extends GreedyOptimizerMiddle{
 	
+	private OptimizerMCMF optimizerMCMF;
 	/** 频率大于0的点 */
 	private int[] nodes;
 	
@@ -38,7 +39,8 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 	 * @param selectNum 随机生成的时候服务器个数
 	 * @param maxMovePerRound 每轮最多移动多少次
 	 */
-	public GreedyOptimizerLeve1(int[] nodes,int selectNum,int maxMovePerRound,int maxUpdateNum,int minUpdateNum){
+	public GreedyOptimizerLeve4(OptimizerMCMF optimizerMCMF,int[] nodes,int selectNum,int maxMovePerRound,int maxUpdateNum,int minUpdateNum){
+		this.optimizerMCMF = optimizerMCMF;
 		this.MAX_UPDATE_NUM = maxUpdateNum;
 		this.MIN_UPDATE_NUM = minUpdateNum;
 		this.selectNum = selectNum;
@@ -128,8 +130,8 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 	}
 	
 	
-	@Override
-	void optimize() {
+	
+	void optimizeMCMF() {
 
 		if (Global.IS_DEBUG) {
 			System.out.println("");
@@ -144,7 +146,7 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 			
 		//selcetBestServers();
 		//selectRandomServers();
-		selcetServers();
+		
 		
 		int lastCsot = Global.INFINITY;
 		
@@ -156,16 +158,14 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 			int minCost = Global.INFINITY;
 			int bestFromNode = -1;
 			int bestToNode = -1;
-
+			selcetServers();
 		
 			if(serverSize==0){
 				break;
 			}
 			
 			 final int leftMoveRound = maxMovePerRound / serverSize;
-		
-			 int updateNum =0;	
-			 boolean found = false;
+
 			 if(Global.IS_DEBUG){
 				 System.out.println("maxUpdateNum:"+maxUpdateNum);
 			 }
@@ -190,79 +190,20 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 						return;
 					}
 					
-					
+					// 移动
 					move(serversInRandom, fromNode, toNode);
-					int cost = Global.getTotalCost(nextGlobalServers);
-					if (cost < minCost) {
-						minCost = cost;
-						bestFromNode = fromNode;
-						bestToNode = toNode;
-						updateNum++;
-						if(updateNum == maxUpdateNum){
-							found = true;
-							break;
-						}
-					}
 					
-					leftNum--;
-					if(leftNum==0){
-						break;
-					}
-					
-				}
-				
-				if(found){
-					break;
 				}
 				
 			}
 			
-			if(maxUpdateNum<=updateNum){
-				maxUpdateNum++;
-				if(maxUpdateNum>MAX_UPDATE_NUM){
-					maxUpdateNum = MAX_UPDATE_NUM;
-				}
-			}else{ // > updateNum
-				maxUpdateNum--;
-				if(maxUpdateNum<MIN_UPDATE_NUM){
-					maxUpdateNum = MIN_UPDATE_NUM;
-				}
-			}
-		
-			if (minCost == Global.INFINITY) {
-				break;
-			}
+			
 
 			if (Global.isTimeOut()) {
 				return;
 			}
 			
-			// 移动
-			move(serversInRandom, bestFromNode, bestToNode);
-			int cost = Global.getTotalCost(nextGlobalServers);
-		
-			if (cost<lastCsot) {
-				serverSize = 0;
-				for(Server server : nextGlobalServers){
-					if(server==null){
-						break;
-					}
-					serversInRandom[serverSize++] = server;
-				}
-				// 设置终止
-				if(serverSize<serversInRandom.length){
-					serversInRandom[serverSize] = null;
-				}
-				
-				lastCsot = cost;
-				Global.updateSolution(serversInRandom);
-			}else{ // not better
-				return;
-				//lastCsot = Global.INFINITY;
-				//selectRandomServers();
-				//maxUpdateNum = MAX_UPDATE_NUM;
 			
-			}
 			
 		}
 
@@ -270,6 +211,28 @@ public final class GreedyOptimizerLeve1 extends GreedyOptimizerMiddle{
 			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
 		}
 		
+	}
+	
+	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
+	protected void move(Server[] oldServers,int fromServerNode, int toServerNode) {
+		Arrays.fill(newServers, null);
+		int lsSize = 0;
+		for (Server server : oldServers) {
+			if(server==null){
+				break;
+			}
+			if (server.node != fromServerNode) {
+				Server newServer = new Server(server.node);
+				newServers[server.node] = newServer;
+				lsNewServers[lsSize++] = newServer;
+			}
+		}
+		Server newServer = new Server(toServerNode);
+		newServers[toServerNode] = newServer;
+		lsNewServers[lsSize++] = newServer;
+		optimizerMCMF.optimizeCASE0(lsNewServers);
+		//Global.resetEdgeBandWidth();
+		//transferServers(nextGlobalServers,newServers,lsNewServers,lsSize);
 	}
 	
 }

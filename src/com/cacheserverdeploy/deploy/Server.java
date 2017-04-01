@@ -17,14 +17,6 @@ public final class Server{
 		this.node = node;
 	}
 	
-	public Server copy() {
-		Server server = new Server(node);
-		for(int i=0;i<size;++i){
-			server.addServerInfo(serverInfos[i].copy());
-		}
-		return server;
-	}
-	
 	public Server(int consumerId,int node,int demand) {
 		super();
 		this.node = node;
@@ -91,8 +83,6 @@ public final class Server{
 		}
 		return toatlCost;
 	}
-
-
 
 //	@Override
 //	public int compareTo(Server o) {

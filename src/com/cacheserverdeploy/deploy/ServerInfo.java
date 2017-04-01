@@ -18,15 +18,10 @@ public final class ServerInfo {
 	 * 当服务器和消费者在一个节点上时只有一个值，服务器的节点（也是消费者的节点）<br>
 	 * [消费者节点 节点1 节点2 ... 节点i ... 服务器节点] <br>
 	 */
-	int[] viaNodes;
+	final int[] viaNodes;
 	
 	/** 提供的带宽  */
     public int provideBandWidth;
-    
-    public ServerInfo copy() {
-		ServerInfo serverInfo = new ServerInfo(consumerId, provideBandWidth, viaNodes);
-		return serverInfo;
-	}
 
 	/** 带宽费*/
 	public int getBandWidthCost(){
@@ -51,7 +46,5 @@ public final class ServerInfo {
 				+ Arrays.toString(viaNodes) + ", provideBandWidth="
 				+ provideBandWidth + "]";
 	}
-
-	
 	
 }

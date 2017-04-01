@@ -113,7 +113,90 @@ public final class OptimizerMCMF {
 			addEdge(node, endNode, demand, 0);
 	
 		}
+		
+		for(int index = 0;index<Global.nodeNum;index++){
+			resetSourceEdge(sourceNode,index);
+		}
 	}
+	
+public void optimizeCASE0(Server[] servers){
+		
+		if (Global.IS_DEBUG) {
+			System.out.println("");
+			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		}
+
+		long t = System.currentTimeMillis();
+		
+		for(int i=head[sourceNode];i!=-1;i=p[i].next){
+			p[i].cap = 0;
+			p[i].cost = inf;
+		}
+		int serverSize = 0;
+		for(Server server : servers){
+			
+			
+			if(server==null){
+				break;
+			}
+			serverSize++;
+			for(int i=head[sourceNode];i!=-1;i=p[i].next){
+				if(server.node==p[i].v){
+					p[i].cap = inf;
+					p[i].cost = 0;
+					break;
+				}
+			}
+			//addEdge(sourceNode, server.node, inf, 0);
+		}
+		resetEdge();
+		
+		int cost = 
+		MCMF(sourceNode, endNode,maxn)+serverSize * Global.depolyCostPerServer;
+		
+		System.out.println("cost:"+cost);
+		System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		Arrays.fill(visEdge, -3);
+		serverInfos.clear();
+		DFS(sourceNode,endNode,maxn);
+
+		
+		if(sumFlow>=Global.consumerTotalDemnad){
+			
+			Map<Integer,Server> newServers = new HashMap<Integer,Server>();
+			for(ServerInfo serverInfo : serverInfos){
+				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length-1];
+				if(!newServers.containsKey(serverNode)){
+					newServers.put(serverNode, new Server(serverNode));
+				}
+				newServers.get(serverNode).addServerInfo(serverInfo);
+			}
+			cost = cost + newServers.size() * Global.depolyCostPerServer;
+			// System.out.println("cost:"+cost);
+			Server[] nextGlobalServers = new Server[newServers.size()];
+			int size = 0;
+			for(Server newServer : newServers.values()){
+				nextGlobalServers[size++] = newServer;
+			}
+			Global.updateSolution(nextGlobalServers);
+	
+			
+		}else{
+			
+			if(Global.IS_DEBUG){
+				System.out.println("mcmf 无法找到一个满足的解！");
+			}
+			
+		}
+
+		if (Global.IS_DEBUG) {
+			System.out.println(this.getClass().getSimpleName() +" 结束，耗时: " + (System.currentTimeMillis() - t));
+		}
+		
+		
+		
+	}
+	
 	
 	public void optimize(){
 		
@@ -124,12 +207,25 @@ public final class OptimizerMCMF {
 
 		long t = System.currentTimeMillis();
 		
+		for(int i=head[sourceNode];i!=-1;i=p[i].next){
+				p[i].cap = 0;
+				p[i].cost = inf;
+		}
+		
 		for(Server server : Global.getBestServers()){
 			if(server==null){
 				break;
 			}
-			addEdge(sourceNode, server.node, inf, 0);
+			for(int i=head[sourceNode];i!=-1;i=p[i].next){
+				if(server.node==p[i].v){
+					p[i].cap = inf;
+					p[i].cost = 0;
+					break;
+				}
+			}
+			//addEdge(sourceNode, server.node, inf, 0);
 		}
+		resetEdge();
 			
 //		addEdge(sourceNode, 3, inf, 0);
 //		addEdge(sourceNode, 0, inf, 0);
@@ -163,8 +259,8 @@ public final class OptimizerMCMF {
 		int cost = 
 		MCMF(sourceNode, endNode,maxn);
 		
-		//System.out.println("cost:"+cost);
-		//System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		System.out.println("cost:"+cost);
+		System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
 		Arrays.fill(visEdge, -3);
 		serverInfos.clear();
 		DFS(sourceNode,endNode,maxn);
@@ -242,6 +338,31 @@ public final class OptimizerMCMF {
 	static int[][] priority = new int[Global.graph.length][Global.graph[0].length];
 	
 
+	void resetSourceEdge(int u,int v){
+		p[edgeIndex] = new McmfEdge();
+		p[edgeIndex].u = u;
+		p[edgeIndex].v = v;
+		p[edgeIndex].cap = 0;
+		p[edgeIndex].cost = inf;
+		p[edgeIndex].flow = 0;
+		p[edgeIndex].next = head[u];
+		head[u] = edgeIndex++;
+		p[edgeIndex] = new McmfEdge();
+		p[edgeIndex].u = v;
+		p[edgeIndex].v = u;
+		p[edgeIndex].cap = 0;
+		p[edgeIndex].flow = 0;
+		p[edgeIndex].cost = 0;
+		p[edgeIndex].next = head[v];
+		head[v] = edgeIndex++;
+	}
+	
+	void resetEdge(){
+		for(int i=0;i<edgeIndex;i++){
+			p[i].flow=0;
+		}
+	}
+	
 	void addEdge(int u, int v, int cap, int cost) {
 		p[edgeIndex] = new McmfEdge();
 		p[edgeIndex].u = u;
