@@ -183,9 +183,7 @@ public final class GreedyOptimizerLeve2{
 		if (Global.IS_DEBUG) {
 			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
 		}
-
 	}
-	
 	
 	/** 新服务器是否已经安装 */
 	private final boolean[] isNewServerInstalled = new boolean[Global.nodeNum];

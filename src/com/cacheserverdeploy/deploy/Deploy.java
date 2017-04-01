@@ -21,6 +21,10 @@ public class Deploy{
 //    		int maxMovePerRound = 2000;//8000;
 //    		int maxUpdateNum = 1000;
 //    		int minUpdateNum = 1000;
+
+    		// 注意:  
+    		// 提速后： GreedyOptimizerLeve2 GreedyOptimizerLeve3 
+    		// 都只是寻找位置，请确保之后的mcmf一定会调用并且有解
     		
     		int nearestK = Global.consumerNum ;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
@@ -29,8 +33,7 @@ public class Deploy{
     		int maxMovePerRound = 2000;
     		int maxUpdateNum = 9;
     		int minUpdateNum = 6;
-//    	
-//    		new GreedyOptimizerLeve2(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    		new GreedyOptimizerLeve2(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 
     		maxMovePerRound = 1000;
     		maxUpdateNum = 6;

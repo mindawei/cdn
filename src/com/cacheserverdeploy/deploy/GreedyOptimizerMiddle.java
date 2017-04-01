@@ -19,11 +19,6 @@ public class GreedyOptimizerMiddle extends GreedyOptimizer{
 		int size = 0;
 		
 		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
-			// 肯定是服务器不用转移
-			if (Global.isMustServerNode[Global.consumerNodes[consumerId]]) {
-				nextGlobalServers[size++] = new Server(consumerId, Global.consumerNodes[consumerId], consumerDemands[consumerId]);
-				continue;
-			} 
 			// 减枝概率不大
 			// 简单减枝计算，转移额最小费用
 			int minCost = Global.INFINITY;
