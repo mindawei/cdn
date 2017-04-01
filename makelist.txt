@@ -9,8 +9,11 @@ com/cacheserverdeploy/deploy/GreedyOptimizerLeve0.java
 com/cacheserverdeploy/deploy/GreedyOptimizerLeve1.java
 com/cacheserverdeploy/deploy/GreedyOptimizerLeve2.java
 com/cacheserverdeploy/deploy/GreedyOptimizerLeve3.java
+com/cacheserverdeploy/deploy/GreedyOptimizerLeve4.java
 com/cacheserverdeploy/deploy/GreedyOptimizerMiddle.java
 com/cacheserverdeploy/deploy/GreedyOptimizerSimple.java
+com/cacheserverdeploy/deploy/NodesSelector.java
+com/cacheserverdeploy/deploy/OptimizerComplex.java
 com/cacheserverdeploy/deploy/OptimizerMCMF.java
 com/cacheserverdeploy/deploy/Parser.java
 com/cacheserverdeploy/deploy/Server.java

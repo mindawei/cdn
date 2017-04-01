@@ -154,8 +154,11 @@ public void optimizeCASE0(Server[] servers){
 		int cost = 
 		MCMF(sourceNode, endNode,maxn)+serverSize * Global.depolyCostPerServer;
 		
-		System.out.println("cost:"+cost);
-		System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		if(Global.IS_DEBUG){
+			System.out.println("cost:"+cost);
+			System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		}
+		
 		Arrays.fill(visEdge, -3);
 		serverInfos.clear();
 		DFS(sourceNode,endNode,maxn);
@@ -259,8 +262,11 @@ public void optimizeCASE0(Server[] servers){
 		int cost = 
 		MCMF(sourceNode, endNode,maxn);
 		
-		System.out.println("cost:"+cost);
-		System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		if(Global.IS_DEBUG){
+			System.out.println("cost:"+cost);
+			System.out.println("sumFlow:"+sumFlow+" consumerTotalDemnad:"+Global.consumerTotalDemnad);
+		}
+		
 		Arrays.fill(visEdge, -3);
 		serverInfos.clear();
 		DFS(sourceNode,endNode,maxn);

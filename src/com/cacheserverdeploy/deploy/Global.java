@@ -20,7 +20,7 @@ import java.util.PriorityQueue;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = true;
+	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 85 * 1000L;
@@ -113,7 +113,7 @@ public final class Global {
 		return bestServers;
 	}
 
-	private static void setBestServers(Server[] nextGlobalServers) {
+	static void setBestServers(Server[] nextGlobalServers) {
 		int size = 0;
 		for(Server server : nextGlobalServers){
 			if(server==null){

@@ -1,25 +1,20 @@
 package com.cacheserverdeploy.deploy;
 
+import java.util.Arrays;
+
 /**
- * 防止在局部最优中出不来 第一轮不随机，之后就完全随机了
- * 
+ * simple 改进
  * @author mindw
- * @date 2017年3月23日
+ * @date 2017年4月1日
  */
-public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple {
+public final class GreedyOptimizerLeve2{
 
 	/** 频率大于0的点 */
-	private int[] nodes;
-
+	private final int[] nodes;
 	/** 每次最多随机选多少个 */
 	private final int selectNum;
-	/** 下一轮的服务器 */
-	private Server[] serversInRandom;
-	private int serverSize;
-	
 	/** 每轮最多移动多少次 */
 	private final int maxMovePerRound;
-
 	private final int MAX_UPDATE_NUM;
 	private final int MIN_UPDATE_NUM;
 
@@ -36,20 +31,34 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple {
 	public GreedyOptimizerLeve2(int[] nodes, int selectNum,
 			int maxMovePerRound, int maxUpdateNum, int minUpdateNum) {
 		this.nodes = nodes;
+		this.selectNum = selectNum;
 		this.MAX_UPDATE_NUM = maxUpdateNum;
 		this.MIN_UPDATE_NUM = minUpdateNum;
-		this.selectNum = selectNum;
-		serversInRandom = new Server[Global.nodeNum];
 		this.maxMovePerRound = maxMovePerRound;
 	}
 
-	private void selcetBestServers() {
-		serverSize = 0;
+	/** 下一轮的服务器 */
+	private final int[] serverNodes = new int[Global.nodeNum];
+	private int serverNodesSize = 0;
+
+	public void updateBeforeReturn(){
+		Server[] servers = new Server[serverNodesSize];
+		for(int i=0;i<serverNodesSize;++i){
+			servers[i] = new Server(serverNodes[i]);
+		}
+		Global.setBestServers(servers);
+		if(Global.IS_DEBUG){
+			System.out.println("服务器设置完成");
+		}
+	}
+	
+	private final void selcetBestServers() {
+		serverNodesSize = 0;
 
 		int leftNum = selectNum;
 		// 肯定是服务器的
 		for (int node : Global.mustServerNodes) {
-			serversInRandom[serverSize++] = new Server(node);
+			serverNodes[serverNodesSize++] = node;
 		}
 		leftNum -= Global.mustServerNodes.length;
 		int index = 0;
@@ -59,17 +68,13 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple {
 			int node = nodes[index++];
 			// 服务器上面已经添加过了
 			if (!Global.isMustServerNode[node]) {
-				serversInRandom[serverSize++] = new Server(node);
+				serverNodes[serverNodesSize++] = node;
 				leftNum--;
 			}
 		}
-		// 设置结束标志
-		if (serverSize < serversInRandom.length) {
-			serversInRandom[serverSize] = null;
-		}
 	}
+	
 
-	@Override
 	void optimize() {
 
 		if (Global.IS_DEBUG) {
@@ -87,47 +92,42 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple {
 
 		int lastCsot = Global.INFINITY;
 		int maxUpdateNum = MAX_UPDATE_NUM;
-
-		while (true) {
-
+	
+		while (!Global.isTimeOut()) {
+			
+			if (serverNodesSize == 0) {
+				break;
+			}
+			
 			// 可选方案
 			int minCost = Global.INFINITY;
 			int bestFromNode = -1;
 			int bestToNode = -1;
-
-			if (serverSize == 0) {
-				break;
-			}
-
-			final int leftMoveRound = maxMovePerRound / serverSize;
-
+			int leftMoveRound = maxMovePerRound / serverNodesSize;
 			int updateNum = 0;
 			boolean found = false;
-			if (Global.IS_DEBUG) {
-				System.out.println("maxUpdateNum:" + maxUpdateNum);
-			}
-
-			for (int i = 0; i < serverSize; ++i) {
-				Server oldServer = serversInRandom[i];
-				int fromNode = oldServer.node;
+			
+			for (int i = 0; i < serverNodesSize; ++i) {
+				int fromNode = serverNodes[i];
 
 				// 服务器不移动
 				if (Global.isMustServerNode[fromNode]) {
 					continue;
 				}
 
-				int leftNum = leftMoveRound;
-				for (int toNode : nodes) {
+				for (int j=0;j<leftMoveRound;++j) {
+					int toNode = nodes[j];
 					// 防止自己到自己
 					if (fromNode == toNode) {
 						continue;
 					}
-
-					if (Global.isTimeOut()) {
+					
+					if(Global.isTimeOut()){
+						updateBeforeReturn();
 						return;
 					}
-
-					int cost = getCostAfterMove(serversInRandom, fromNode,toNode);
+					
+					int cost = getCostAfterMove(fromNode,toNode);
 					if (cost < minCost) {
 						minCost = cost;
 						bestFromNode = fromNode;
@@ -138,18 +138,16 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple {
 							break;
 						}
 					}
-
-					leftNum--;
-					if (leftNum == 0) {
-						break;
-					}
-
 				}
 
 				if (found) {
 					break;
 				}
 
+			}
+			
+			if (minCost == Global.INFINITY) {
+				break;
 			}
 
 			if (maxUpdateNum <= updateNum) {
@@ -163,46 +161,154 @@ public final class GreedyOptimizerLeve2 extends GreedyOptimizerSimple {
 					maxUpdateNum = MIN_UPDATE_NUM;
 				}
 			}
-
-			if (minCost == Global.INFINITY) {
+			
+			// 移动
+			if (minCost < lastCsot) {
+				lastCsot = minCost;
+				moveBest(bestFromNode, bestToNode);
+				if(Global.IS_DEBUG){
+					System.out.println("better : "+minCost);
+					System.out.println("maxUpdateNum:" + maxUpdateNum);
+				}
+			} else { // not better
+				if(Global.IS_DEBUG){
+					System.out.println("worse : "+minCost);
+				}
 				break;
 			}
+		}
+		
+		updateBeforeReturn();
+		
+		if (Global.IS_DEBUG) {
+			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
+		}
 
-			if (Global.isTimeOut()) {
-				return;
+	}
+	
+	
+	/** 新服务器是否已经安装 */
+	private final boolean[] isNewServerInstalled = new boolean[Global.nodeNum];
+	/** 是否是新服务器 */
+	private final boolean[] isNewServer = new boolean[Global.nodeNum];
+	
+	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
+	private final int getCostAfterMove(int fromServerNode, int toServerNode) {
+		
+		Global.resetEdgeBandWidth();
+		
+		Arrays.fill(isNewServer, false);
+		
+		for (int i=0;i<serverNodesSize;++i) {
+			int serverNode = serverNodes[i];
+			isNewServer[serverNode] = true;
+			isNewServerInstalled[serverNode] = false;
+		}
+		isNewServer[fromServerNode] = false;
+		isNewServer[toServerNode] = true;
+		isNewServerInstalled[toServerNode] = false;
+		
+		int cost = 0;
+
+		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
+		
+			if(Global.isConsumerServer[consumerId]){
+				cost += Global.depolyCostPerServer;
+				continue;
 			}
-
-			// 移动
-			move(serversInRandom, bestFromNode, bestToNode);
-			if (minCost < lastCsot) {
-				serverSize = 0;
-				for (Server server : nextGlobalServers) {
-					if (server == null) {
+			
+			int consumerDemand = Global.consumerDemands[consumerId];	
+			// 将起始点需求分发到目的地点中，会改变边的流量	
+			for(int node : Global.allPriorityCost[consumerId]){
+				
+				// 不是服务器
+				if(!isNewServer[node]){
+					continue;
+				}
+				
+				int usedDemand = Global.useBandWidthByPreNode(consumerDemand, node, Global.allPreNodes[consumerId]);
+				// 可以消耗
+				if (usedDemand > 0) {	
+					if(!isNewServerInstalled[node]){
+						cost+=Global.depolyCostPerServer;
+						isNewServerInstalled[node] = true;
+					}
+					int[] preNodes = Global.allPreNodes[consumerId];
+					int node1 = node;
+					int node0 = preNodes[node1];
+					while(node0!=-1){
+						Edge edge = Global.graph[node1][node0];
+						cost +=  edge.cost * usedDemand;
+						node1 = node0;
+						node0 = preNodes[node0];
+					}
+					consumerDemand -= usedDemand;
+					if(consumerDemand==0){
 						break;
 					}
-					serversInRandom[serverSize++] = server;
 				}
-				// 设置终止
-				if (serverSize < serversInRandom.length) {
-					serversInRandom[serverSize] = null;
-				}
-
-				lastCsot = minCost;
-				Global.updateSolution(serversInRandom);
-			} else { // not better
-				break;
-				// lastCsot = Global.INFINITY;
-				// selectRandomServers();
-				// maxUpdateNum = MAX_UPDATE_NUM;
 			}
-
+			
+			if(consumerDemand>0){
+				cost+=Global.depolyCostPerServer;
+			}
 		}
-
-		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "
-					+ (System.currentTimeMillis() - t));
+		return cost;
+	}
+	
+	/** 进行一步移动 ,不要改变传进来的Server,结果缓存在 nextGlobalServers */
+	private final void moveBest(int fromServerNode, int toServerNode) {
+		
+		Global.resetEdgeBandWidth();
+		
+		for(int i=0;i<Global.nodeNum;++i){
+			isNewServer[i] = false;
+			isNewServerInstalled[i] = false;
 		}
-
+	
+		for (int i=0;i<serverNodesSize;++i) {
+			int serverNode = serverNodes[i];
+			isNewServer[serverNode] = true;
+		}
+		isNewServer[fromServerNode] = false;
+		isNewServer[toServerNode] = true;
+	
+		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
+		
+			if(Global.isConsumerServer[consumerId]){
+				isNewServerInstalled[Global.consumerNodes[consumerId]] = true;
+				continue;
+			}
+			
+			int consumerDemand = Global.consumerDemands[consumerId];	
+			// 将起始点需求分发到目的地点中，会改变边的流量	
+			for(int node : Global.allPriorityCost[consumerId]){
+				// 不是服务器
+				if(!isNewServer[node]){
+					continue;
+				}
+				int usedDemand = Global.useBandWidthByPreNode(consumerDemand, node, Global.allPreNodes[consumerId]);
+				// 可以消耗
+				if (usedDemand > 0) {	
+					isNewServerInstalled[node] = true;
+					consumerDemand -= usedDemand;
+					if(consumerDemand==0){
+						break;
+					}
+				}
+			}
+			
+			if(consumerDemand>0){
+				isNewServerInstalled[Global.consumerNodes[consumerId]] = true;		
+			}
+		}
+		
+		serverNodesSize = 0;
+		for(int node=0;node<Global.nodeNum;++node){
+			if(isNewServerInstalled[node]){
+				serverNodes[serverNodesSize++] = node;
+			}
+		}
 	}
 	
 }
