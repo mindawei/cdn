@@ -100,6 +100,9 @@ public final class Global {
 	
 	/** 是否确肯定定是服务节点 */
 	static boolean[] isMustServerNode;
+	/** 是否确肯定定是服务节点 */
+	static boolean[] isConsumerServer;
+	
 	/** 一定是服务节点的点 */
 	static int[] mustServerNodes;
 	
@@ -160,7 +163,9 @@ public final class Global {
 		
 		// 如果需求大于供应，则这个消费节点必须建立服务器
 		isMustServerNode = new boolean[nodeNum];
+		isConsumerServer = new boolean[consumerNum];
 		Arrays.fill(isMustServerNode, false);
+		Arrays.fill(isConsumerServer, false);
 		ArrayList<Integer> lsMustServerNodes = new ArrayList<Integer>();
 		for(int consumerId = 0;consumerId<consumerNum;++consumerId){
 			// 自己的需求
@@ -205,6 +210,7 @@ public final class Global {
 			if(isServerNode){
 				lsMustServerNodes.add(consumerNode);
 				isMustServerNode[consumerNode]= true;
+				isConsumerServer[consumerId] = true;
 			}
 		}
 		mustServerNodes = new int[lsMustServerNodes.size()];

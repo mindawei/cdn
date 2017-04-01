@@ -27,8 +27,8 @@ public class Deploy{
         
     		int selectedNum = Global.consumerNum / 4;
     		int maxMovePerRound = 2000;
-    		int maxUpdateNum = 1000;
-    		int minUpdateNum = 1000;
+    		int maxUpdateNum = 9;
+    		int minUpdateNum = 6;
     	
     		new GreedyOptimizerLeve2(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 

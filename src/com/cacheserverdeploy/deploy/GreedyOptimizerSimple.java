@@ -20,40 +20,32 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 			if(server==null){
 				break;
 			}
-			if (server.node != fromServerNode) {
-				isNewServer[server.node] = true;
-				isNewServerInstalled[server.node] = false;
-			}
+			isNewServer[server.node] = true;
+			isNewServerInstalled[server.node] = false;
 		}
+		isNewServer[fromServerNode] = false;
 		isNewServer[toServerNode] = true;
 		isNewServerInstalled[toServerNode] = false;
 		
 		int cost = 0;
 
 		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
-			
-			int consumerDemand = Global.consumerDemands[consumerId];
-			
-			int consumerNode = Global.consumerNodes[consumerId];
-			
-			if(Global.isMustServerNode[consumerNode]){
-				cost+=Global.depolyCostPerServer;
+		
+			if(Global.isConsumerServer[consumerId]){
+				cost += Global.depolyCostPerServer;
 				continue;
 			}
 			
+			int consumerDemand = Global.consumerDemands[consumerId];	
 			// 将起始点需求分发到目的地点中，会改变边的流量	
 			for(int node : Global.allPriorityCost[consumerId]){
-				
-				if(node==-1){
-					break;
-				}
 				
 				// 不是服务器
 				if(!isNewServer[node]){
 					continue;
 				}
 				
-				int usedDemand = Global.useBandWidthByPreNode(consumerDemand, node,Global.allPreNodes[consumerId]);
+				int usedDemand = Global.useBandWidthByPreNode(consumerDemand, node, Global.allPreNodes[consumerId]);
 				// 可以消耗
 				if (usedDemand > 0) {	
 					if(!isNewServerInstalled[node]){
@@ -90,14 +82,15 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 		
 		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
 			
-			int consumerNode = Global.consumerNodes[consumerId];
-			int consumerDemand = Global.consumerDemands[consumerId];
-			
-			if(Global.isMustServerNode[consumerNode]){
+			if(Global.isConsumerServer[consumerId]){
 				// 肯定是服务器不用转移
-				nextGlobalServers[size++] = new Server(consumerId,consumerNode,consumerDemand);
+				nextGlobalServers[size++] = new Server(consumerId,
+						Global.consumerNodes[consumerId],
+						Global.consumerDemands[consumerId]);
 				continue;
 			}
+			
+			int consumerDemand = Global.consumerDemands[consumerId];
 			
 			// 将起始点需求分发到目的地点中，会改变边的流量	
 			for(int node : Global.allPriorityCost[consumerId]){
@@ -118,7 +111,7 @@ public class GreedyOptimizerSimple extends GreedyOptimizer{
 			}
 			
 			if (consumerDemand>0) {
-				nextGlobalServers[size++] = new Server(consumerId,consumerNode,consumerDemand);
+				nextGlobalServers[size++] = new Server(consumerId,Global.consumerNodes[consumerId],consumerDemand);
 			}
 			
 		}
