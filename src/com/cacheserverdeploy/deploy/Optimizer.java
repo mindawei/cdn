@@ -73,6 +73,9 @@ public abstract class Optimizer {
 					}
 
 					if (Global.isTimeOut()) {
+						if(minCost<Global.minCost){
+							moveBest(bestFromNode, bestToNode);
+						}
 						updateBeforeReturn();
 						return;
 					}

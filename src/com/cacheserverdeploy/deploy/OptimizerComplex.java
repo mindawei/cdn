@@ -1,11 +1,11 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * 利用最大最小费用流进行优化
@@ -15,96 +15,102 @@ import java.util.Queue;
  */
 public final class OptimizerComplex extends Optimizer{
 	
-	private int totalCost;
+	
+	/** 新服务器是否已经安装 */
+	private final boolean[] isNewServerInstalled = new boolean[Global.nodeNum];
+	/** 是否是新服务器 */
+	private final boolean[] isNewServer = new boolean[Global.nodeNum];
 	
 	@Override
-	protected int getCostAfterMove(int fromNode, int toNode) {
+	protected int getCostAfterMove(int fromServerNode, int toServerNode) {
 		
-		mcmfServersSize = 0;
-		mcmfServers[mcmfServersSize++] = toNode;
-		for (int i=0;i<serverNodesSize;++i) {
+		for (int i = 0; i < Global.nodeNum; ++i) {
+			isNewServer[i] = false;
+			isNewServerInstalled[i] = false;
+		}
+		
+		// 1 与超级源点相连的重置 
+		for (McmfEdge edge : serverEdges) {
+			edge.cap = 0;
+			edge.cost = inf;
+		}
+
+		// 2 设置与超级源点相连的节点
+		for (int i = 0; i < serverNodesSize; ++i) {
 			int serverNode = serverNodes[i];
-			if(serverNode!=fromNode){
-				mcmfServers[mcmfServersSize++] = serverNode;
+			if (serverNode != fromServerNode) {
+				isNewServer[serverNode] = true;
+				// 重置
+				serverEdges[serverNode].cap = inf;
+				serverEdges[serverNode].cost = 0;
 			}
 		}
 		
-		mcmfCost(mcmfServers, mcmfServersSize);
+		isNewServer[toServerNode] = true;
+		// 重置
+		serverEdges[toServerNode].cap = inf;
+		serverEdges[toServerNode].cost = 0;
+		
 	
-		return totalCost;
+		// 3 重置的流量边 
+		for (int i = 0; i < edgeIndex; i++) {
+			edges[i].flow = 0;
+		}
+		
+		return mcmfCost();
 	}
 	
-	/** 优化一个位置的 */
-	final void mcmfCost(int[] lsNewServers, int lsNewServersSize) {
+	int round;
+
+	private int mcmfCost() {
+		
+		int cost = 0;
+		int flow = 0; // 总流量
 	
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
-		
-		// 与超级源点相连的重置 
-		for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
-			edges[i].cap = 0;
-			edges[i].cost = inf;
-		}
-		
-		for (int index =0;index <lsNewServersSize;++index) {
-			int serverNode = lsNewServers[index];
-			for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
-				if (serverNode == edges[i].v) {
-					edges[i].cap = inf;
-					edges[i].cost = 0;
-					break;
+		while (spfa()) {
+			
+			int minflow = Global.INFINITY;		
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]){
+				int leftFlow = edges[i].cap - edges[i].flow;
+				if (leftFlow < minflow){
+					minflow = leftFlow;
 				}
 			}
+			flow += minflow;
+			
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]) {
+				edges[i].flow += minflow;
+				edges[i ^ 1].flow -= minflow;
+			}
+			cost += dis[endNode] * minflow;
+			
+			int serverNode = edges[pre[endNode]].u;
+			if(!isNewServerInstalled[serverNode]){
+				isNewServerInstalled[serverNode] = true;
+				cost+=Global.depolyCostPerServer;
+			}
+			
+			if(flow==Global.consumerTotalDemnad){
+				break;
+			}
 		}
 		
-		resetEdge();
-
-		int totalCost = minCostMaxFlow(sourceNode, endNode, maxn);
-
-		if (sumFlow >= Global.consumerTotalDemnad) {
-			
-			
-			Arrays.fill(visEdge, -3);
-			serverInfos.clear();
-			DFS(sourceNode, endNode, maxn);
-
-			Map<Integer, Server> newServers = new HashMap<Integer, Server>();
-			for (ServerInfo serverInfo : serverInfos) {
-				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
-				if (!newServers.containsKey(serverNode)) {
-					newServers.put(serverNode, new Server(serverNode));
-				}
-				newServers.get(serverNode).addServerInfo(serverInfo);
-			}
-
-			Server[] nextGlobalServers = new Server[newServers.size()];
-			int size = 0;
-			for (Server newServer : newServers.values()) {
-				nextGlobalServers[size++] = newServer;
-			}
-			Global.updateSolution(nextGlobalServers);
-			
-			totalCost += newServers.size() * Global.depolyCostPerServer;
-			
+		if(flow==Global.consumerTotalDemnad){
 			if (Global.IS_DEBUG) {
-				System.out.println("totalCost:" + totalCost+" sumFlow:" + sumFlow + " consumerTotalDemnad:" + Global.consumerTotalDemnad);
+				System.out.println("round:"+(round++)+" cost:"+cost);
 			}
-
-		} else {
-			
-
-			totalCost = Global.INFINITY;
-			
+			return cost;
+		}else{
 			if (Global.IS_DEBUG) {
 				System.out.println("mcmf 无法找到一个满足的解！");
 			}
-
+			return Global.INFINITY;
 		}
+		
 	}
-
-
+	
+	
+	//////////////////////////////////////////////////////
 	@Override
 	protected void moveBest(int bestFromNode, int bestToNode) {
 		
@@ -118,7 +124,6 @@ public final class OptimizerComplex extends Optimizer{
 		}
 		
 		mcmfMove(mcmfServers, mcmfServersSize);
-		
 	
 	}
 	
@@ -138,18 +143,15 @@ public final class OptimizerComplex extends Optimizer{
 		
 		for (int index =0;index <lsNewServersSize;++index) {
 			int serverNode = lsNewServers[index];
-			for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
-				if (serverNode == edges[i].v) {
-					edges[i].cap = inf;
-					edges[i].cost = 0;
-					break;
-				}
-			}
+			serverEdges[serverNode].cap = inf;
+			serverEdges[serverNode].cost = 0;
 		}
 		
-		resetEdge();
+		for (int i = 0; i < edgeIndex; i++) {
+			edges[i].flow = 0;
+		}
 
-		int totalCost = minCostMaxFlow(sourceNode, endNode, maxn);
+		int totalCost = minCostMaxFlow();
 
 		if (sumFlow >= Global.consumerTotalDemnad) {
 			
@@ -157,18 +159,15 @@ public final class OptimizerComplex extends Optimizer{
 			serverInfos.clear();
 			DFS(sourceNode, endNode, maxn);
 
-			Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+			Set<Integer> newServers = new HashSet<Integer>();
 			for (ServerInfo serverInfo : serverInfos) {
 				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
-				if (!newServers.containsKey(serverNode)) {
-					newServers.put(serverNode, new Server(serverNode));
-				}
-				newServers.get(serverNode).addServerInfo(serverInfo);
+				newServers.add(serverNode);
 			}
 
 			serverNodesSize = 0;
-			for (Server newServer : newServers.values()) {
-				serverNodes[serverNodesSize++] = newServer.node;
+			for (int node : newServers) {
+				serverNodes[serverNodesSize++] = node;
 			}
 			
 			totalCost += newServers.size() * Global.depolyCostPerServer;
@@ -251,7 +250,7 @@ public final class OptimizerComplex extends Optimizer{
 		}
 
 		for (int index = 0; index < Global.nodeNum; index++) {
-			resetSourceEdge(sourceNode, index);
+			resetSourceEdge(index);
 		}
 	}
 
@@ -289,18 +288,22 @@ public final class OptimizerComplex extends Optimizer{
 	
 	private List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 
-	private void resetSourceEdge(int u, int v) {
+	private final McmfEdge[] serverEdges = new McmfEdge[Global.nodeNum];
+	private void resetSourceEdge(int v) {
 		edges[edgeIndex] = new McmfEdge();
-		edges[edgeIndex].u = u;
+		serverEdges[v] = edges[edgeIndex];
+		
+		edges[edgeIndex].u = sourceNode;
 		edges[edgeIndex].v = v;
 		edges[edgeIndex].cap = 0;
 		edges[edgeIndex].cost = inf;
 		edges[edgeIndex].flow = 0;
-		edges[edgeIndex].next = head[u];
-		head[u] = edgeIndex++;
+		edges[edgeIndex].next = head[sourceNode];
+		head[sourceNode] = edgeIndex++;
+		
 		edges[edgeIndex] = new McmfEdge();
 		edges[edgeIndex].u = v;
-		edges[edgeIndex].v = u;
+		edges[edgeIndex].v = sourceNode;
 		edges[edgeIndex].cap = 0;
 		edges[edgeIndex].flow = 0;
 		edges[edgeIndex].cost = 0;
@@ -308,11 +311,6 @@ public final class OptimizerComplex extends Optimizer{
 		head[v] = edgeIndex++;
 	}
 
-	private void resetEdge() {
-		for (int i = 0; i < edgeIndex; i++) {
-			edges[i].flow = 0;
-		}
-	}
 
 	private void addEdge(int u, int v, int cap, int cost) {
 		edges[edgeIndex] = new McmfEdge();
@@ -389,21 +387,25 @@ public final class OptimizerComplex extends Optimizer{
 
 	}
 
-	private final boolean spfa(int s, int t, int n) {
+	
+	private final Queue<Integer> que = new LinkedList<Integer>();
+	
+	private final boolean spfa() {
 		int u, v;
-		Queue<Integer> q = new LinkedList<Integer>();
-		Arrays.fill(vis, false);
-		Arrays.fill(pre, -1);
-		for (int i = 0; i < n; ++i) {
+		que.clear();
+		
+		for(int i=0;i<maxn;++i){
+			vis[i] = false;
 			dis[i] = inf;
 		}
-		vis[s] = true;
-		dis[s] = 0;
+	
+		vis[sourceNode] = true;
+		dis[sourceNode] = 0;
+		pre[sourceNode] = -1;
 
-		q.offer(s);
-		while (!q.isEmpty()) {
-			u = q.peek();
-			q.poll();
+		que.offer(sourceNode);
+		while (!que.isEmpty()) {
+			u = que.poll();
 			vis[u] = false;
 			for (int i = head[u]; i != -1; i = edges[i].next) {
 				if (edges[i].cap <= edges[i].flow) {
@@ -414,32 +416,34 @@ public final class OptimizerComplex extends Optimizer{
 					dis[v] = dis[u] + edges[i].cost;
 					pre[v] = i;
 					if (!vis[v]) {
-						q.offer(v);
+						que.offer(v);
 						vis[v] = true;
 					}
 				}
 			}
 		}
-		if (dis[t] == inf)
+		if (dis[endNode] == inf){
 			return false;
-		return true;
+		}else{
+			return true;
+		}
 	}
 
-	private int minCostMaxFlow(int s, int t, int n) {
+	private int minCostMaxFlow() {
 		int flow = 0; // 总流量
 		int minflow, mincost;
 		mincost = 0;
-		while (spfa(s, t, n)) {
+		while (spfa()) {
 			minflow = inf + 1;
-			for (int i = pre[t]; i != -1; i = pre[edges[i ^ 1].v])
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v])
 				if ((edges[i].cap - edges[i].flow) < minflow)
 					minflow = (edges[i].cap - edges[i].flow);
 			flow += minflow;
-			for (int i = pre[t]; i != -1; i = pre[edges[i ^ 1].v]) {
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]) {
 				edges[i].flow += minflow;
 				edges[i ^ 1].flow -= minflow;
 			}
-			mincost += dis[t] * minflow;
+			mincost += dis[endNode] * minflow;
 			
 		}
 		sumFlow = flow; // 最大流
