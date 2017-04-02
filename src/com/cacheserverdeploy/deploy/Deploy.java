@@ -48,8 +48,8 @@ public class Deploy{
 			
     	}else{
 
-			new OptimizerMiddle().optimize();
-			optimizerMCMF.optimizeGlobalBest();		
+//			new OptimizerMiddle().optimize();
+//			optimizerMCMF.optimizeGlobalBest();		
 			
 			int nearestK = 2;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);

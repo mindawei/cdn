@@ -24,9 +24,8 @@ public class OptimizerComplex extends Optimizer{
 		}
 		
 		// 1 与超级源点相连的重置 
-		for (McmfEdge edge : serverEdges) {
-			edge.cap = 0;
-			edge.cost = inf;
+		for (McmfEdge edge : edges) {
+			edge.leftBandWidth = edge.initBandWidth;
 		}
 
 		// 2 设置与超级源点相连的节点
@@ -35,21 +34,14 @@ public class OptimizerComplex extends Optimizer{
 			if (serverNode != fromServerNode) {
 				isNewServer[serverNode] = true;
 				// 重置
-				serverEdges[serverNode].cap = inf;
-				serverEdges[serverNode].cost = 0;
+				serverEdges[serverNode].leftBandWidth  = inf;		
 			}
 		}
 		
 		isNewServer[toServerNode] = true;
 		// 重置
-		serverEdges[toServerNode].cap = inf;
-		serverEdges[toServerNode].cost = 0;
+		serverEdges[toServerNode].leftBandWidth  = inf;
 		
-	
-		// 3 重置的流量边 
-		for (int i = 0; i < edgeIndex; i++) {
-			edges[i].flow = 0;
-		}
 	}
 	
 	@Override
@@ -63,19 +55,18 @@ public class OptimizerComplex extends Optimizer{
 		while (spfa()) {
 			
 			int minflow = Global.INFINITY;		
-			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]){
-				int leftFlow = edges[i].cap - edges[i].flow;
-				if (leftFlow < minflow){
-					minflow = leftFlow;
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].toNode ]){
+				if (edges[i].leftBandWidth  < minflow){
+					minflow = edges[i].leftBandWidth ;
 				}
 			}
 			flow += minflow;
 			
 			int serverNode = -1;
-			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]) {
-				edges[i].flow += minflow;
-				edges[i ^ 1].flow -= minflow;
-				serverNode = edges[i].v; 
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].toNode ]) {
+				edges[i].leftBandWidth  -= minflow;
+				edges[i ^ 1].leftBandWidth  += minflow;
+				serverNode = edges[i].toNode ; 
 			}
 			cost += dis[endNode] * minflow;
 			
@@ -114,19 +105,18 @@ public class OptimizerComplex extends Optimizer{
 		while (spfa()) {
 			
 			int minflow = Global.INFINITY;		
-			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]){
-				int leftFlow = edges[i].cap - edges[i].flow;
-				if (leftFlow < minflow){
-					minflow = leftFlow;
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].toNode]){
+				if (edges[i].leftBandWidth < minflow){
+					minflow = edges[i].leftBandWidth;
 				}
 			}
 			flow += minflow;
 			
 			int serverNode = -1;
-			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]) {
-				edges[i].flow += minflow;
-				edges[i ^ 1].flow -= minflow;
-				serverNode = edges[i].v; 
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].toNode]) {
+				edges[i].leftBandWidth  -= minflow;
+				edges[i ^ 1].leftBandWidth  += minflow;
+				serverNode = edges[i].toNode; 
 			}
 	
 			if(!isNewServerInstalled[serverNode]){
@@ -139,22 +129,17 @@ public class OptimizerComplex extends Optimizer{
 			
 		}
 		
-		if(flow==Global.consumerTotalDemnad){
-			serverNodesSize = 0;
-			for (int node=0;node<Global.nodeNum;++node) {
-				if(isNewServerInstalled[node]){
-					serverNodes[serverNodesSize++] = node;
-				}
-			}
-			
-			if (Global.IS_DEBUG) {
-				System.out.println("移动成功");
-			}
-		}else{
-			if (Global.IS_DEBUG) {
-				System.out.println("mcmf 无法找到一个满足的解！");
+		serverNodesSize = 0;
+		for (int node = 0; node < Global.nodeNum; ++node) {
+			if (isNewServerInstalled[node]) {
+				serverNodes[serverNodesSize++] = node;
 			}
 		}
+
+		if (Global.IS_DEBUG) {
+			System.out.println("移动成功");
+		}
+		
 	}
 	
 	////////////////////////
@@ -223,16 +208,20 @@ public class OptimizerComplex extends Optimizer{
 	}
 
 	private final class McmfEdge {
-		int u;
-		int v;
-		int cap;
-		int cost;
-		int flow;
-		int next;
-		@Override
-		public String toString() {
-			return "Edge [u=" + u + ",v=" + v + ", cap=" + cap + ", cost=" + cost + ",flow=" + flow + ", next=" + next
-					+ "]";
+	
+		final int toNode;
+		final int initBandWidth;
+		final int next;
+		final int cost;
+		int leftBandWidth;
+		
+		public McmfEdge(int toNode, int initBandWidth, int cost, int next) {
+			super();
+			this.toNode = toNode;
+			this.initBandWidth = initBandWidth;
+			this.cost = cost;
+			this.next = next;
+			this.leftBandWidth = initBandWidth;
 		}
 
 	}
@@ -252,44 +241,18 @@ public class OptimizerComplex extends Optimizer{
 
 	private final McmfEdge[] serverEdges = new McmfEdge[Global.nodeNum];
 	private void resetSourceEdge(int v) {
-		edges[edgeIndex] = new McmfEdge();
+		edges[edgeIndex] = new McmfEdge(v, 0, 0, head[sourceNode]);
 		serverEdges[v] = edges[edgeIndex];
-		
-		edges[edgeIndex].u = sourceNode;
-		edges[edgeIndex].v = v;
-		edges[edgeIndex].cap = 0;
-		edges[edgeIndex].cost = inf;
-		edges[edgeIndex].flow = 0;
-		edges[edgeIndex].next = head[sourceNode];
 		head[sourceNode] = edgeIndex++;
 		
-		edges[edgeIndex] = new McmfEdge();
-		edges[edgeIndex].u = v;
-		edges[edgeIndex].v = sourceNode;
-		edges[edgeIndex].cap = 0;
-		edges[edgeIndex].flow = 0;
-		edges[edgeIndex].cost = 0;
-		edges[edgeIndex].next = head[v];
+		edges[edgeIndex] = new McmfEdge(sourceNode,0,0,head[v]);
 		head[v] = edgeIndex++;
 	}
-
-
+	
 	private void addEdge(int u, int v, int cap, int cost) {
-		edges[edgeIndex] = new McmfEdge();
-		edges[edgeIndex].u = u;
-		edges[edgeIndex].v = v;
-		edges[edgeIndex].cap = cap;
-		edges[edgeIndex].cost = cost;
-		edges[edgeIndex].flow = 0;
-		edges[edgeIndex].next = head[u];
-		head[u] = edgeIndex++;
-		edges[edgeIndex] = new McmfEdge();
-		edges[edgeIndex].u = v;
-		edges[edgeIndex].v = u;
-		edges[edgeIndex].cap = 0;
-		edges[edgeIndex].flow = 0;
-		edges[edgeIndex].cost = -cost;
-		edges[edgeIndex].next = head[v];
+		edges[edgeIndex] = new McmfEdge(v,cap,cost,head[u]);
+		head[u] = edgeIndex++;	
+		edges[edgeIndex] = new McmfEdge(u,0,-cost,head[v]);
 		head[v] = edgeIndex++;
 	}
 	
@@ -317,7 +280,6 @@ public class OptimizerComplex extends Optimizer{
 		que[qTail++] = sourceNode;
 		
 		while (qHead!=qTail) {
-			
 			// u = que.poll();
 			u = que[qHead++];
 			if(qHead==que.length){
@@ -326,10 +288,10 @@ public class OptimizerComplex extends Optimizer{
 			
 			vis[u] = false;
 			for (int i = head[u]; i != -1; i = edges[i].next) {
-				if (edges[i].cap <= edges[i].flow) {
+				if (edges[i].leftBandWidth == 0) {
 					continue;
 				}
-				v = edges[i].v;
+				v = edges[i].toNode;
 				int newCost = dis[u] + edges[i].cost; 
 				if (dis[v] > newCost) {
 					dis[v] = newCost;
@@ -360,10 +322,5 @@ public class OptimizerComplex extends Optimizer{
 			return true;
 		}
 	}
-
-
-
-
-	
 	
 }

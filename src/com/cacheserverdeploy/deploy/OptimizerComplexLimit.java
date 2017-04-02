@@ -62,7 +62,7 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 			// 可选方案
 			int bestFromNode = -1;
 			int bestToNode = -1;
-			int leftMoveRound = maxMovePerRound / serverNodesSize;
+			int leftMoveRound = Math.min(nodes.length,maxMovePerRound / serverNodesSize);
 			int updateNum = 0;
 			boolean found = false;
 			
