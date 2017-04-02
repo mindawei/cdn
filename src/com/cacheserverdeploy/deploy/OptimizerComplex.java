@@ -13,7 +13,7 @@ import java.util.Set;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class OptimizerComplex extends Optimizer{
+public class OptimizerComplex extends Optimizer{
 	
 	
 	/** 新服务器是否已经安装 */
@@ -215,7 +215,9 @@ public final class OptimizerComplex extends Optimizer{
 		dis = new int[maxn];
 		pre = new int[maxn];
 		vis = new boolean[maxn];
+		que = new int[maxn];
 		head = new int[maxn << 1];
+		
 		Arrays.fill(head, -1);
 
 		/* dfs */
@@ -388,11 +390,18 @@ public final class OptimizerComplex extends Optimizer{
 	}
 
 	
-	private final Queue<Integer> que = new LinkedList<Integer>();
+	//private final Queue<Integer> que = new LinkedList<Integer>();
+	
+	// 数组模拟循环队列，当前后指针在同一个位置上的时候才算结束（开始不包括）
+	private final int[] que;
+	private int qHead;  // 指向队首位置
+	private int qTail; // 指向下一个插入的位置
 	
 	private final boolean spfa() {
 		int u, v;
-		que.clear();
+		// que.clear()
+		qHead = 0;
+		qTail = 0;
 		
 		for(int i=0;i<maxn;++i){
 			vis[i] = false;
@@ -403,20 +412,42 @@ public final class OptimizerComplex extends Optimizer{
 		dis[sourceNode] = 0;
 		pre[sourceNode] = -1;
 
-		que.offer(sourceNode);
-		while (!que.isEmpty()) {
-			u = que.poll();
+		// que.offer(sourceNode);
+		que[qTail++] = sourceNode;
+		
+		while (qHead!=qTail) {
+			
+			// u = que.poll();
+			u = que[qHead++];
+			if(qHead==que.length){
+				qHead = 0;
+			}
+			
 			vis[u] = false;
 			for (int i = head[u]; i != -1; i = edges[i].next) {
 				if (edges[i].cap <= edges[i].flow) {
 					continue;
 				}
 				v = edges[i].v;
-				if (dis[v] > dis[u] + edges[i].cost) {
-					dis[v] = dis[u] + edges[i].cost;
+				int newCost = dis[u] + edges[i].cost; 
+				if (dis[v] > newCost) {
+					dis[v] = newCost;
 					pre[v] = i;
 					if (!vis[v]) {
-						que.offer(v);
+						// que.offer(v);
+						int insertNode = v;
+						
+						// 队伍不空，比头部小
+						if(qHead!=qTail && dis[v]<dis[que[qHead]]){
+							insertNode = que[qHead]; 
+							que[qHead] = v;
+						}
+						
+						que[qTail++] = insertNode;
+						if(qTail==que.length){
+							qTail = 0;
+						}
+					
 						vis[v] = true;
 					}
 				}

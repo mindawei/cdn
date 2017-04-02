@@ -46,13 +46,18 @@ public class Deploy{
     	
     	}else{
 
-    		new OptimizerComplex(graphContent).optimize();
-//			new OptimizerMiddle().optimize();
-//			
-//			optimizerMCMF.optimizeGlobalBest();		
-//			
-//			int nearestK = 2;
-//    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+//    		new OptimizerComplex(graphContent).optimize();
+			new OptimizerMiddle().optimize();
+			
+			optimizerMCMF.optimizeGlobalBest();		
+			
+			int nearestK = 2;
+    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+    		
+    		int maxMovePerRound = 2000;
+    		int maxUpdateNum = 1000;
+    		int minUpdateNum = 1000;
+			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 //			new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
 		
     	}
