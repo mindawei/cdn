@@ -1,6 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -17,8 +16,12 @@ import java.util.Queue;
 public final class OptimizerMCMF {
 
 	private final class McmfEdge {
-		int u, v, cap, cost, flow, next;
-
+		int u;
+		int v;
+		int cap;
+		int cost;
+		int flow;
+		int next;
 		@Override
 		public String toString() {
 			return "Edge [u=" + u + ",v=" + v + ", cap=" + cap + ", cost=" + cost + ",flow=" + flow + ", next=" + next
@@ -31,21 +34,18 @@ public final class OptimizerMCMF {
 	//// 无向边转换成有向边时需要拆分成两条有向边。即两次加边。
 	// 最多节点数
 	private final int maxn;
-	// 最多边数
-	private int maxm;
 	private final int inf = 1000000000;
 	private int edgeIndex = 0;
 	private final McmfEdge[] p;
 	private int sumFlow;
-	private int n, m, st, en;
-	int[] head;
-	int[] dis;
-	int[] pre;
-	boolean[] vis;
+	private int[] head;
+	private int[] dis;
+	private int[] pre;
+	private boolean[] vis;
 
-	int nodeNum;
-	int sourceNode;
-	int endNode;
+	private int nodeNum;
+	private int sourceNode;
+	private int endNode;
 
 	public OptimizerMCMF(String[] graphContent) {
 
@@ -101,12 +101,10 @@ public final class OptimizerMCMF {
 		for (int index = lineIndex; index < graphContent.length; ++index) {
 			line = graphContent[index];
 			String[] strs = line.split(" ");
-			// int consumerId = Integer.parseInt(strs[0]);
 			int node = Integer.parseInt(strs[1]);
 			int demand = Integer.parseInt(strs[2]);
 			// 定义消费节点到超级汇点的带宽 消费节点的需求带宽
 			addEdge(node, endNode, demand, 0);
-
 		}
 
 		for (int index = 0; index < Global.nodeNum; index++) {
@@ -114,8 +112,7 @@ public final class OptimizerMCMF {
 		}
 	}
 
-	//public void optimizeCASE0(Server[] servers) {
-	public void optimizeCASE(int[] lsNewServers, int lsNewServersSize) {
+	final void optimizeCASE(int[] lsNewServers, int lsNewServersSize) {
 		
 		Global.resetEdgeBandWidth();
 	
@@ -142,7 +139,6 @@ public final class OptimizerMCMF {
 					break;
 				}
 			}
-			// addEdge(sourceNode, server.node, inf, 0);
 		}
 		resetEdge();
 
@@ -168,7 +164,6 @@ public final class OptimizerMCMF {
 				newServers.get(serverNode).addServerInfo(serverInfo);
 			}
 			cost = cost + newServers.size() * Global.depolyCostPerServer;
-			// System.out.println("cost:"+cost);
 			Server[] nextGlobalServers = new Server[newServers.size()];
 			int size = 0;
 			for (Server newServer : newServers.values()) {
@@ -190,7 +185,7 @@ public final class OptimizerMCMF {
 
 	}
 
-	public void optimize() {
+	void optimize() {
 
 		if (Global.IS_DEBUG) {
 			System.out.println("");
@@ -215,39 +210,9 @@ public final class OptimizerMCMF {
 					break;
 				}
 			}
-			// addEdge(sourceNode, server.node, inf, 0);
 		}
 		resetEdge();
-
-		// addEdge(sourceNode, 3, inf, 0);
-		// addEdge(sourceNode, 0, inf, 0);
-		// addEdge(sourceNode, 22, inf, 0);
-		// addEdge(sourceNode, 5, inf, 0);
-		// addEdge(sourceNode, 11, inf, 0);
-		// addEdge(sourceNode, 23, inf, 0);
-		// addEdge(sourceNode, 45, inf, 0);
-		// addEdge(sourceNode, 52, inf, 0);
-		// addEdge(sourceNode, 56, inf, 0);
-		// addEdge(sourceNode, 58, inf, 0);
-		// addEdge(sourceNode, 61, inf, 0);
-		// addEdge(sourceNode, 62, inf, 0);
-		// addEdge(sourceNode, 65, inf, 0);
-		// addEdge(sourceNode, 75, inf, 0);
-		// addEdge(sourceNode, 89, inf, 0);
-		// addEdge(sourceNode, 98, inf, 0);
-		// addEdge(sourceNode, 113, inf, 0);
-		// addEdge(sourceNode, 118, inf, 0);
-		// addEdge(sourceNode, 136, inf, 0);
-		// addEdge(sourceNode, 180, inf, 0);
-		// addEdge(sourceNode, 192, inf, 0);
-		// addEdge(sourceNode, 288, inf, 0);
-
-		// for(int i=0;i<p.length;i++){
-		// if(p[i]!=null){
-		// System.out.println(p[i].toString());
-		// }
-		//
-		// }
+		
 		int cost = MCMF(sourceNode, endNode, maxn);
 
 		if (Global.IS_DEBUG) {
@@ -258,12 +223,7 @@ public final class OptimizerMCMF {
 		Arrays.fill(visEdge, -3);
 		serverInfos.clear();
 		DFS(sourceNode, endNode, maxn);
-		// for(int i=0;i<p.length;i++){
-		// if(p[i]!=null){
-		// System.out.println(p[i].toString());
-		// }
-		//
-		// }
+	
 
 		if (sumFlow >= Global.consumerTotalDemnad) {
 
@@ -276,30 +236,13 @@ public final class OptimizerMCMF {
 				newServers.get(serverNode).addServerInfo(serverInfo);
 			}
 			cost = cost + newServers.size() * Global.depolyCostPerServer;
-			// System.out.println("cost:"+cost);
 			Server[] nextGlobalServers = new Server[newServers.size()];
 			int size = 0;
 			for (Server newServer : newServers.values()) {
 				nextGlobalServers[size++] = newServer;
 			}
 			Global.updateSolution(nextGlobalServers);
-
-			/*
-			 * Global.resetEdgeBandWidth(); optimize(nextGlobalServers);
-			 * 
-			 * 
-			 * Global.resetEdgeBandWidth(); for(int fromNode
-			 * =0;fromNode<nodeNum;++fromNode){ for (int i = head[fromNode]; i
-			 * != -1; i = p[i].next) { int toNode = p[i].v; if(toNode>=nodeNum){
-			 * continue; } // 反向边的流量 if(p[i].cost<0){ // 只考虑一条边 continue; } //
-			 * 反向边的流量 //if(p[i^1].cap==0){
-			 * Global.graph[fromNode][toNode].leftBandWidth = p[i^1].cap; //} }
-			 * }
-			 * 
-			 * // 重新更新流量后利用 complex进行寻路 optimize(nextGlobalServers); //
-			 * optimize(Global.getBestServers());
-			 */
-
+			
 		} else {
 
 			if (Global.IS_DEBUG) {
@@ -314,9 +257,8 @@ public final class OptimizerMCMF {
 
 	}
 
-	static int[][] priority = new int[Global.graph.length][Global.graph[0].length];
 
-	void resetSourceEdge(int u, int v) {
+	private void resetSourceEdge(int u, int v) {
 		p[edgeIndex] = new McmfEdge();
 		p[edgeIndex].u = u;
 		p[edgeIndex].v = v;
@@ -335,13 +277,13 @@ public final class OptimizerMCMF {
 		head[v] = edgeIndex++;
 	}
 
-	void resetEdge() {
+	private void resetEdge() {
 		for (int i = 0; i < edgeIndex; i++) {
 			p[i].flow = 0;
 		}
 	}
 
-	void addEdge(int u, int v, int cap, int cost) {
+	private void addEdge(int u, int v, int cap, int cost) {
 		p[edgeIndex] = new McmfEdge();
 		p[edgeIndex].u = u;
 		p[edgeIndex].v = v;
@@ -360,12 +302,13 @@ public final class OptimizerMCMF {
 		head[v] = edgeIndex++;
 	}
 
-	boolean[] visDFS;
-	int[] visEdge;
-	int visCount = 0;
-	int MINFLOW = inf;
+	private boolean[] visDFS;
+	private int[] visEdge;
+	private int visCount = 0;
+	private int MINFLOW = inf;
 
-	void DFS(int s, int t, int n) {
+	private static final int[] nodes = new int[Global.nodeNum];
+	private void DFS(int s, int t, int n) {
 
 		if (s == t) {
 			MINFLOW = inf;
@@ -386,10 +329,7 @@ public final class OptimizerMCMF {
 				p[visedge].flow -= MINFLOW;
 				p[visedge ^ 1].flow += MINFLOW;
 				nodes[nodeSize++] = p[visedge].v;
-				// System.out.print(p[visedge].v+" ");
 			}
-			// System.out.println(MINFLOW);
-
 			// 保存服务信息,从消费者开始的 -> 服务器
 
 			// 去头 end,node0,node1,....
@@ -400,9 +340,6 @@ public final class OptimizerMCMF {
 			for (int j = nodeSize - 1; j >= 0; j--) {
 				viaNodes[k++] = nodes[j];
 			}
-
-			// System.arraycopy(nodes, 1, viaNodes, 0, nodeSize);
-
 			int consumerId = Global.nodeToConsumerId.get(viaNodes[0]);
 			ServerInfo serverInfo = new ServerInfo(consumerId, MINFLOW, viaNodes);
 			serverInfos.add(serverInfo);
@@ -421,7 +358,9 @@ public final class OptimizerMCMF {
 
 	}
 
-	boolean spfa(int s, int t, int n) {
+
+	private final static int[] len = new int[Global.mcmfNodeNum];
+	private final boolean spfa(int s, int t, int n) {
 		int u, v;
 		Queue<Integer> q = new LinkedList<Integer>();
 		Arrays.fill(vis, false);
@@ -467,13 +406,10 @@ public final class OptimizerMCMF {
 		return true;
 	}
 
-	// int[] nodes = new int[Global.nodeNum];
-	List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
+	private List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 
-	int MCMF(int s, int t, int n) {
-
-		// serverInfos.clear();
-
+	private int MCMF(int s, int t, int n) {
+		
 		int flow = 0; // 总流量
 		int minflow, mincost;
 		mincost = 0;
@@ -488,234 +424,10 @@ public final class OptimizerMCMF {
 				p[i ^ 1].flow -= minflow;
 			}
 			mincost += dis[t] * minflow;
-
-			// // 保存服务信息,从消费者开始的 -> 服务器
-			// int nodeSize = 0;
-			// for (int i = pre[t]; i != -1; i = pre[p[i ^ 1].v]) {
-			// nodes[nodeSize++] = p[i].v;
-			// }
-			//
-			// // 去头 end,node0,node1,....
-			// nodeSize--;
-			//
-			//
-			// int[] viaNodes = new int[nodeSize];
-			// System.arraycopy(nodes, 1, viaNodes, 0, nodeSize);
-			//
-			// int consumerId = Global.nodeToConsumerId.get(viaNodes[0]);
-			// ServerInfo serverInfo = new ServerInfo(consumerId, minflow,
-			// viaNodes);
-			// serverInfos.add(serverInfo);
-
+			
 		}
 		sumFlow = flow; // 最大流
 		return mincost;
 	}
-
-	/// 复杂djkstra
-	/** 为了复用，为null的地方不放置服务器 */
-	private static Server[] newServers = new Server[Global.nodeNum];
-	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束 */
-	private static Server[] lsNewServers = new Server[Global.nodeNum];
-
-	/** 为了复用，下一轮的服务器，模拟队列，当遇到null时表示结束 */
-	private static Server[] nextGlobalServers = new Server[Global.nodeNum];
-
-	/** 优化全局最优解 */
-	static void optimizeBestServers() {
-		optimize(Global.getBestServers());
-	}
-
-	static void optimize(Server[] oldServers) {
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println("做一次Complex");
-		}
-		Arrays.fill(newServers, null);
-		int lsSize = 0;
-		for (Server server : oldServers) {
-			if (server == null) {
-				break;
-			}
-			Server newServer = new Server(server.node);
-			newServers[server.node] = newServer;
-			lsNewServers[lsSize++] = newServer;
-		}
-		transferServers(nextGlobalServers, newServers, lsNewServers, lsSize);
-		Global.updateSolution(nextGlobalServers);
-
-	}
-
-	static void transferServers(Server[] nextGlobalServers, Server[] newServers, Server[] lsServers, int lsSize) {
-
-		List<Integer> sourceToNodes = new ArrayList<Integer>();
-		for (int node = 0; node < Global.nodeNum; ++node) {
-			// 没有服务器
-			if (newServers[node] == null) {
-				Global.graph[node][Global.sourceNode] = null;
-				Global.graph[Global.sourceNode][node] = null;
-			} else {
-				sourceToNodes.add(node);
-				Global.graph[Global.sourceNode][node] = new Edge(Global.INFINITY, 0);
-				Global.graph[node][Global.sourceNode] = new Edge(0, 0);
-			}
-		}
-
-		Global.mfmcConnections[Global.sourceNode] = new int[sourceToNodes.size()];
-		for (int i = 0; i < sourceToNodes.size(); ++i) {
-			Global.mfmcConnections[Global.sourceNode][i] = sourceToNodes.get(i);
-		}
-
-		List<ServerInfo> serverInfos = complex();
-
-		if (serverInfos == null) { // 无解
-			int size = 0;
-			for (int consumerId = 0; consumerId < Global.consumerNum; ++consumerId) {
-				nextGlobalServers[size++] = new Server(consumerId, Global.consumerNodes[consumerId],
-						Global.consumerDemands[consumerId]);
-			}
-			// 尾部设置null表示结束
-			if (size < nextGlobalServers.length) {
-				nextGlobalServers[size] = null;
-			}
-		} else { // 有解
-			int size = 0;
-			for (ServerInfo serverInfo : serverInfos) {
-				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
-				Server newServer = newServers[serverNode];
-				newServer.addServerInfo(serverInfo);
-			}
-			for (int i = 0; i < lsSize; ++i) {
-				Server newServer = lsServers[i];
-				if (newServer.getDemand() > 0) {
-					nextGlobalServers[size++] = newServer;
-				}
-			}
-			// 尾部设置null表示结束
-			if (size < nextGlobalServers.length) {
-				nextGlobalServers[size] = null;
-			}
-		}
-	}
-
-	// 复用
-	private static final int[] nodes = new int[Global.nodeNum];
-	private static int nodeSize = 0;
-
-	/**
-	 * @return 返回路由,不存在解决方案则为无穷大
-	 */
-	private static List<ServerInfo> complex() {
-
-		List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
-
-		int sumFlow = 0;
-		int s = Global.sourceNode;
-		int t = Global.endNode;
-
-		while (spfa(s, t)) {
-
-			for (int i = t; i != s; i = mcmfPre[i]) {
-				Global.graph[mcmfPre[i]][i].leftBandWidth -= mcmfFlow[t];
-				// Global.graph[i][mcmfPre[i]].leftBandWidth+= mcmfFlow[t];
-			}
-
-			// 保存服务信息,从消费者开始的 -> 服务器
-			nodeSize = 0;
-			for (int i = mcmfPre[t]; i != s; i = mcmfPre[i]) {
-				nodes[nodeSize++] = i;
-			}
-			int[] viaNodes = new int[nodeSize];
-			System.arraycopy(nodes, 0, viaNodes, 0, nodeSize);
-
-			int consumerId = Global.nodeToConsumerId.get(viaNodes[0]);
-			ServerInfo serverInfo = new ServerInfo(consumerId, mcmfFlow[t], viaNodes);
-			serverInfos.add(serverInfo);
-
-			sumFlow += mcmfFlow[t];
-		}
-		System.out.println("sumFlow:" + sumFlow);
-		if (sumFlow >= Global.consumerTotalDemnad) {
-			return serverInfos;
-		} else {
-			return null;
-		}
-	}
-
-	private final static int[] mcmfFlow = new int[Global.mcmfNodeNum];
-	private final static int[] mcmfPre = new int[Global.mcmfNodeNum];
-	private final static int[] len = new int[Global.mcmfNodeNum];
-	private final static boolean visist[] = new boolean[Global.mcmfNodeNum];
-	private final static int[] dist = new int[Global.mcmfNodeNum];
-	private final static int[] que = new int[Global.mcmfNodeNum];
-
-	private static boolean spfa(int s, int t) {
-
-		for (int i = 0; i <= t; i++) {
-			visist[i] = false;
-			mcmfFlow[i] = Global.INFINITY;
-			dist[i] = Global.INFINITY;
-			len[i] = 0;
-		}
-
-		// 左边指针 == 右边指针 时候队列为空
-		// 左边指针，指向队首
-		int queL = 0;
-		// 右边指针，指向下一个插入的地方
-		int queR = 0;
-		visist[s] = true;
-		dist[s] = 0;
-		que[queR++] = s;
-
-		while (queL != queR) {
-			int u = que[queL++];
-			if (queL >= Global.mcmfNodeNum) {
-				queL = queL % Global.mcmfNodeNum;
-			}
-
-			visist[u] = false;
-			// u -> v的边
-			for (int v : Global.mfmcConnections[u]) {
-				if (Global.graph[u][v].leftBandWidth == 0) {
-					continue;
-				}
-
-				if (dist[v] > dist[u] + Global.graph[u][v].cost) {
-
-					dist[v] = dist[u] + Global.graph[u][v].cost;
-					mcmfFlow[v] = Math.min(mcmfFlow[u], Global.graph[u][v].leftBandWidth);
-					mcmfPre[v] = u;
-					len[v] = len[u] + 1;
-					if (!visist[v]) {
-						que[queR++] = v;
-						if (queR >= Global.mcmfNodeNum) {
-							queR = queR % Global.mcmfNodeNum;
-						}
-						visist[v] = true;
-					}
-				} else if (dist[v] == dist[u] + Global.graph[u][v].cost && len[v] > len[u] + 1) {
-
-					mcmfFlow[v] = Math.min(mcmfFlow[u], Global.graph[u][v].leftBandWidth);
-					mcmfPre[v] = u;
-					len[v] = len[u] + 1;
-					if (!visist[v]) {
-						que[queR++] = v;
-						if (queR >= Global.mcmfNodeNum) {
-							queR = queR % Global.mcmfNodeNum;
-						}
-						visist[v] = true;
-					}
-
-				}
-
-			}
-		}
-		if (dist[t] == Global.INFINITY) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
 	
 }
