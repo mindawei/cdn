@@ -16,54 +16,45 @@ public class Deploy{
     	Global.init();
     	OptimizerMCMF optimizerMCMF = new OptimizerMCMF(graphContent);
     	if(Global.isNpHardest){
-//    		int nearestK = 1;//Global.consumerNum;
-//    		int selectedNum = Global.consumerNum / 4;
-//    		int maxMovePerRound = 2000;//8000;
-//    		int maxUpdateNum = 1000;
-//    		int minUpdateNum = 1000;
-
-    		// 注意:  
-    		// 提速后： GreedyOptimizerLeve2 GreedyOptimizerLeve3 
-    		// 都只是寻找位置，请确保之后的mcmf一定会调用并且有解
     		
     		int nearestK = Global.consumerNum ;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
-        
+     
     		int selectedNum = Global.consumerNum / 4;
     		int maxMovePerRound = 2000;
     		int maxUpdateNum = 9;
     		int minUpdateNum = 6;
-    		new GreedyOptimizerLeve2(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    		new OptimizerSimpleLimit(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 
     		maxMovePerRound = 1000;
     		maxUpdateNum = 6;
      		minUpdateNum = 3;
-    		new GreedyOptimizerLeve3(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+     		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
     	}else if(Global.isNpHard){
     		
     		int nearestK = 2 ;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
-        	
-    		int selectedNum = Global.consumerNum +1;
     		int maxMovePerRound = 2000;
     		int maxUpdateNum = 1000;
     		int minUpdateNum = 1000;
-    		new GreedyOptimizerLeve1(nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
-    		optimizerMCMF.optimize();
-			new GreedyOptimizerLeve4(optimizerMCMF,nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimizeMCMF();
-    	}else{
-    		int nearestK = 2;
-    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+    		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
-    		int selectedNum = Global.consumerNum +1;
-    		int maxMovePerRound = 2000;
-    		int maxUpdateNum = 1000;
-    		int minUpdateNum = 1000;
-			new GreedyOptimizerLeve0().optimize();
-			optimizerMCMF.optimize();
-			new GreedyOptimizerLeve4(optimizerMCMF,nodes,selectedNum,maxMovePerRound,maxUpdateNum,minUpdateNum).optimizeMCMF();
-		}
+    		optimizerMCMF.optimize();
+			
+    		new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
+    	
+    	}else{
+    		
+//			new OptimizerMiddle().optimize();
+//			
+//			optimizerMCMF.optimize();		
+			
+			int nearestK = 2;
+    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+			new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
+		
+    	}
     	
     	
     	optimizerMCMF.optimize();
