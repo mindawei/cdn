@@ -41,14 +41,14 @@ public class Deploy{
     		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
     		optimizerMCMF.optimizeGlobalBest();
+		
+    		maxUpdateNum = 9;
+    		minUpdateNum = 6;
+			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 			
-    		new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
-    	
     	}else{
 
-//    		new OptimizerComplex(graphContent).optimize();
 			new OptimizerMiddle().optimize();
-			
 			optimizerMCMF.optimizeGlobalBest();		
 			
 			int nearestK = 2;
@@ -58,7 +58,6 @@ public class Deploy{
     		int maxUpdateNum = 1000;
     		int minUpdateNum = 1000;
 			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
-//			new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
 		
     	}
     	

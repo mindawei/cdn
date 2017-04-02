@@ -49,8 +49,8 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 		long t = System.currentTimeMillis();
 
 		selcetServers();
-
-		int lastCsot = Global.INFINITY;
+		
+		int minCost = Global.minCost;
 		int maxUpdateNum = MAX_UPDATE_NUM;
 	
 		while (!Global.isTimeOut()) {
@@ -60,7 +60,6 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 			}
 			
 			// 可选方案
-			int minCost = Global.INFINITY;
 			int bestFromNode = -1;
 			int bestToNode = -1;
 			int leftMoveRound = maxMovePerRound / serverNodesSize;
@@ -82,8 +81,13 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 						continue;
 					}
 					
-					if(Global.isTimeOut()){
-						updateBeforeReturn();
+					if (Global.isTimeOut()) {
+						if(bestFromNode!=-1){
+							moveBest(bestFromNode, bestToNode);
+						}
+						if(minCost<Global.minCost){
+							updateBeforeReturn();
+						}
 						return;
 					}
 					
@@ -106,8 +110,17 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 
 			}
 			
-			if (minCost == Global.INFINITY) {
+			// not better
+			if (bestFromNode == -1) {
+				if (Global.IS_DEBUG) {
+					System.out.println("not better");
+				}
 				break;
+			} else { // 移动
+				moveBest(bestFromNode, bestToNode);
+				if (Global.IS_DEBUG) {
+					System.out.println("better : " + minCost);
+				}
 			}
 
 			if (maxUpdateNum <= updateNum) {
@@ -122,23 +135,11 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 				}
 			}
 			
-			// 移动
-			if (minCost < lastCsot) {
-				lastCsot = minCost;
-				moveBest(bestFromNode, bestToNode);
-				if(Global.IS_DEBUG){
-					System.out.println("better : "+minCost);
-					System.out.println("maxUpdateNum:" + maxUpdateNum);
-				}
-			} else { // not better
-				if(Global.IS_DEBUG){
-					System.out.println("worse : "+minCost);
-				}
-				break;
-			}
 		}
 		
-		updateBeforeReturn();
+		if(minCost<Global.minCost){
+			updateBeforeReturn();
+		}
 		
 		if (Global.IS_DEBUG) {
 			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));

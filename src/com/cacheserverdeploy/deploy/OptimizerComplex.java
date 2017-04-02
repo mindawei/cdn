@@ -1,11 +1,6 @@
 package com.cacheserverdeploy.deploy;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
 
 /**
  * 利用最大最小费用流进行优化
@@ -21,9 +16,8 @@ public class OptimizerComplex extends Optimizer{
 	/** 是否是新服务器 */
 	private final boolean[] isNewServer = new boolean[Global.nodeNum];
 	
-	@Override
-	protected int getCostAfterMove(int fromServerNode, int toServerNode) {
-		
+	
+	private void reset(int fromServerNode, int toServerNode){
 		for (int i = 0; i < Global.nodeNum; ++i) {
 			isNewServer[i] = false;
 			isNewServerInstalled[i] = false;
@@ -56,13 +50,12 @@ public class OptimizerComplex extends Optimizer{
 		for (int i = 0; i < edgeIndex; i++) {
 			edges[i].flow = 0;
 		}
-		
-		return mcmfCost();
 	}
 	
-	int round;
-
-	private int mcmfCost() {
+	@Override
+	protected int getCostAfterMove(int fromServerNode, int toServerNode) {
+		
+		reset(fromServerNode, toServerNode);
 		
 		int cost = 0;
 		int flow = 0; // 总流量
@@ -78,13 +71,14 @@ public class OptimizerComplex extends Optimizer{
 			}
 			flow += minflow;
 			
+			int serverNode = -1;
 			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]) {
 				edges[i].flow += minflow;
 				edges[i ^ 1].flow -= minflow;
+				serverNode = edges[i].v; 
 			}
 			cost += dis[endNode] * minflow;
 			
-			int serverNode = edges[pre[endNode]].u;
 			if(!isNewServerInstalled[serverNode]){
 				isNewServerInstalled[serverNode] = true;
 				cost+=Global.depolyCostPerServer;
@@ -95,95 +89,71 @@ public class OptimizerComplex extends Optimizer{
 			}
 		}
 		
-		if(flow==Global.consumerTotalDemnad){
-			if (Global.IS_DEBUG) {
-				System.out.println("round:"+(round++)+" cost:"+cost);
+		if(flow<Global.consumerTotalDemnad){
+			cost = Global.INFINITY;
+		}
+		
+		if (Global.IS_DEBUG) {
+			System.out.println("round:"+(round++)+" cost:"+cost);
+		}
+	
+		return cost;
+	}
+	
+	int round;
+
+	
+
+	@Override
+	protected void moveBest(int fromServerNode, int toServerNode) {
+		
+		reset(fromServerNode, toServerNode);
+		
+		int flow = 0; // 总流量
+	
+		while (spfa()) {
+			
+			int minflow = Global.INFINITY;		
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]){
+				int leftFlow = edges[i].cap - edges[i].flow;
+				if (leftFlow < minflow){
+					minflow = leftFlow;
+				}
 			}
-			return cost;
+			flow += minflow;
+			
+			int serverNode = -1;
+			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]) {
+				edges[i].flow += minflow;
+				edges[i ^ 1].flow -= minflow;
+				serverNode = edges[i].v; 
+			}
+	
+			if(!isNewServerInstalled[serverNode]){
+				isNewServerInstalled[serverNode] = true;
+			}
+			
+			if(flow==Global.consumerTotalDemnad){
+				break;
+			}
+			
+		}
+		
+		if(flow==Global.consumerTotalDemnad){
+			serverNodesSize = 0;
+			for (int node=0;node<Global.nodeNum;++node) {
+				if(isNewServerInstalled[node]){
+					serverNodes[serverNodesSize++] = node;
+				}
+			}
+			
+			if (Global.IS_DEBUG) {
+				System.out.println("移动成功");
+			}
 		}else{
 			if (Global.IS_DEBUG) {
 				System.out.println("mcmf 无法找到一个满足的解！");
 			}
-			return Global.INFINITY;
-		}
-		
-	}
-	
-	
-	//////////////////////////////////////////////////////
-	@Override
-	protected void moveBest(int bestFromNode, int bestToNode) {
-		
-		mcmfServersSize = 0;
-		mcmfServers[mcmfServersSize++] = bestToNode;
-		for (int i=0;i<serverNodesSize;++i) {
-			int serverNode = serverNodes[i];
-			if(serverNode!=bestFromNode){
-				mcmfServers[mcmfServersSize++] = serverNode;
-			}
-		}
-		
-		mcmfMove(mcmfServers, mcmfServersSize);
-	
-	}
-	
-	/** 优化一个位置的 */
-	final void mcmfMove(int[] lsNewServers, int lsNewServersSize) {
-	
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
-		
-		// 与超级源点相连的重置 
-		for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
-			edges[i].cap = 0;
-			edges[i].cost = inf;
-		}
-		
-		for (int index =0;index <lsNewServersSize;++index) {
-			int serverNode = lsNewServers[index];
-			serverEdges[serverNode].cap = inf;
-			serverEdges[serverNode].cost = 0;
-		}
-		
-		for (int i = 0; i < edgeIndex; i++) {
-			edges[i].flow = 0;
-		}
-
-		int totalCost = minCostMaxFlow();
-
-		if (sumFlow >= Global.consumerTotalDemnad) {
-			
-			Arrays.fill(visEdge, -3);
-			serverInfos.clear();
-			DFS(sourceNode, endNode, maxn);
-
-			Set<Integer> newServers = new HashSet<Integer>();
-			for (ServerInfo serverInfo : serverInfos) {
-				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
-				newServers.add(serverNode);
-			}
-
-			serverNodesSize = 0;
-			for (int node : newServers) {
-				serverNodes[serverNodesSize++] = node;
-			}
-			
-			totalCost += newServers.size() * Global.depolyCostPerServer;
-			
-			if (Global.IS_DEBUG) {
-				System.out.println("totalCost:" + totalCost+" sumFlow:" + sumFlow + " consumerTotalDemnad:" + Global.consumerTotalDemnad);
-			}
-
-		} else {
-			
-			totalCost = Global.INFINITY;
-			
-			if (Global.IS_DEBUG) {
-				System.out.println("mcmf 无法找到一个满足的解！");
-			}
-
 		}
 	}
 	
@@ -219,10 +189,6 @@ public class OptimizerComplex extends Optimizer{
 		head = new int[maxn << 1];
 		
 		Arrays.fill(head, -1);
-
-		/* dfs */
-		visDFS = new boolean[maxm << 1];
-		visEdge = new int[maxm << 1];
 
 		int lineIndex = 4;
 		String line = null;
@@ -275,7 +241,6 @@ public class OptimizerComplex extends Optimizer{
 	private final int inf = 1000000000;
 	private int edgeIndex = 0;
 	private final McmfEdge[] edges;
-	private int sumFlow;
 	private int[] head;
 	private int[] dis;
 	private int[] pre;
@@ -284,11 +249,6 @@ public class OptimizerComplex extends Optimizer{
 	private int sourceNode;
 	private int endNode;
 
-	private final int[] mcmfServers = new int[Global.nodeNum];
-	private int mcmfServersSize;
-	
-	
-	private List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
 
 	private final McmfEdge[] serverEdges = new McmfEdge[Global.nodeNum];
 	private void resetSourceEdge(int v) {
@@ -332,65 +292,6 @@ public class OptimizerComplex extends Optimizer{
 		edges[edgeIndex].next = head[v];
 		head[v] = edgeIndex++;
 	}
-
-	private boolean[] visDFS;
-	private int[] visEdge;
-	private int visCount = 0;
-	private int MINFLOW = inf;
-
-	private static final int[] nodes = new int[Global.nodeNum];
-	private void DFS(int s, int t, int n) {
-
-		if (s == t) {
-			MINFLOW = inf;
-			for (int visedge : visEdge) {
-				if (visedge < 0) {
-					break;
-				}
-				MINFLOW = Math.min(MINFLOW, edges[visedge].flow);
-			}
-			if (MINFLOW <= 0) {
-				return;
-			}
-			int nodeSize = 0;
-			for (int visedge : visEdge) {
-				if (visedge < 0) {
-					break;
-				}
-				edges[visedge].flow -= MINFLOW;
-				edges[visedge ^ 1].flow += MINFLOW;
-				nodes[nodeSize++] = edges[visedge].v;
-			}
-			// 保存服务信息,从消费者开始的 -> 服务器
-
-			// 去头 end,node0,node1,....
-			nodeSize--;
-			int k = 0;
-			int[] viaNodes = new int[nodeSize];
-			// nodeSize--;
-			for (int j = nodeSize - 1; j >= 0; j--) {
-				viaNodes[k++] = nodes[j];
-			}
-			int consumerId = Global.nodeToConsumerId.get(viaNodes[0]);
-			ServerInfo serverInfo = new ServerInfo(consumerId, MINFLOW, viaNodes);
-			serverInfos.add(serverInfo);
-
-			return;
-		}
-		for (int i = head[s]; i != -1; i = edges[i].next) {
-			if (edges[i].v != sourceNode && edges[i].flow > 0 && !visDFS[i]) {
-				visDFS[i] = true;
-				visEdge[visCount++] = i;
-				DFS(edges[i].v, t, n);
-				visEdge[--visCount] = -3;
-				visDFS[i] = false;
-			}
-		}
-
-	}
-
-	
-	//private final Queue<Integer> que = new LinkedList<Integer>();
 	
 	// 数组模拟循环队列，当前后指针在同一个位置上的时候才算结束（开始不包括）
 	private final int[] que;
@@ -460,26 +361,7 @@ public class OptimizerComplex extends Optimizer{
 		}
 	}
 
-	private int minCostMaxFlow() {
-		int flow = 0; // 总流量
-		int minflow, mincost;
-		mincost = 0;
-		while (spfa()) {
-			minflow = inf + 1;
-			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v])
-				if ((edges[i].cap - edges[i].flow) < minflow)
-					minflow = (edges[i].cap - edges[i].flow);
-			flow += minflow;
-			for (int i = pre[endNode]; i != -1; i = pre[edges[i ^ 1].v]) {
-				edges[i].flow += minflow;
-				edges[i ^ 1].flow -= minflow;
-			}
-			mincost += dis[endNode] * minflow;
-			
-		}
-		sumFlow = flow; // 最大流
-		return mincost;
-	}
+
 
 
 	

@@ -44,8 +44,9 @@ public abstract class Optimizer {
 			}
 			serverNodes[serverNodesSize++] = server.node;
 		}
-
-		int lastCsot = Global.INFINITY;
+		
+		int minCost = Global.INFINITY;
+		
 		while (!Global.isTimeOut()) {
 
 			if (serverNodesSize == 0) {
@@ -53,7 +54,6 @@ public abstract class Optimizer {
 			}
 
 			// 可选方案
-			int minCost = Global.INFINITY;
 			int bestFromNode = -1;
 			int bestToNode = -1;
 
@@ -73,10 +73,12 @@ public abstract class Optimizer {
 					}
 
 					if (Global.isTimeOut()) {
-						if(minCost<Global.minCost){
+						if(bestFromNode!=-1){
 							moveBest(bestFromNode, bestToNode);
 						}
-						updateBeforeReturn();
+						if(minCost<Global.minCost){
+							updateBeforeReturn();
+						}
 						return;
 					}
 
@@ -89,26 +91,23 @@ public abstract class Optimizer {
 				}
 			}
 
-			if (minCost == Global.INFINITY) {
+			// not better
+			if (bestFromNode==-1) {
+				if (Global.IS_DEBUG) {
+					System.out.println("not better" );
+				}
 				break;
-			}
-
-			// 移动
-			if (minCost < lastCsot) {
-				lastCsot = minCost;
+			}else{ // 移动
 				moveBest(bestFromNode, bestToNode);
 				if (Global.IS_DEBUG) {
 					System.out.println("better : " + minCost);
 				}
-			} else { // not better
-				if (Global.IS_DEBUG) {
-					System.out.println("worse : " + minCost);
-				}
-				break;
 			}
 		}
 
-		updateBeforeReturn();
+		if(minCost<Global.minCost){
+			updateBeforeReturn();
+		}
 
 		if (Global.IS_DEBUG) {
 			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));

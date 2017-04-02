@@ -167,10 +167,6 @@ public final class OptimizerMCMF {
 
 		if (sumFlow >= Global.consumerTotalDemnad) {
 			
-			if (Global.IS_DEBUG) {
-				System.out.println("cost:" + cost+" sumFlow:" + sumFlow + " consumerTotalDemnad:" + Global.consumerTotalDemnad);
-			}
-			
 			Arrays.fill(visEdge, -3);
 			serverInfos.clear();
 			DFS(sourceNode, endNode, maxn);
