@@ -40,24 +40,25 @@ public class Deploy{
     		int minUpdateNum = 1000;
     		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
-    		optimizerMCMF.optimize();
+    		optimizerMCMF.optimizeGlobalBest();
 			
     		new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
     	
     	}else{
-    		
+
+    		new OptimizerComplex(graphContent).optimize();
 //			new OptimizerMiddle().optimize();
 //			
-//			optimizerMCMF.optimize();		
-			
-			int nearestK = 2;
-    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
-			new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
+//			optimizerMCMF.optimizeGlobalBest();		
+//			
+//			int nearestK = 2;
+//    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+//			new OptimizerMcmfManyTimes(optimizerMCMF,nodes).optimizeMCMF();
 		
     	}
     	
     	
-    	optimizerMCMF.optimize();
+    	optimizerMCMF.optimizeGlobalBest();
     	
 //    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();

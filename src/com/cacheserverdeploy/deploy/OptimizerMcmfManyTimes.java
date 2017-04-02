@@ -86,7 +86,7 @@ public final class OptimizerMcmfManyTimes{
 						}
 					}
 					servers[serverSize++] = toNode;
-					optimizerMCMF.optimizeCASE(servers,serverSize);
+					optimizerMCMF.optimize(servers,serverSize);
 					
 				}
 

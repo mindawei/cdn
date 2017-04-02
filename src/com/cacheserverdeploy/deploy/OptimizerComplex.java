@@ -13,37 +13,184 @@ import java.util.Queue;
  * @author mindw
  * @date 2017年3月23日
  */
-public final class OptimizerMCMF {
-
-	private final class McmfEdge {
-		int u;
-		int v;
-		int cap;
-		int cost;
-		int flow;
-		int next;
-		@Override
-		public String toString() {
-			return "Edge [u=" + u + ",v=" + v + ", cap=" + cap + ", cost=" + cost + ",flow=" + flow + ", next=" + next
-					+ "]";
+public final class OptimizerComplex extends Optimizer{
+	
+	private int totalCost;
+	
+	@Override
+	protected int getCostAfterMove(int fromNode, int toNode) {
+		
+		mcmfServersSize = 0;
+		mcmfServers[mcmfServersSize++] = toNode;
+		for (int i=0;i<serverNodesSize;++i) {
+			int serverNode = serverNodes[i];
+			if(serverNode!=fromNode){
+				mcmfServers[mcmfServersSize++] = serverNode;
+			}
 		}
+		
+		mcmfCost(mcmfServers, mcmfServersSize);
+	
+		return totalCost;
+	}
+	
+	/** 优化一个位置的 */
+	final void mcmfCost(int[] lsNewServers, int lsNewServersSize) {
+	
+		if (Global.IS_DEBUG) {
+			System.out.println("");
+			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		}
+		
+		// 与超级源点相连的重置 
+		for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
+			edges[i].cap = 0;
+			edges[i].cost = inf;
+		}
+		
+		for (int index =0;index <lsNewServersSize;++index) {
+			int serverNode = lsNewServers[index];
+			for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
+				if (serverNode == edges[i].v) {
+					edges[i].cap = inf;
+					edges[i].cost = 0;
+					break;
+				}
+			}
+		}
+		
+		resetEdge();
 
+		int totalCost = minCostMaxFlow(sourceNode, endNode, maxn);
+
+		if (sumFlow >= Global.consumerTotalDemnad) {
+			
+			
+			Arrays.fill(visEdge, -3);
+			serverInfos.clear();
+			DFS(sourceNode, endNode, maxn);
+
+			Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+			for (ServerInfo serverInfo : serverInfos) {
+				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
+				if (!newServers.containsKey(serverNode)) {
+					newServers.put(serverNode, new Server(serverNode));
+				}
+				newServers.get(serverNode).addServerInfo(serverInfo);
+			}
+
+			Server[] nextGlobalServers = new Server[newServers.size()];
+			int size = 0;
+			for (Server newServer : newServers.values()) {
+				nextGlobalServers[size++] = newServer;
+			}
+			Global.updateSolution(nextGlobalServers);
+			
+			totalCost += newServers.size() * Global.depolyCostPerServer;
+			
+			if (Global.IS_DEBUG) {
+				System.out.println("totalCost:" + totalCost+" sumFlow:" + sumFlow + " consumerTotalDemnad:" + Global.consumerTotalDemnad);
+			}
+
+		} else {
+			
+
+			totalCost = Global.INFINITY;
+			
+			if (Global.IS_DEBUG) {
+				System.out.println("mcmf 无法找到一个满足的解！");
+			}
+
+		}
 	}
 
-	private final int maxn;
-	private final int inf = 1000000000;
-	private int edgeIndex = 0;
-	private final McmfEdge[] edges;
-	private int sumFlow;
-	private int[] head;
-	private int[] dis;
-	private int[] pre;
-	private boolean[] vis;
 
-	private int sourceNode;
-	private int endNode;
+	@Override
+	protected void moveBest(int bestFromNode, int bestToNode) {
+		
+		mcmfServersSize = 0;
+		mcmfServers[mcmfServersSize++] = bestToNode;
+		for (int i=0;i<serverNodesSize;++i) {
+			int serverNode = serverNodes[i];
+			if(serverNode!=bestFromNode){
+				mcmfServers[mcmfServersSize++] = serverNode;
+			}
+		}
+		
+		mcmfMove(mcmfServers, mcmfServersSize);
+		
+	
+	}
+	
+	/** 优化一个位置的 */
+	final void mcmfMove(int[] lsNewServers, int lsNewServersSize) {
+	
+		if (Global.IS_DEBUG) {
+			System.out.println("");
+			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		}
+		
+		// 与超级源点相连的重置 
+		for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
+			edges[i].cap = 0;
+			edges[i].cost = inf;
+		}
+		
+		for (int index =0;index <lsNewServersSize;++index) {
+			int serverNode = lsNewServers[index];
+			for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
+				if (serverNode == edges[i].v) {
+					edges[i].cap = inf;
+					edges[i].cost = 0;
+					break;
+				}
+			}
+		}
+		
+		resetEdge();
 
-	public OptimizerMCMF(String[] graphContent) {
+		int totalCost = minCostMaxFlow(sourceNode, endNode, maxn);
+
+		if (sumFlow >= Global.consumerTotalDemnad) {
+			
+			Arrays.fill(visEdge, -3);
+			serverInfos.clear();
+			DFS(sourceNode, endNode, maxn);
+
+			Map<Integer, Server> newServers = new HashMap<Integer, Server>();
+			for (ServerInfo serverInfo : serverInfos) {
+				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
+				if (!newServers.containsKey(serverNode)) {
+					newServers.put(serverNode, new Server(serverNode));
+				}
+				newServers.get(serverNode).addServerInfo(serverInfo);
+			}
+
+			serverNodesSize = 0;
+			for (Server newServer : newServers.values()) {
+				serverNodes[serverNodesSize++] = newServer.node;
+			}
+			
+			totalCost += newServers.size() * Global.depolyCostPerServer;
+			
+			if (Global.IS_DEBUG) {
+				System.out.println("totalCost:" + totalCost+" sumFlow:" + sumFlow + " consumerTotalDemnad:" + Global.consumerTotalDemnad);
+			}
+
+		} else {
+			
+			totalCost = Global.INFINITY;
+			
+			if (Global.IS_DEBUG) {
+				System.out.println("mcmf 无法找到一个满足的解！");
+			}
+
+		}
+	}
+	
+	////////////////////////
+	
+	public OptimizerComplex(String[] graphContent) {
 
 		// 多少个网络节点，多少条链路，多少个消费节点
 		String[] line0 = graphContent[0].split(" ");
@@ -107,99 +254,40 @@ public final class OptimizerMCMF {
 			resetSourceEdge(sourceNode, index);
 		}
 	}
-	
-	private final int[] bestServers = new int[Global.nodeNum];
-	private int bestServersSize;
-	
-	/** 优化全局的 */
-	final void optimizeGlobalBest(){
-		
-		long t = System.currentTimeMillis();
 
-		bestServersSize = 0;
-		for (Server server : Global.getBestServers()) {
-			if (server == null) {
-				break;
-			}
-			bestServers[bestServersSize++] = server.node;
+	private final class McmfEdge {
+		int u;
+		int v;
+		int cap;
+		int cost;
+		int flow;
+		int next;
+		@Override
+		public String toString() {
+			return "Edge [u=" + u + ",v=" + v + ", cap=" + cap + ", cost=" + cost + ",flow=" + flow + ", next=" + next
+					+ "]";
 		}
-		
-		optimize(bestServers, bestServersSize);
-		
-		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
-		}
-		
+
 	}
 
+	private final int maxn;
+	private final int inf = 1000000000;
+	private int edgeIndex = 0;
+	private final McmfEdge[] edges;
+	private int sumFlow;
+	private int[] head;
+	private int[] dis;
+	private int[] pre;
+	private boolean[] vis;
+
+	private int sourceNode;
+	private int endNode;
+
+	private final int[] mcmfServers = new int[Global.nodeNum];
+	private int mcmfServersSize;
+	
+	
 	private List<ServerInfo> serverInfos = new LinkedList<ServerInfo>();
-	
-	/** 优化一个位置的 */
-	final void optimize(int[] lsNewServers, int lsNewServersSize) {
-	
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
-		
-		// 与超级源点相连的重置 
-		for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
-			edges[i].cap = 0;
-			edges[i].cost = inf;
-		}
-		
-		int serverSize = 0;
-		for (int index =0;index <lsNewServersSize;++index) {
-			int serverNode = lsNewServers[index];
-			serverSize++;
-			for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
-				if (serverNode == edges[i].v) {
-					edges[i].cap = inf;
-					edges[i].cost = 0;
-					break;
-				}
-			}
-		}
-		
-		resetEdge();
-
-		int cost = minCostMaxFlow(sourceNode, endNode, maxn) + serverSize * Global.depolyCostPerServer;
-
-		if (sumFlow >= Global.consumerTotalDemnad) {
-			
-			if (Global.IS_DEBUG) {
-				System.out.println("cost:" + cost+" sumFlow:" + sumFlow + " consumerTotalDemnad:" + Global.consumerTotalDemnad);
-			}
-			
-			Arrays.fill(visEdge, -3);
-			serverInfos.clear();
-			DFS(sourceNode, endNode, maxn);
-
-			Map<Integer, Server> newServers = new HashMap<Integer, Server>();
-			for (ServerInfo serverInfo : serverInfos) {
-				int serverNode = serverInfo.viaNodes[serverInfo.viaNodes.length - 1];
-				if (!newServers.containsKey(serverNode)) {
-					newServers.put(serverNode, new Server(serverNode));
-				}
-				newServers.get(serverNode).addServerInfo(serverInfo);
-			}
-			cost = cost + newServers.size() * Global.depolyCostPerServer;
-			Server[] nextGlobalServers = new Server[newServers.size()];
-			int size = 0;
-			for (Server newServer : newServers.values()) {
-				nextGlobalServers[size++] = newServer;
-			}
-			Global.updateSolution(nextGlobalServers);
-
-		} else {
-			
-			if (Global.IS_DEBUG) {
-				System.out.println("mcmf 无法找到一个满足的解！");
-			}
-
-		}
-	}
-
 
 	private void resetSourceEdge(int u, int v) {
 		edges[edgeIndex] = new McmfEdge();
@@ -357,5 +445,8 @@ public final class OptimizerMCMF {
 		sumFlow = flow; // 最大流
 		return mincost;
 	}
+
+
+	
 	
 }
