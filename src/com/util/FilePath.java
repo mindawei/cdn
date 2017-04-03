@@ -37,9 +37,10 @@ public class FilePath {
 	// 42180 78
 	// 42180 78
 	// 42162
-   //static String graphFilePath = "case_example/1 中级/case0.txt";
-	// 40527
-// static String graphFilePath = "case_example/1 中级/case1.txt";
+   // 42157
+	//static String graphFilePath = "case_example/1 中级/case0.txt";
+	// 40483
+	// static String graphFilePath = "case_example/1 中级/case1.txt";
 	// 26626
 	// static String graphFilePath = "case_example/1 中级/case2.txt";
 	// 27200
@@ -79,7 +80,10 @@ public class FilePath {
 	
 	
 	// random 跑一次 k=1 updateNum = [3,6]
-	// 104895
+	// 104788
+	
+	// 193382 fromNode 在外层
+	// 192474 193065 toNode 在外层 
 	//static String graphFilePath = "case_example/2 高级/case0.txt";
 	// 
 	// static String graphFilePath = "case_example/2 高级/case1.txt";
@@ -93,8 +97,10 @@ public class FilePath {
 	// 166252 700
 	// 2 s 323 ms.s
 	
-	// 206346
-	//static String graphFilePath = "case_example/2 高级/case3.txt";
+	// 197854
+	
+	// 198219
+ //static String graphFilePath = "case_example/2 高级/case3.txt";
 	
 	
 	// 38373 38074 37829

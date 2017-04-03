@@ -116,12 +116,141 @@ public final class NodesSelector {
 	}
 
 
-	public static int[] selectAllNodes() {
-		int[] nodes = new int[Global.nodeNum];
-		for(int i=0;i<nodes.length;++i){
-			nodes[i] = i;
+	public static int[] selectAllNodes(int nearestK) {
+		// 不会超过消费者数
+				nearestK = Math.min(nearestK, Global.nodeNum - 1);
+
+				// 节点频率
+				NodeFreq[] nodeFreqs = new NodeFreq[Global.nodeNum];
+				for (int node = 0; node < Global.nodeNum; ++node) {
+					nodeFreqs[node] = new NodeFreq(node, 0);
+				}
+
+				for (int consumerId = 0; consumerId < Global.consumerNum; ++consumerId) {
+
+					int fromConsumerNode = Global.consumerNodes[consumerId];
+
+					// 最大堆
+					PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>(
+							nearestK + 1, new Comparator<Info>() {
+								@Override
+								public int compare(Info o1, Info o2) {
+									return o2.cost - o1.cost;
+								}
+							});
+
+					for (int toConsumerNode : Global.consumerNodes) {
+						// 自己不到自己
+						if (toConsumerNode == fromConsumerNode) {
+							continue;
+						}
+						int cost = Global.allCost[consumerId][toConsumerNode];
+						int[] preNodes = Global.allPreNodes[consumerId];
+						Info info = new Info(cost, preNodes, toConsumerNode);
+						priorityQueue.add(info);
+						if (priorityQueue.size() > nearestK) {
+							// 去掉最大的，保留 k个最小的
+							priorityQueue.poll();
+						}
+					}
+
+					// 统计频率
+					Info info = null;
+					while ((info = priorityQueue.poll()) != null) {
+						int[] preNodes = info.preNodes;
+						for (int node = info.toNode; node != -1; node = preNodes[node]) {
+							nodeFreqs[node].freqs++;
+						}
+					}
+				}
+
+				// 按频率从大到小排
+				Arrays.sort(nodeFreqs, new Comparator<NodeFreq>() {
+					@Override
+					public int compare(NodeFreq o1, NodeFreq o2) {
+						return o2.freqs - o1.freqs;
+					}
+				});
+
+				
+				int[] selectedNodes = new int[Global.nodeNum];
+				int len = 0;
+				for (NodeFreq nodeFreq : nodeFreqs) {
+						selectedNodes[len++] = nodeFreq.node;
+				}
+				if(Global.IS_DEBUG){
+					System.out.println("选出数目："+selectedNodes.length+" 总共数目："+Global.nodeNum);
+				}
+				return selectedNodes;
+	}
+
+
+	public static int[] selectAllNodesInReverse(int nearestK) {
+		// 不会超过消费者数
+		nearestK = Math.min(nearestK, Global.nodeNum - 1);
+
+		// 节点频率
+		NodeFreq[] nodeFreqs = new NodeFreq[Global.nodeNum];
+		for (int node = 0; node < Global.nodeNum; ++node) {
+			nodeFreqs[node] = new NodeFreq(node, 0);
 		}
-		return nodes;
+
+		for (int consumerId = 0; consumerId < Global.consumerNum; ++consumerId) {
+
+			int fromConsumerNode = Global.consumerNodes[consumerId];
+
+			// 最大堆
+			PriorityQueue<Info> priorityQueue = new PriorityQueue<Info>(
+					nearestK + 1, new Comparator<Info>() {
+						@Override
+						public int compare(Info o1, Info o2) {
+							return o2.cost - o1.cost;
+						}
+					});
+
+			for (int toConsumerNode : Global.consumerNodes) {
+				// 自己不到自己
+				if (toConsumerNode == fromConsumerNode) {
+					continue;
+				}
+				int cost = Global.allCost[consumerId][toConsumerNode];
+				int[] preNodes = Global.allPreNodes[consumerId];
+				Info info = new Info(cost, preNodes, toConsumerNode);
+				priorityQueue.add(info);
+				if (priorityQueue.size() > nearestK) {
+					// 去掉最大的，保留 k个最小的
+					priorityQueue.poll();
+				}
+			}
+
+			// 统计频率
+			Info info = null;
+			while ((info = priorityQueue.poll()) != null) {
+				int[] preNodes = info.preNodes;
+				for (int node = info.toNode; node != -1; node = preNodes[node]) {
+					nodeFreqs[node].freqs++;
+				}
+			}
+		}
+
+		// 按频率从大到小排
+		Arrays.sort(nodeFreqs, new Comparator<NodeFreq>() {
+			@Override
+			public int compare(NodeFreq o1, NodeFreq o2) {
+				return o2.freqs - o1.freqs;
+			}
+		});
+
+		
+		int[] selectedNodes = new int[Global.nodeNum];
+		int len = Global.nodeNum-1;
+		for (NodeFreq nodeFreq : nodeFreqs) {
+				selectedNodes[len--] = nodeFreq.node;
+		}
+		if(Global.IS_DEBUG){
+			System.out.println("选出数目："+selectedNodes.length+" 总共数目："+Global.nodeNum);
+		}
+		return selectedNodes;
 	}
 
 	

@@ -74,16 +74,18 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 			int updateNum = 0;
 			boolean found = false;
 			
-			for (int i = 0; i < serverNodesSize; ++i) {
-				int fromNode = serverNodes[i];
+			
+			for (int j=0;j<leftMoveRound;++j) {
+				int toNode = nodes[j];
+			
+				for (int i = 0; i < serverNodesSize; ++i) {
+					int fromNode = serverNodes[i];
 
-				// 服务器不移动
-				if (Global.isMustServerNode[fromNode]) {
-					continue;
-				}
+					// 服务器不移动
+					if (Global.isMustServerNode[fromNode]) {
+						continue;
+					}
 
-				for (int j=0;j<leftMoveRound;++j) {
-					int toNode = nodes[j];
 					// 防止自己到自己
 					if (fromNode == toNode) {
 						continue;

@@ -262,7 +262,7 @@ public class OptimizerComplex extends Optimizer{
 	protected int qTail; // 指向下一个插入的位置
 	
 	protected final boolean spfa() {
-		int u, v;
+		int u, v,newCost,insertNode;
 		// que.clear()
 		qHead = 0;
 		qTail = 0;
@@ -279,6 +279,7 @@ public class OptimizerComplex extends Optimizer{
 		// que.offer(sourceNode);
 		que[qTail++] = sourceNode;
 		
+		
 		while (qHead!=qTail) {
 			// u = que.poll();
 			u = que[qHead++];
@@ -292,20 +293,20 @@ public class OptimizerComplex extends Optimizer{
 					continue;
 				}
 				v = edges[i].toNode;
-				int newCost = dis[u] + edges[i].cost; 
+				newCost = dis[u] + edges[i].cost; 
 				if (newCost < dis[v] && newCost < dis[endNode]) { // 费用比目的地低才考虑
 					dis[v] = newCost;
 					pre[v] = i;
 					if (!vis[v]) {
 						// que.offer(v);
-						int insertNode = v;
+						insertNode = v;
 						
 						// 队伍不空，比头部小
 						if(qHead!=qTail && dis[v]<dis[que[qHead]]){
 							insertNode = que[qHead]; 
 							que[qHead] = v;
 						}
-						
+		
 						que[qTail++] = insertNode;
 						if(qTail==que.length){
 							qTail = 0;
@@ -322,5 +323,4 @@ public class OptimizerComplex extends Optimizer{
 			return true;
 		}
 	}
-	
 }

@@ -35,28 +35,36 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 		this.maxMovePerRound = maxMovePerRound;
 	}
 	
-	private final void selcetBestServers() {
+//	private final void selcetBestServers() {
+//		serverNodesSize = 0;
+//
+//		int leftNum = selectNum;
+//		// 肯定是服务器的
+//		for (int node : Global.mustServerNodes) {
+//			serverNodes[serverNodesSize++] = node;
+//		}
+//		leftNum -= Global.mustServerNodes.length;
+//		int index = 0;
+//		// 随机选择
+//		while (leftNum > 0 && index < nodes.length) {
+//			// 没有被选过
+//			int node = nodes[index++];
+//			// 服务器上面已经添加过了
+//			if (!Global.isMustServerNode[node]) {
+//				serverNodes[serverNodesSize++] = node;
+//				leftNum--;
+//			}
+//		}
+//	}
+	private void selectServers() {
 		serverNodesSize = 0;
-
-		int leftNum = selectNum;
-		// 肯定是服务器的
-		for (int node : Global.mustServerNodes) {
-			serverNodes[serverNodesSize++] = node;
-		}
-		leftNum -= Global.mustServerNodes.length;
-		int index = 0;
-		// 随机选择
-		while (leftNum > 0 && index < nodes.length) {
-			// 没有被选过
-			int node = nodes[index++];
-			// 服务器上面已经添加过了
-			if (!Global.isMustServerNode[node]) {
-				serverNodes[serverNodesSize++] = node;
-				leftNum--;
+		for (Server server : Global.getBestServers()) {
+			if (server == null) {
+				break;
 			}
+			serverNodes[serverNodesSize++] = server.node;
 		}
 	}
-	
 	@Override
 	void optimize() {
 
@@ -71,8 +79,8 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 
 		long t = System.currentTimeMillis();
 
-		selcetBestServers();
-
+		// selcetBestServers();
+		selectServers();
 		int minCost = Global.INFINITY;
 		int maxUpdateNum = MAX_UPDATE_NUM;
 	
@@ -89,16 +97,18 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 			int updateNum = 0;
 			boolean found = false;
 			
-			for (int i = 0; i < serverNodesSize; ++i) {
-				int fromNode = serverNodes[i];
+			
+			for (int j=0;j<leftMoveRound;++j) {
+				int toNode = nodes[j];
+			
+				for (int i = 0; i < serverNodesSize; ++i) {
+					int fromNode = serverNodes[i];
 
-				// 服务器不移动
-				if (Global.isMustServerNode[fromNode]) {
-					continue;
-				}
+					// 服务器不移动
+					if (Global.isMustServerNode[fromNode]) {
+						continue;
+					}
 
-				for (int j=0;j<leftMoveRound;++j) {
-					int toNode = nodes[j];
 					// 防止自己到自己
 					if (fromNode == toNode) {
 						continue;
