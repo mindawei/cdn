@@ -18,7 +18,7 @@ public abstract class Optimizer {
 			servers[i] = new Server(serverNodes[i]);
 		}
 		Global.setBestServers(servers);
-		if (Global.IS_DEBUG) {
+			if (Global.IS_DEBUG) {
 			System.out.println(this.getClass().getSimpleName() + "服务器设置完成");
 		}
 	}
