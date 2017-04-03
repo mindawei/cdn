@@ -48,24 +48,26 @@ public class Deploy{
 			
     	}else{
 
-//			new OptimizerMiddle().optimize();
-//			optimizerMCMF.optimizeGlobalBest();		
-//			
-//			int nearestK = 2;
-//    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
-//    		
-//    		int maxMovePerRound = 2000;
-//    		int maxUpdateNum = 1000;
-//    		int minUpdateNum = 1000;
-//			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+			new OptimizerMiddle().optimize();
+			optimizerMCMF.optimizeGlobalBest();		
+			
+			int nearestK = 2;
+    		//int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+    		int[] nodes = NodesSelector.selectAllNodes();
+    		
+    		
+    		int maxMovePerRound = 500*1000;
+    		int maxUpdateNum = 1000;
+    		int minUpdateNum = 1000;
+			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 		
-    		int nearestK = 1;
-    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
-    		int maxMovePerRound = 2000;
-    		int maxUpdateNum = 20;
-    		int minUpdateNum = 10;
-    		int selectedNum = Global.consumerNum / 4;
-    		new OptimizerRandomLimit(optimizerMCMF,nodes, selectedNum, maxMovePerRound, maxUpdateNum, minUpdateNum).optimize();
+//    		int nearestK = Global.consumerNum / 4;
+//    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+//    		int maxMovePerRound = 2000;
+//    		int maxUpdateNum = 12;
+//    		int minUpdateNum = 12;
+//    		int selectedNum = Global.consumerNum / 4;
+//    		new OptimizerRandomLimit(optimizerMCMF,nodes, selectedNum, maxMovePerRound, maxUpdateNum, minUpdateNum).optimize();
 			
     	}
     	

@@ -115,5 +115,14 @@ public final class NodesSelector {
 		return nodes;
 	}
 
+
+	public static int[] selectAllNodes() {
+		int[] nodes = new int[Global.nodeNum];
+		for(int i=0;i<nodes.length;++i){
+			nodes[i] = i;
+		}
+		return nodes;
+	}
+
 	
 }
