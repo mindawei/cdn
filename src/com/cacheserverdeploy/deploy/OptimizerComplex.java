@@ -293,7 +293,7 @@ public class OptimizerComplex extends Optimizer{
 				}
 				v = edges[i].toNode;
 				int newCost = dis[u] + edges[i].cost; 
-				if (dis[v] > newCost) {
+				if (newCost < dis[v] && newCost < dis[endNode]) { // 费用比目的地低才考虑
 					dis[v] = newCost;
 					pre[v] = i;
 					if (!vis[v]) {
