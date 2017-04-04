@@ -28,10 +28,8 @@ public class OptimizerMiddle extends Optimizer{
 				lsNewServers[lsNewServersSize++] = serverNode;
 			}
 		}
-		if(toServerNode!=-1){
-			isNewServer[toServerNode] = true;
-			lsNewServers[lsNewServersSize++] = toServerNode;
-		}
+		isNewServer[toServerNode] = true;
+		lsNewServers[lsNewServersSize++] = toServerNode;
 		
 		// 复制需求
 		System.arraycopy(Global.consumerDemands, 0, consumerDemands, 0, Global.consumerNum);

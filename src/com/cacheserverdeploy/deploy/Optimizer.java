@@ -18,23 +18,13 @@ public abstract class Optimizer {
 			servers[i] = new Server(serverNodes[i]);
 		}
 		Global.setBestServers(servers);
-			if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + "服务器设置完成");
-		}
 	}
 
 	void optimize() {
 
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
-
 		if (Global.isTimeOut()) {
 			return;
 		}
-
-		long t = System.currentTimeMillis();
 
 		// 选择服务器
 		serverNodesSize = 0;
@@ -73,8 +63,7 @@ public abstract class Optimizer {
 					continue;
 				}
 
-				// -1 表示消失
-				for (int toNode = -1; toNode < Global.nodeNum; ++toNode) {
+				for (int toNode = 0; toNode < Global.nodeNum; ++toNode) {
 
 					// 防止自己到自己
 					if (fromNode == toNode) {
@@ -102,24 +91,14 @@ public abstract class Optimizer {
 
 			// not better
 			if (bestFromNode==-1) {
-				if (Global.IS_DEBUG) {
-					System.out.println("not better" );
-				}
 				break;
 			}else{ // 移动
 				moveBest(bestFromNode, bestToNode);
-				if (Global.IS_DEBUG) {
-					System.out.println("better : " + minCost);
-				}
 			}
 		}
 
 		if(minCost<Global.minCost){
 			updateBeforeReturn();
-		}
-
-		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
 		}
 
 	}

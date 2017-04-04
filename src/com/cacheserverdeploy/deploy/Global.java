@@ -19,7 +19,7 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = false;
+	static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
 	static final long TIME_OUT = System.currentTimeMillis() + 88 * 1000L;
@@ -216,9 +216,6 @@ public final class Global {
 		for(int i=0;i<lsMustServerNodes.size();++i){
 			mustServerNodes[i] = lsMustServerNodes.get(i);
 		}
-		if(IS_DEBUG){
-			System.out.println("服务器节点："+Arrays.toString(mustServerNodes));
-		}
 				
 		// 初始解
 		Server[] nextGlobalServers = new Server[consumerNum];
@@ -233,10 +230,6 @@ public final class Global {
 		int On = nodeNum * nodeNum * consumerNum;
 		isNpHardest = On>=NP_HARDEST_THRESHOLD;
 		isNpHard = On >= NP_HARD_THRESHOLD;
-		if(IS_DEBUG){
-			System.out.println("initCost:"+initCost);
-			System.out.println("On:"+On+" isNpHardest:"+isNpHardest+" isNpHard:"+isNpHard);
-		}
 		
 		/** 初始化缓存 */
 		initAllCostAndPreNodes();
@@ -426,9 +419,6 @@ public final class Global {
 			
 		}
 		
-		if(Global.IS_DEBUG){
-			System.out.println("预计算完成：消费者到所有节点的费用 ");
-		}
 	}
 	
 	private static void initOneCostAndPreNodes(int consumerId) {

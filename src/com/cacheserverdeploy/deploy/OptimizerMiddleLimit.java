@@ -45,16 +45,9 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 
 	void optimize() {
 
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
-
 		if (Global.isTimeOut()) {
 			return;
 		}
-
-		long t = System.currentTimeMillis();
 
 		selcetServers();
 
@@ -80,11 +73,8 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 			boolean found = false;
 			
 			
-			for (int j=-1;j<leftMoveRound;++j) {
-				int toNode = -1; // 表示消失
-				if(j!=-1){
-					toNode = nodes[j];
-				}
+			for (int j=0;j<leftMoveRound;++j) {
+				int toNode = nodes[j];
 				
 				for (int i = 0; i < serverNodesSize; ++i) {
 					int fromNode = serverNodes[i];
@@ -134,15 +124,9 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 			
 			// not better
 			if (bestFromNode == -1) {
-				if (Global.IS_DEBUG) {
-					System.out.println("not better");
-				}
 				break;
 			} else { // 移动
 				moveBest(bestFromNode, bestToNode);
-				if (Global.IS_DEBUG) {
-					System.out.println("better : " + minCost);
-				}
 			}
 
 			if (maxUpdateNum <= updateNum) {
@@ -162,10 +146,5 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 		if(minCost<Global.minCost){
 			updateBeforeReturn();
 		}
-		
-		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
-		}
-
 	}
 }
