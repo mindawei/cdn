@@ -35,17 +35,43 @@ public class Deploy{
     		
     		int nearestK = 2 ;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
-    		int maxMovePerRound = 1600;
+    		//int[] nodes = NodesSelector.selectMoveNodesByRank(nearestK);
+    		// 68559
+    		int maxMovePerRound = 1000;
     		int maxUpdateNum = 200;
     		int minUpdateNum = 100;
     		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
+    		// 68313
     		optimizerMCMF.optimizeGlobalBest();
-		
+	
+    		
+//    		int minRank = 1000000;
+//    		int maxRank = -1;
+//    		for(Server server : Global.getBestServers()){
+//        		if(server==null){
+//        			break;
+//        		}
+//        		
+//        		System.out.println(NodesSelector.nodeFreqs2[server.node] );
+//        		if(NodesSelector.nodeFreqs2[server.node].rank<minRank){
+//        			minRank = NodesSelector.nodeFreqs2[server.node].rank;
+//        		}
+//        		if(NodesSelector.nodeFreqs2[server.node].rank >maxRank){
+//        			maxRank = NodesSelector.nodeFreqs2[server.node].rank;
+//        		}
+//        		
+//        		
+//        	}
+    		
+    		// minRank:2 maxRAnk:180
+    		// 
+    		//System.out.println("minRank:"+minRank+" maxRAnk:"+maxRank);
+    		
     		maxUpdateNum = 6;
     		minUpdateNum = 3;
 			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
-			
+//			
     	}else{
 //
 //			new OptimizerMiddle().optimize();
@@ -59,19 +85,13 @@ public class Deploy{
 //    		int minUpdateNum = 1000;
 //			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 
-    		// 
+    		// 29082
 			new OptimizerMiddle().optimize();
 			optimizerMCMF.optimizeGlobalBest();		
-	
-			// k = 1
-			// k = 3
-			// k = 5
-			// k = 7
-			// k - 9
 			
-			int nearestK = Global.consumerNum; // 5
+			int nearestK = 5;
     		// int[] nodes = NodesSelector.selectMoveNodes(nearestK);
-    		// int[] nodes = NodesSelector.selectAllNodes(nearestK);
+    		//int[] nodes = NodesSelector.selectAllNodes(nearestK);
     		int[] nodes = NodesSelector.selectAllNodesInReverse(nearestK);
     		
     		
@@ -80,9 +100,11 @@ public class Deploy{
     		int minUpdateNum = 1000;
 			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 		
-    		// 22276
+//    		// 22276
 //    		int nearestK = 5; /// 4
-//    		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+//    		//int[] nodes = NodesSelector.selectMoveNodes(nearestK);
+//    		int[] nodes = NodesSelector.selectAllNodes(nearestK);
+//
 //    		int maxMovePerRound = 3000;
 //    		int maxUpdateNum = 20;
 //    		int minUpdateNum = 12;
@@ -94,6 +116,8 @@ public class Deploy{
     	
     	
     	optimizerMCMF.optimizeGlobalBest();
+    	
+    	
     	
 //    	if(Global.IS_DEBUG){
 //    		Global.printBestSolution();
