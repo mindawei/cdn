@@ -33,18 +33,16 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 	public OptimizerRandomLimit(OptimizerMCMF optimizerMCMF,int[] nodes, 
 			int selectNum,
 			int simpleMaxMovePerRound,
-			int simpleMaxUpdateNum,
-			int middleMaxMovePerRound,
-			int middleMaxUpdateNum) {
+			int middleMaxMovePerRound) {
 		this.nodes = nodes;
 		this.selectNum = selectNum;
 		this.maxMovePerRound = simpleMaxMovePerRound;
-		this.MAX_UPDATE_NUM = simpleMaxMovePerRound;
-		this.MIN_UPDATE_NUM = simpleMaxMovePerRound;
+		this.MAX_UPDATE_NUM = 1;
+		this.MIN_UPDATE_NUM = 1;
 	
 		this.selected = new boolean[nodes.length];
 		
-		this.optimizerMiddleLimit = new OptimizerMiddleLimit(nodes, middleMaxMovePerRound , middleMaxUpdateNum, middleMaxUpdateNum);
+		this.optimizerMiddleLimit = new OptimizerMiddleLimit(nodes, middleMaxMovePerRound , 1, 1);
 		this.optimizerMCMF = optimizerMCMF;
 	}
 	
@@ -150,8 +148,12 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 					continue;
 				}
 
-				for (int j=0;j<leftMoveRound;++j) {
-					int toNode = nodes[j];
+				for (int j=-1;j<leftMoveRound;++j) {
+					int toNode = -1; // 表示消失
+					if(j!=-1){
+						toNode = nodes[j];
+					}
+					
 					// 防止自己到自己
 					if (fromNode == toNode) {
 						continue;

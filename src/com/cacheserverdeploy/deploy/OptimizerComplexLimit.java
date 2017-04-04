@@ -70,9 +70,11 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 			int updateNum = 0;
 			boolean found = false;
 			
-			for (int j=0;j<leftMoveRound;++j) {
-				int toNode = nodes[j];
-				
+			for (int j=-1;j<leftMoveRound;++j) {
+				int toNode = -1; // 表示消失
+				if(j!=-1){
+					toNode = nodes[j];
+				}
 			
 				for (int i = 0; i < serverNodesSize; ++i) {
 					int fromNode = serverNodes[i];

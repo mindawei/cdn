@@ -22,8 +22,10 @@ public class OptimizerSimple extends Optimizer{
 			isNewServerInstalled[serverNode] = false;
 		}
 		isNewServer[fromServerNode] = false;
-		isNewServer[toServerNode] = true;
-		isNewServerInstalled[toServerNode] = false;
+		if(toServerNode!=-1){
+			isNewServer[toServerNode] = true;
+			isNewServerInstalled[toServerNode] = false;
+		}
 		
 		int cost = 0;
 
@@ -88,7 +90,10 @@ public class OptimizerSimple extends Optimizer{
 			isNewServer[serverNode] = true;
 		}
 		isNewServer[fromServerNode] = false;
-		isNewServer[toServerNode] = true;
+		if(toServerNode!=-1){
+			isNewServer[toServerNode] = true;
+			isNewServerInstalled[toServerNode] = false;
+		}
 	
 		for(int consumerId=0;consumerId<Global.consumerNum;++consumerId){	
 		

@@ -12,26 +12,23 @@ public class FilePath {
 
 	
 	// middle 一般跑20s左右
-	// 28956
-	static String graphFilePath = "case_example/0 初级/case0.txt";
-	// 28979
-	//static String graphFilePath = "case_example/0 初级/case1.txt";
-	// 28371
+	// 28956 28963
+	//static String graphFilePath = "case_example/0 初级/case0.txt";
+	// 28979 28952
+	// static String graphFilePath = "case_example/0 初级/case1.txt";
+	// 28371 28371
 	// static String graphFilePath = "case_example/0 初级/case2.txt";
-	
-	
-	
-	// 
+	// 30692 30585
 	// static String graphFilePath = "case_example/0 初级/case3.txt";
-	// 11936
+	// 29058 29223
 	// static String graphFilePath = "case_example/0 初级/case4.txt";
-	// 11976
-	// static String graphFilePath = "case_example/0 初级/case5.txt";
-	// 11765
+	// 27984 27840
+	static String graphFilePath = "case_example/0 初级/case5.txt";
+	// 
 	// static String graphFilePath = "case_example/0 初级/case6.txt";
-	// 12186
+	// 
 	// static String graphFilePath = "case_example/0 初级/case7.txt";
-	// 14334
+	// 
 	// static String graphFilePath = "case_example/0 初级/case8.txt";
 	
 	// random+middle 跑 85s k=consumerNum updateNum = [6,9] maxMovePerRound = 2000
@@ -39,8 +36,8 @@ public class FilePath {
 	// 42180 78
 	// 42162
 	
-   // 42157
-//	static String graphFilePath = "case_example/1 中级/case0.txt";
+   // 68313  68313
+	// static String graphFilePath = "case_example/1 中级/case0.txt";
 	// 40483
 	// static String graphFilePath = "case_example/1 中级/case1.txt";
 	// 26626
@@ -86,6 +83,8 @@ public class FilePath {
 	
 	// 193382 fromNode 在外层
 	// 192474 193065 toNode 在外层 
+	// 195052
+	// 191520
 	//static String graphFilePath = "case_example/2 高级/case0.txt";
 	// 
 	// static String graphFilePath = "case_example/2 高级/case1.txt";
@@ -102,7 +101,10 @@ public class FilePath {
 	// 197854
 	
 	// 198219
- //static String graphFilePath = "case_example/2 高级/case3.txt";
+	
+	// 197894   197044  195982  196217
+	// 194878
+	//static String graphFilePath = "case_example/2 高级/case3.txt";
 	
 	
 	// 38373 38074 37829
@@ -178,7 +180,9 @@ public class FilePath {
 	// 3   服务器费用调高后的效果
 	
 	 
-	 // 40214
-	 // 13 s 520 ms.
+	// 两个想法
+ 
+ 	// 1 from to 的时候能否模拟增加和减少
+ 	// 2 低级simplest 
 	
 }

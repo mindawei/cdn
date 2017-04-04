@@ -38,10 +38,11 @@ public class OptimizerComplex extends Optimizer{
 			}
 		}
 		
-		isNewServer[toServerNode] = true;
-		// 重置
-		serverEdges[toServerNode].leftBandWidth  = inf;
-		
+		if(toServerNode!=-1){
+			isNewServer[toServerNode] = true;
+			// 重置
+			serverEdges[toServerNode].leftBandWidth  = inf;
+		}
 	}
 	
 	@Override

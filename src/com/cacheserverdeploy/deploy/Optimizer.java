@@ -73,7 +73,8 @@ public abstract class Optimizer {
 					continue;
 				}
 
-				for (int toNode = 0; toNode < Global.nodeNum; ++toNode) {
+				// -1 表示消失
+				for (int toNode = -1; toNode < Global.nodeNum; ++toNode) {
 
 					// 防止自己到自己
 					if (fromNode == toNode) {
