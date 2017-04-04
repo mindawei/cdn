@@ -84,9 +84,17 @@ public class OptimizerComplex extends Optimizer{
 			cost = Global.INFINITY;
 		}
 		
+		if (Global.IS_DEBUG) {
+			System.out.println("round:"+(round++)+" cost:"+cost);
+		}
+	
 		return cost;
 	}
 	
+	int round;
+
+	
+
 	@Override
 	protected void moveBest(int fromServerNode, int toServerNode) {
 		
@@ -126,6 +134,10 @@ public class OptimizerComplex extends Optimizer{
 			if (isNewServerInstalled[node]) {
 				serverNodes[serverNodesSize++] = node;
 			}
+		}
+
+		if (Global.IS_DEBUG) {
+			System.out.println("移动成功");
 		}
 		
 	}

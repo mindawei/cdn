@@ -16,6 +16,7 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 	/** 每轮最多移动多少次 */
 	private final int maxMovePerRound;
 	private final int MAX_UPDATE_NUM;
+	private final int MIN_UPDATE_NUM;
 	private final Random random = new Random();
 	private final boolean[] selected;
 	
@@ -39,6 +40,7 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 		this.selectNum = selectNum;
 		this.maxMovePerRound = simpleMaxMovePerRound;
 		this.MAX_UPDATE_NUM = simpleMaxUpdateNum;
+		this.MIN_UPDATE_NUM = simpleMaxUpdateNum;
 	
 		this.selected = new boolean[nodes.length];
 		
@@ -102,21 +104,26 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 	int round = 0;
 	@Override
 	void optimize() {
-		
+
+		if (Global.IS_DEBUG) {
+			System.out.println("");
+			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		}
+
 		if (Global.isTimeOut()) {
 			return;
 		}
-		
+
+		long t = System.currentTimeMillis();
+
 		selectServers();
 
 		int minCost = Global.INFINITY;
+		int maxUpdateNum = MAX_UPDATE_NUM;
 	
 		int bestFromNode = -1;
 		int bestToNode = -1;
 		int lastToNode = -1;
-		int leftMoveRound;
-		int updateNum;
-		
 		while (!Global.isTimeOut()) {
 			
 			if (serverNodesSize == 0) {
@@ -127,13 +134,8 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 			lastToNode = bestToNode;
 			bestFromNode = -1;
 			bestToNode = -1;
-			updateNum = 0;
-			
-			leftMoveRound = maxMovePerRound / serverNodesSize;
-			if(leftMoveRound>nodes.length){
-				leftMoveRound = nodes.length;
-			}
-			
+			int leftMoveRound = Math.min(nodes.length,maxMovePerRound / serverNodesSize);
+			int updateNum = 0;
 			boolean found = false;
 			
 			for (int i = 0; i < serverNodesSize; ++i) {
@@ -171,7 +173,7 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 						bestFromNode = fromNode;
 						bestToNode = toNode;
 						updateNum++;
-						if (updateNum == MAX_UPDATE_NUM) {
+						if (updateNum == maxUpdateNum) {
 							found = true;
 							break;
 						}
@@ -186,9 +188,15 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 			
 			// not better
 			if (bestFromNode == -1) {
+				if (Global.IS_DEBUG) {
+					System.out.println("not better");
+					System.out.println("minCost:"+minCost);
+				}
+				
 		
 				updateBeforeReturn();
-			
+				
+				
 				// 再做中级
 				optimizerMiddleLimit.optimize();
 				optimizerMiddleLimit.updateBeforeReturn();
@@ -198,24 +206,48 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 			
 				selectRandomServers();
 				minCost = Global.INFINITY;
+				maxUpdateNum = MAX_UPDATE_NUM;
 				bestFromNode = -1;
 				bestToNode = -1;
 				
+				if (Global.IS_DEBUG) {
+				System.out.println("Global.minCost:"+Global.minCost);
+				System.out.println("round:"+round++);
+				System.out.println();
+				}
+				
 				randomNodes();
 				
-				System.out.println("round:"+(round++));
 				
 			} else { // 移动
 				moveBest(bestFromNode, bestToNode);
+				if (Global.IS_DEBUG) {
+					System.out.println("better : " + minCost);
+				}
 			}
 
+			if (maxUpdateNum <= updateNum) {
+				maxUpdateNum++;
+				if (maxUpdateNum > MAX_UPDATE_NUM) {
+					maxUpdateNum = MAX_UPDATE_NUM;
+				}
+			} else { // > updateNum
+				maxUpdateNum--;
+				if (maxUpdateNum < MIN_UPDATE_NUM) {
+					maxUpdateNum = MIN_UPDATE_NUM;
+				}
+			}
 			
 		}
 		
 		if(minCost<Global.minCost){
 			updateBeforeReturn();
 		}
-	
+		
+		if (Global.IS_DEBUG) {
+			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
+		}
+
 	}
 
 }

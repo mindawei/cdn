@@ -37,10 +37,17 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 
 	void optimize() {
 
+		if (Global.IS_DEBUG) {
+			System.out.println("");
+			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		}
+
 		if (Global.isTimeOut()) {
 			return;
 		}
-		
+
+		long t = System.currentTimeMillis();
+
 		selcetServers();
 		
 		int minCost = Global.minCost;
@@ -115,9 +122,15 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 			
 			// not better
 			if (bestFromNode == -1) {
+				if (Global.IS_DEBUG) {
+					System.out.println("not better");
+				}
 				break;
 			} else { // 移动
 				moveBest(bestFromNode, bestToNode);
+				if (Global.IS_DEBUG) {
+					System.out.println("better : " + minCost);
+				}
 			}
 
 			if (maxUpdateNum <= updateNum) {
@@ -136,6 +149,10 @@ public final class OptimizerComplexLimit extends OptimizerComplex{
 		
 		if(minCost<Global.minCost){
 			updateBeforeReturn();
+		}
+		
+		if (Global.IS_DEBUG) {
+			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
 		}
 
 	}

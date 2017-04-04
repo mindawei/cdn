@@ -127,6 +127,10 @@ public final class NodesSelector {
 		}
 		int[] nodes = new int[len];
 		System.arraycopy(selectedNodes, 0, nodes, 0, len);
+
+		if (Global.IS_DEBUG) {
+			System.out.println("选出数目：" + nodes.length + " 总共数目：" + Global.nodeNum);
+		}
 		return nodes;
 	}
 
@@ -224,6 +228,9 @@ public final class NodesSelector {
 		int[] nodes = new int[len];
 		System.arraycopy(selectedNodes, 0, nodes, 0, len);
 
+		if (Global.IS_DEBUG) {
+			System.out.println("选出数目：" + nodes.length + " 总共数目：" + Global.nodeNum);
+		}
 		return nodes;
 	}
 
@@ -287,7 +294,9 @@ public final class NodesSelector {
 		for (NodeFreq nodeFreq : nodeFreqs) {
 			selectedNodes[len++] = nodeFreq.node;
 		}
-		
+		if (Global.IS_DEBUG) {
+			System.out.println("选出数目：" + selectedNodes.length + " 总共数目：" + Global.nodeNum);
+		}
 		return selectedNodes;
 	}
 
@@ -357,7 +366,9 @@ public final class NodesSelector {
 		for (NodeFreq nodeFreq : nodeFreqs) {
 			selectedNodes[len++] = nodeFreq.node;
 		}
-	
+		if (Global.IS_DEBUG) {
+			System.out.println("选出数目：" + selectedNodes.length + " 总共数目：" + Global.nodeNum);
+		}
 		return selectedNodes;
 	}
 
