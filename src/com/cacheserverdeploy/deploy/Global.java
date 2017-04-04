@@ -19,10 +19,10 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = true;
+	static final boolean IS_DEBUG = false;
 
 	/** 何时超时 */
-	static final long TIME_OUT = System.currentTimeMillis() + 85 * 1000L;
+	static final long TIME_OUT = System.currentTimeMillis() + 88 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {

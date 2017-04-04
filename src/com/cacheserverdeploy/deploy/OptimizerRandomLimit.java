@@ -1,6 +1,5 @@
 package com.cacheserverdeploy.deploy;
 
-import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -31,16 +30,21 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 	 * @param maxMovePerRound
 	 *            每轮最多移动多少次
 	 */
-	public OptimizerRandomLimit(OptimizerMCMF optimizerMCMF,int[] nodes, int selectNum,
-			int maxMovePerRound, int maxUpdateNum, int minUpdateNum) {
+	public OptimizerRandomLimit(OptimizerMCMF optimizerMCMF,int[] nodes, 
+			int selectNum,
+			int simpleMaxMovePerRound,
+			int simpleMaxUpdateNum,
+			int middleMaxMovePerRound,
+			int middleMaxUpdateNum) {
 		this.nodes = nodes;
 		this.selectNum = selectNum;
-		this.MAX_UPDATE_NUM = maxUpdateNum;
-		this.MIN_UPDATE_NUM = minUpdateNum;
-		this.maxMovePerRound = maxMovePerRound;
+		this.maxMovePerRound = simpleMaxMovePerRound;
+		this.MAX_UPDATE_NUM = simpleMaxMovePerRound;
+		this.MIN_UPDATE_NUM = simpleMaxMovePerRound;
+	
 		this.selected = new boolean[nodes.length];
 		
-		this.optimizerMiddleLimit = new OptimizerMiddleLimit(nodes, maxMovePerRound , maxUpdateNum, minUpdateNum);
+		this.optimizerMiddleLimit = new OptimizerMiddleLimit(nodes, middleMaxMovePerRound , middleMaxUpdateNum, middleMaxUpdateNum);
 		this.optimizerMCMF = optimizerMCMF;
 	}
 	
@@ -97,7 +101,7 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 			}
 		}
 	}
-	
+	int round = 0;
 	@Override
 	void optimize() {
 
@@ -198,10 +202,12 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 				
 				if (Global.IS_DEBUG) {
 				System.out.println("Global.minCost:"+Global.minCost);
+				System.out.println("round:"+round++);
 				System.out.println();
 				}
 				
 				randomNodes();
+				
 				
 			} else { // 移动
 				moveBest(bestFromNode, bestToNode);

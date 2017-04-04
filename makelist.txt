@@ -8,7 +8,6 @@ com/cacheserverdeploy/deploy/NodesSelector.java
 com/cacheserverdeploy/deploy/Optimizer.java
 com/cacheserverdeploy/deploy/OptimizerComplex.java
 com/cacheserverdeploy/deploy/OptimizerComplexLimit.java
-com/cacheserverdeploy/deploy/OptimizerComplexLimitLevel0.java
 com/cacheserverdeploy/deploy/OptimizerMCMF.java
 com/cacheserverdeploy/deploy/OptimizerMiddle.java
 com/cacheserverdeploy/deploy/OptimizerMiddleLimit.java
