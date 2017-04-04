@@ -35,9 +35,14 @@ public class Deploy{
     		int nearestK = 2 ;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
     		
-    		int maxMovePerRound = 800;
-    		int maxUpdateNum = 15;
-    		int minUpdateNum = 10;
+    		int maxMovePerRound = 1000;
+    		int maxUpdateNum = 25;
+    		int minUpdateNum = 15;
+    		new OptimizerSimpleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+
+    		maxMovePerRound = 800;
+    		maxUpdateNum = 15;
+    		minUpdateNum = 10;
     		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
     		optimizerMCMF.optimizeGlobalBest();
