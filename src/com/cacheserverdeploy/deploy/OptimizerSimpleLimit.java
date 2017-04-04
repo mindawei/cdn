@@ -9,8 +9,6 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 
 	/** 频率大于0的点 */
 	private final int[] nodes;
-	/** 每次最多随机选多少个 */
-	private final int selectNum;
 	/** 每轮最多移动多少次 */
 	private final int maxMovePerRound;
 	private final int MAX_UPDATE_NUM;
@@ -26,10 +24,8 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 	 * @param maxMovePerRound
 	 *            每轮最多移动多少次
 	 */
-	public OptimizerSimpleLimit(int[] nodes, int selectNum,
-			int maxMovePerRound, int maxUpdateNum, int minUpdateNum) {
+	public OptimizerSimpleLimit(int[] nodes,int maxMovePerRound, int maxUpdateNum, int minUpdateNum) {
 		this.nodes = nodes;
-		this.selectNum = selectNum;
 		this.MAX_UPDATE_NUM = maxUpdateNum;
 		this.MIN_UPDATE_NUM = minUpdateNum;
 		this.maxMovePerRound = maxMovePerRound;
@@ -84,6 +80,9 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 		int minCost = Global.INFINITY;
 		int maxUpdateNum = MAX_UPDATE_NUM;
 	
+		int bestFromNode = -1;
+		int bestToNode = -1;
+		int lastToNode = -1;
 		while (!Global.isTimeOut()) {
 			
 			if (serverNodesSize == 0) {
@@ -91,8 +90,9 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 			}
 			
 			// 可选方案
-			int bestFromNode = -1;
-			int bestToNode = -1;
+			lastToNode = bestToNode;
+			bestFromNode = -1;
+			bestToNode = -1;
 			int leftMoveRound = Math.min(nodes.length, maxMovePerRound / serverNodesSize);
 			int updateNum = 0;
 			boolean found = false;
@@ -103,6 +103,10 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 			
 				for (int i = 0; i < serverNodesSize; ++i) {
 					int fromNode = serverNodes[i];
+					
+					if(fromNode==lastToNode){
+						continue;
+					}
 
 					// 服务器不移动
 					if (Global.isMustServerNode[fromNode]) {

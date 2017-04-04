@@ -47,6 +47,9 @@ public abstract class Optimizer {
 		
 		int minCost = Global.INFINITY;
 		
+		int bestFromNode = -1;
+		int bestToNode = -1;
+		int lastToNode = -1;
 		while (!Global.isTimeOut()) {
 
 			if (serverNodesSize == 0) {
@@ -54,12 +57,17 @@ public abstract class Optimizer {
 			}
 
 			// 可选方案
-			int bestFromNode = -1;
-			int bestToNode = -1;
+			lastToNode = bestToNode;
+			bestFromNode = -1;
+			bestToNode = -1;
 
 			for (int i = 0; i < serverNodesSize; ++i) {
 				int fromNode = serverNodes[i];
 
+				if(fromNode==lastToNode){
+					continue;
+				}
+				
 				// 服务器不移动
 				if (Global.isMustServerNode[fromNode]) {
 					continue;

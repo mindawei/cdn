@@ -17,7 +17,7 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 	private final int maxMovePerRound;
 	private final int MAX_UPDATE_NUM;
 	private final int MIN_UPDATE_NUM;
-	private final Random random = new Random(47);
+	private final Random random = new Random();
 	private final boolean[] selected;
 	
 	/**
@@ -73,7 +73,7 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 	
 	private void randomNodes(){
 		for(int i=0;i<nodes.length;++i){
-			int left = random.nextInt(nodes.length);
+			int left = i;//random.nextInt(nodes.length);
 			int right = random.nextInt(nodes.length);
 			int tmp =  nodes[left];
 			nodes[left] = nodes[right];
@@ -121,6 +121,9 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 		int minCost = Global.INFINITY;
 		int maxUpdateNum = MAX_UPDATE_NUM;
 	
+		int bestFromNode = -1;
+		int bestToNode = -1;
+		int lastToNode = -1;
 		while (!Global.isTimeOut()) {
 			
 			if (serverNodesSize == 0) {
@@ -128,14 +131,19 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 			}
 			
 			// 可选方案
-			int bestFromNode = -1;
-			int bestToNode = -1;
+			lastToNode = bestToNode;
+			bestFromNode = -1;
+			bestToNode = -1;
 			int leftMoveRound = Math.min(nodes.length,maxMovePerRound / serverNodesSize);
 			int updateNum = 0;
 			boolean found = false;
 			
 			for (int i = 0; i < serverNodesSize; ++i) {
 				int fromNode = serverNodes[i];
+				
+				if(fromNode==lastToNode){
+					continue;
+				}
 
 				// 服务器不移动
 				if (Global.isMustServerNode[fromNode]) {
@@ -199,6 +207,8 @@ public class OptimizerRandomLimit extends OptimizerSimple{
 				selectRandomServers();
 				minCost = Global.INFINITY;
 				maxUpdateNum = MAX_UPDATE_NUM;
+				bestFromNode = -1;
+				bestToNode = -1;
 				
 				if (Global.IS_DEBUG) {
 				System.out.println("Global.minCost:"+Global.minCost);
