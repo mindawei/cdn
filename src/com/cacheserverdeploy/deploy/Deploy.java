@@ -105,7 +105,7 @@ public class Deploy{
     		int middleMaxMovePerRound = 1000;
     		
     		int middleMaxUpdateNum = 1;
-    		int selectedNum = Global.consumerNum/5 ;
+    		int selectedNum = Global.consumerNum/2 ;
     		
     		new OptimizerRandomLimit(optimizerMCMF,nodes, 
     				selectedNum,
