@@ -84,9 +84,9 @@ public class OptimizerComplex extends Optimizer{
 			cost = Global.INFINITY;
 		}
 		
-		if (Global.IS_DEBUG) {
-			System.out.println("round:"+(round++)+" cost:"+cost);
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println("round:"+(round++)+" cost:"+cost);
+		//}
 	
 		return cost;
 	}
@@ -136,9 +136,9 @@ public class OptimizerComplex extends Optimizer{
 			}
 		}
 
-		if (Global.IS_DEBUG) {
-			System.out.println("移动成功");
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println("移动成功");
+		//}
 		
 	}
 	

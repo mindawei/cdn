@@ -14,7 +14,7 @@ public class FilePath {
 	// middle 一般跑20s左右
 	// 28956 28963
 	// 28956
-	static String graphFilePath = "case_example/0 初级/case0.txt";
+	//static String graphFilePath = "case_example/0 初级/case0.txt";
 	// 28979 28952
 	// static String graphFilePath = "case_example/0 初级/case1.txt";
 	// 28371 28371
@@ -38,9 +38,9 @@ public class FilePath {
 	// 42162
 	
    // 68313  68313
-	// static String graphFilePath = "case_example/1 中级/case0.txt";
+	//static String graphFilePath = "case_example/1 中级/case0.txt";
 	// 40483
-	// static String graphFilePath = "case_example/1 中级/case1.txt";
+	 static String graphFilePath = "case_example/1 中级/case1.txt";
 	// 26626
 	// static String graphFilePath = "case_example/1 中级/case2.txt";
 	// 27200
@@ -59,7 +59,7 @@ public class FilePath {
 	
 	// random 跑 85s k=1 updateNum = [3,6]
 	// 38452 38767
-	//static String graphFilePath = "case_example/2 高级/case0.txt";
+	// static String graphFilePath = "case_example/2 高级/case0.txt";
 	// 36233 35987
 	//static String graphFilePath = "case_example/2 高级/case1.txt";
 	// 38418 37372

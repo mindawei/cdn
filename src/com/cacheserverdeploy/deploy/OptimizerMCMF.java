@@ -114,7 +114,7 @@ public final class OptimizerMCMF {
 	/** 优化全局的 */
 	final void optimizeGlobalBest(){
 		
-		long t = System.currentTimeMillis();
+		// long t = System.currentTimeMillis();
 
 		bestServersSize = 0;
 		for (Server server : Global.getBestServers()) {
@@ -126,9 +126,9 @@ public final class OptimizerMCMF {
 		
 		optimize(bestServers, bestServersSize);
 		
-		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println(this.getClass().getSimpleName() + " 结束，耗时: " + (System.currentTimeMillis() - t));
+		//}
 		
 	}
 
@@ -137,10 +137,10 @@ public final class OptimizerMCMF {
 	/** 优化一个位置的 */
 	final void optimize(int[] lsNewServers, int lsNewServersSize) {
 	
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println("");
+		//	System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		//}
 		
 		// 与超级源点相连的重置 
 		for (int i = head[sourceNode]; i != -1; i = edges[i].next) {
@@ -189,9 +189,9 @@ public final class OptimizerMCMF {
 
 		} else {
 			
-			if (Global.IS_DEBUG) {
-				System.out.println("mcmf 无法找到一个满足的解！");
-			}
+			///if (Global.IS_DEBUG) {
+			//	System.out.println("mcmf 无法找到一个满足的解！");
+			//}
 
 		}
 	}

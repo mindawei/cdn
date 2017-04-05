@@ -59,10 +59,10 @@ public final class Parser {
 			buildConsumer(line);
 		}
 		
-		if(Global.IS_DEBUG){
-			String info = String.format("节点数：%d,消费节点数：%d,每台部署成本：%d", nodeNum,consumerNum, depolyCostPerServer);
-			System.out.println(info);
-		}
+		//if(Global.IS_DEBUG){
+		//	String info = String.format("节点数：%d,消费节点数：%d,每台部署成本：%d", nodeNum,consumerNum, depolyCostPerServer);
+		//	System.out.println(info);
+		//}
 		
 	}
 

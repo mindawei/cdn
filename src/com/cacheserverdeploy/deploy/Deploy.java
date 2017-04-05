@@ -20,35 +20,35 @@ public class Deploy{
     		int nearestK = Global.consumerNum ;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
      
-    		int maxMovePerRound = 800;
-    		int maxUpdateNum = 25;
-    		int minUpdateNum = 15;
+    		int maxMovePerRound = 1200;
+    		int maxUpdateNum = 9;
+    		int minUpdateNum = 6;
     		new OptimizerSimpleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 
     		maxMovePerRound = 200;
-    		maxUpdateNum = 6;
-     		minUpdateNum = 3;
+    		maxUpdateNum = 2;
+     		minUpdateNum = 2;
      		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
     	}else if(Global.isNpHard){
     		
-    		int nearestK = 2 ;
+    		int nearestK = 5 ;
     		int[] nodes = NodesSelector.selectMoveNodes(nearestK);
     		
-    		int maxMovePerRound = 1000;
-    		int maxUpdateNum = 25;
-    		int minUpdateNum = 15;
-    		new OptimizerSimpleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
+    	//	int maxMovePerRound = 2000;
+    	//	int maxUpdateNum = 10;
+    	//	int minUpdateNum = 10;
+    	//	new OptimizerSimpleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 
-    		maxMovePerRound = 800;
-    		maxUpdateNum = 15;
-    		minUpdateNum = 10;
+    		int maxMovePerRound = 1000;
+    		int maxUpdateNum = 30;
+    		int minUpdateNum = 20;
     		new OptimizerMiddleLimit(nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
     		
     		optimizerMCMF.optimizeGlobalBest();
-    		
-    		maxUpdateNum = 6;
-    		minUpdateNum = 3;
+    		maxMovePerRound = 800;
+    		maxUpdateNum = 2;
+    		minUpdateNum = 2;
 			new OptimizerComplexLimit(graphContent,nodes,maxMovePerRound,maxUpdateNum,minUpdateNum).optimize();
 		
     	}else{
@@ -88,7 +88,7 @@ public class Deploy{
     	
     	
     		int simpleMaxMovePerRound = 1000;
-    		int simpleMaxUpdateNum = 1000;
+    		int simpleMaxUpdateNum = 1;
     		
     		// = 2000 30706
     		// = 1500 30694,30629
@@ -105,7 +105,7 @@ public class Deploy{
     		int middleMaxMovePerRound = 1000;
     		
     		int middleMaxUpdateNum = 1;
-    		int selectedNum = Global.consumerNum/2 ;
+    		int selectedNum = Global.consumerNum/5 ;
     		
     		new OptimizerRandomLimit(optimizerMCMF,nodes, 
     				selectedNum,

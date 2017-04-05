@@ -19,12 +19,10 @@ import java.util.Map;
 public final class Global {
 
 	/** 是否是调试 */
-	static final boolean IS_DEBUG = false;
+	// static final boolean IS_DEBUG = true;
 
 	/** 何时超时 */
-	// static final long TIME_OUT = System.currentTimeMillis() + 88 * 1000L;
-	
-	static final long TIME_OUT = System.currentTimeMillis() + 885 * 100L;
+	static final long TIME_OUT = System.currentTimeMillis() + 88 * 1000L;
 
 	/** 是否超时 */
 	static boolean isTimeOut() {
@@ -96,8 +94,7 @@ public final class Global {
 	public static Edge[] edges;
 	/** 连接关系：下游节点 */
 	static int[][] connections; 
-	/** 连接关系：下游节点 */
-	static int[][] mfmcConnections; 
+
 	
 	/** 是否确肯定定是服务节点 */
 	static boolean[] isMustServerNode;
@@ -147,21 +144,7 @@ public final class Global {
 				connections[fromNode][i] = toNodeIds.get(i);
 			}
 		}
-		
-		mfmcConnections = new int[mcmfNodeNum][];
-		for(int fromNode=0;fromNode<mcmfNodeNum;++fromNode){
-			ArrayList<Integer> toNodeIds = new ArrayList<Integer>();
-			for (int toNodeId = 0; toNodeId < mcmfNodeNum; ++toNodeId) {
-				if (graph[fromNode][toNodeId] != null) {
-					toNodeIds.add(toNodeId);
-				}
-			}
-			mfmcConnections[fromNode] = new int[toNodeIds.size()];
-			for(int i=0;i<toNodeIds.size();++i){
-				mfmcConnections[fromNode][i] = toNodeIds.get(i);
-			}
-		}
-		
+			
 		// 如果需求大于供应，则这个消费节点必须建立服务器
 		isMustServerNode = new boolean[nodeNum];
 		isConsumerServer = new boolean[consumerNum];
@@ -218,9 +201,9 @@ public final class Global {
 		for(int i=0;i<lsMustServerNodes.size();++i){
 			mustServerNodes[i] = lsMustServerNodes.get(i);
 		}
-		if(IS_DEBUG){
-			System.out.println("服务器节点："+Arrays.toString(mustServerNodes));
-		}
+		//if(IS_DEBUG){
+		//	System.out.println("服务器节点："+Arrays.toString(mustServerNodes));
+		//}
 				
 		// 初始解
 		Server[] nextGlobalServers = new Server[consumerNum];
@@ -235,10 +218,10 @@ public final class Global {
 		int On = nodeNum * nodeNum * consumerNum;
 		isNpHardest = On>=NP_HARDEST_THRESHOLD;
 		isNpHard = On >= NP_HARD_THRESHOLD;
-		if(IS_DEBUG){
-			System.out.println("initCost:"+initCost);
-			System.out.println("On:"+On+" isNpHardest:"+isNpHardest+" isNpHard:"+isNpHard);
-		}
+		//if(IS_DEBUG){
+		//	System.out.println("initCost:"+initCost);
+		//	System.out.println("On:"+On+" isNpHardest:"+isNpHardest+" isNpHard:"+isNpHard);
+		//}
 		
 		/** 初始化缓存 */
 		initAllCostAndPreNodes();
@@ -267,10 +250,10 @@ public final class Global {
 		
 		int newMinCost = getTotalCost(nextGlobalServers);
 		
-		if (IS_DEBUG) {
-			System.out.println("newMinCost:" + newMinCost);
-			System.out.println(newMinCost < Global.minCost ? "better" : "worse");
-		}
+		//if (IS_DEBUG) {
+		//	System.out.println("newMinCost:" + newMinCost);
+		//	System.out.println(newMinCost < Global.minCost ? "better" : "worse");
+		//}
 		
 		if (newMinCost < Global.minCost) {
 			minCost = newMinCost;
@@ -428,9 +411,9 @@ public final class Global {
 			
 		}
 		
-		if(Global.IS_DEBUG){
-			System.out.println("预计算完成：消费者到所有节点的费用 ");
-		}
+		//if(Global.IS_DEBUG){
+		//	System.out.println("预计算完成：消费者到所有节点的费用 ");
+		//}
 	}
 	
 	private static void initOneCostAndPreNodes(int consumerId) {

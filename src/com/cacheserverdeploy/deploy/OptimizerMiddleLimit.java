@@ -45,16 +45,16 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 
 	void optimize() {
 
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println("");
+		//	System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		//}
 
 		if (Global.isTimeOut()) {
 			return;
 		}
 
-		long t = System.currentTimeMillis();
+		// long t = System.currentTimeMillis();
 
 		selcetServers();
 
@@ -131,15 +131,15 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 			
 			// not better
 			if (bestFromNode == -1) {
-				if (Global.IS_DEBUG) {
-					System.out.println("not better");
-				}
+				//if (Global.IS_DEBUG) {
+				//	System.out.println("not better");
+				//}
 				break;
 			} else { // 移动
 				moveBest(bestFromNode, bestToNode);
-				if (Global.IS_DEBUG) {
-					System.out.println("better : " + minCost);
-				}
+				//if (Global.IS_DEBUG) {
+				//	System.out.println("better : " + minCost);
+				//}
 			}
 
 			if (maxUpdateNum <= updateNum) {
@@ -160,9 +160,9 @@ public final class OptimizerMiddleLimit extends OptimizerMiddle{
 			updateBeforeReturn();
 		}
 		
-		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
+		//}
 
 	}
 }

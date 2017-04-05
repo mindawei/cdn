@@ -64,16 +64,16 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 	@Override
 	void optimize() {
 
-		if (Global.IS_DEBUG) {
-			System.out.println("");
-			System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println("");
+		//	System.out.println(this.getClass().getSimpleName() + " 开始接管 ");
+		//}
 
 		if (Global.isTimeOut()) {
 			return;
 		}
 
-		long t = System.currentTimeMillis();
+		// long t = System.currentTimeMillis();
 
 		// selcetBestServers();
 		selectServers();
@@ -149,15 +149,15 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 			
 			// not better
 			if (bestFromNode == -1) {
-				if (Global.IS_DEBUG) {
-					System.out.println("not better");
-				}
+				//if (Global.IS_DEBUG) {
+				//	System.out.println("not better");
+				//}
 				break;
 			} else { // 移动
 				moveBest(bestFromNode, bestToNode);
-				if (Global.IS_DEBUG) {
-					System.out.println("better : " + minCost);
-				}
+				//if (Global.IS_DEBUG) {
+				//	System.out.println("better : " + minCost);
+				//}
 			}
 
 			if (maxUpdateNum <= updateNum) {
@@ -178,9 +178,9 @@ public final class OptimizerSimpleLimit extends OptimizerSimple{
 			updateBeforeReturn();
 		}
 		
-		if (Global.IS_DEBUG) {
-			System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
-		}
+		//if (Global.IS_DEBUG) {
+		//	System.out.println(this.getClass().getSimpleName() + " 结束，耗时: "+ (System.currentTimeMillis() - t));
+		//}
 
 	}
 
